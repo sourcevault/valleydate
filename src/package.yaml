@@ -1,0 +1,19 @@
+name: valleydate
+author: sourcevault
+email: joykrishnamondal@gmail.com
+homepage: https://github.com/sourcevault/valleydate#readme.md
+license: MIT
+description: immutable object validator
+repository: https://github.com/sourcevault/valleydate.git
+version: 0.0.1
+main: dist/main.js
+dependencies:
+  seamless-immutable: "*"
+  ramda: "*"
+  chalk: "*"
+  json-stringify-pretty-compact: "*"
+  guard-js: "*"
+  seamless-immutable-mergers: "*"
+  traverse: "*"
+  at-line: "*"
+  pretty-error: "*"
