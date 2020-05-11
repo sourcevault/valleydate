@@ -5,6 +5,7 @@
   ref$ = require("./common"), unfinished = ref$.unfinished, sim = ref$.sim, utilInspectCustom = ref$.utilInspectCustom;
   registry = require("./registry");
   require("./validators");
+  require("./helper");
   print = require("./print");
   genproxSave = function(neo, old, key){
     var P, common, current_cache, store;
@@ -102,7 +103,9 @@
     return registry.basetype[k];
   }, validator_initial).when(function(d, k){
     return registry.helper[k];
-  }, unfinished("get.helper")).any(print.not_in_base_or_help);
+  }, function(d, k){
+    return registry.helper[k];
+  }).any(print.not_in_base_or_help);
   ap = guard(function(data, args){
     return registry.router[data.call];
   }, validator_call).when(function(data, args){
@@ -137,6 +140,7 @@
     IS = new Proxy(noops, handle.of(init));
     registry.cache.common.set(init, {});
     registry.cache.all.add(IS);
+    registry.is = IS;
     return IS;
   };
   module.exports = start();

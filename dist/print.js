@@ -98,6 +98,12 @@
     str = [c.ok("| " + data.type + " " + inn + "| "), chain.join(c.ok(" > "))];
     return str.join("");
   };
+  print.requiredError = function(loc){
+    l(c.er("[" + moduleName + "][error]"), c.er("key in position " + loc + " is not string type.\n"));
+    l(c.warn("keys passed to helper function " + c.ok('.required') + " has to be string or number.\n"));
+    l(help);
+    return show_stack();
+  };
   print.pretty = guard(function(data, key){
     return !data.type;
   }, top).any(internal);

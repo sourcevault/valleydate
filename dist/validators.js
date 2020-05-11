@@ -158,7 +158,7 @@
     messages = [topRet.message];
     for (i$ = 0, len$ = funs.length; i$ < len$; ++i$) {
       f = funs[i$];
-      localRet = main.sanatize(f, value);
+      localRet = registry.sanatize(f, value);
       if (localRet['continue']) {
         return {
           'continue': true,
@@ -183,7 +183,7 @@
       for (i$ = 0, len$ = val.length; i$ < len$; ++i$) {
         n = i$;
         I = val[i$];
-        localRet = main.sanatize(f, I, n);
+        localRet = register.sanatize(f, I, n);
         if (localRet.error) {
           return createError(localRet, topRet.value, n);
         }
@@ -202,7 +202,7 @@
       pos = args[0], f = args[1];
       onValue = topRet.value[pos];
       if (!(onValue === undefined)) {
-        localRet = main.sanatize(f, onValue);
+        localRet = registry.sanatize(f, onValue);
         if (localRet.error) {
           return createError(localRet, topRet.value, pos);
         } else {
@@ -246,7 +246,7 @@
     if (topRet['continue']) {
       for (key in ref$ = topRet.value) {
         value = ref$[key];
-        localRet = main.sanatize(f, value, key);
+        localRet = registry.sanatize(f, value, key);
         if (localRet.error) {
           return createError(localRet, topRet.value, key);
         }

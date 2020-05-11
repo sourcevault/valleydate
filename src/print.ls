@@ -59,6 +59,7 @@ show_stack = !->
 
 
 
+
 # print.wrong_basetype_for_unit = (data,key) ->
 
 # 	ret = [I[0] for I in data.all]
@@ -199,17 +200,17 @@ internal = (data) ->
 
 	str.join ""
 
-# print.required_not_string = (loc) ->
+print.requiredError = (loc) ->
 
-# 	l do
-# 		c.er ("[#{module-name}][error]")
-# 		c.er ("key in position #{loc} is not string type.\n")
+	l do
+		c.er ("[#{module-name}][error]")
+		c.er ("key in position #{loc} is not string type.\n")
 
-# 	l (c.warn "keys passed to helper function #{c.ok \.required} has to be string.\n")
+	l (c.warn "keys passed to helper function #{c.ok '\.required'} has to be string or number.\n")
 
-# 	l help
+	l help
 
-# 	show_stack!
+	show_stack!
 
 
 print.pretty = guard do

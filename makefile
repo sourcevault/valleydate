@@ -6,6 +6,7 @@ WATCH = ${FILE_NAME:%=--watch %}
 
 file = test.js
 
+
 compile:
 	lsc -co dist src
 	yaml2json src/package.yaml > package.json

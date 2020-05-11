@@ -5,10 +5,10 @@ commonjs = require "./common"
 unfinshed_to_leaf = (x) !->
 
 	if x is null
+
 		@update (unfinished @path.join ".")
 
 create_filler_function = (main) ->
-
 
 	(traverse main).forEach unfinshed_to_leaf
 
@@ -59,6 +59,8 @@ registry = {}
 		..integer = null
 		..alphanum = null
 
+
+
 	..sanatize = null
 
 	..sideEffects = null
@@ -72,8 +74,6 @@ registry = {}
 		..continue = null
 		..error    = null
 		..tap      = null
-
-
 
 	..is = null
 

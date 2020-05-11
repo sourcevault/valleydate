@@ -13,14 +13,12 @@ local.sanatize = (f,val,path)->
 	ret = f val,path
 
 	if booly.has (typeof ret)
-
 		if ret
 			return (continue:true,error:false,value:val)
 		else
 			return (coninue:false,error:true,value:val)
 
 	else if (Array.isArray ret)
-
 
 		[cont,message] = ret
 
@@ -67,12 +65,12 @@ createError = (localRet,topValue,loc) ->
 	else
 		out.path = []
 
-
 	if localRet.path
 		out.path = out.path.concat localRet.path
 
 	if localRet.message
 		out.message = localRet.message
+
 	else
 		out.message = ""
 
@@ -87,20 +85,6 @@ registry.router =
 		on      :(data,config) -> (val) -> registry.unit.on[data.type] data,config,val
 
 
-# registry.router.continue = (data,f) ->
-
-# 	update =
-# 		*call:null
-# 			all:[[data.call,f]]
-
-# 	update[data.call] = f
-
-# 	neo = data.merge update,(merger:sim.concatArrayMerger)
-
-# 	genprox.simple neo
-
-
-# registry.router.error = registry.router.continue
 
 registry.unit.and = (data,funs,value) ->
 
@@ -140,7 +124,7 @@ registry.unit.or = (data,funs,value) ->
 
 	for f in funs
 
-		localRet = main.sanatize f,value
+		localRet = registry.sanatize f,value
 
 		if localRet.continue
 			return
@@ -167,7 +151,7 @@ registry.unit.map.array = (data,f,value) ->
 
 		for I,n in val
 
-			localRet = main.sanatize f,I,n
+			localRet = register.sanatize f,I,n
 
 			if localRet.error then return createError localRet,topRet.value,n
 
@@ -191,7 +175,7 @@ obj.single = (data,args,UFO) ->
 
 		if not (onValue is undefined)
 
-			localRet = main.sanatize f,onValue
+			localRet = registry.sanatize f,onValue
 
 			if localRet.error
 
@@ -236,7 +220,7 @@ registry.unit.map.object = (data,f,UFO) ->
 
 		for key,value of topRet.value
 
-			localRet = main.sanatize f,value,key
+			localRet = registry.sanatize f,value,key
 
 			if localRet.error then return createError localRet,topRet.value,key
 

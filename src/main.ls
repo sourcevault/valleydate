@@ -6,6 +6,8 @@ registry = require "./registry"
 
 require "./validators"
 
+require "./helper"
+
 print = require "./print"
 
 genprox-save = (neo,old,key) ->
@@ -47,7 +49,6 @@ incache = (data,key)->
 	if found then found[key]
 
 	else false
-
 
 validator_get = (data,key) -> 
 
@@ -94,6 +95,7 @@ ap_call = (data,[val])->
 
 	rets
 
+
 registry.router.continue = (data,f) ->
 
 	update =
@@ -120,7 +122,7 @@ get = guard do
 	validator_initial
 .when do
 	(d,k) -> registry.helper[k]
-	unfinished "get.helper"
+	(d,k) -> registry.helper[k]
 .any print.not_in_base_or_help
 
 
@@ -165,6 +167,8 @@ start = ->
 	registry.cache.common.set init,{}
 
 	registry.cache.all.add IS
+
+	registry.is = IS
 
 	IS
 
