@@ -11,7 +11,6 @@ V = IS.required "address","name","age"
 .on "name",IS.string
 .on "age",IS.number
 
-
 sample =
 	name:"Fred"
 	age:30

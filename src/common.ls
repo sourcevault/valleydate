@@ -50,6 +50,7 @@ module.exports =
 	*l:l
 		chalk:chalk
 		guard:guard
+		guardjs:guardjs
 		unfinished:unfinished
 		SI:SI
 		j:(j)-> console.log render j 

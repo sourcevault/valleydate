@@ -50,57 +50,107 @@ pe.appendStyle do
 	"pretty-error > header > message":(display:"none")
 
 
-
 show_stack = !->
 
 	E = pe.render new Error!
 
 	l E
 
+print.wrong_basetype_for_map = (data,key) !->
+
+	l do
+		c.er ("[#{module-name}][error]")
+		c.er ("#{data.type}.#{key}") + (c.warn " <<--\n")
+
+	l c.warn "   map can only be used for basetype object and array.\n"
+
+	l help
+
+	show_stack!
+
+gen_chain = (data) ->
+
+	str = ""
+
+	if data.type
+
+		str = data.type + "." + str
+
+	if data.all.length > 0
+
+		ret = [I[0] for I in data.all]
+
+		str = str + (ret.join "(~~).") + "(~~)"
+
+		if data.call
+
+			str = str + "."
+
+	if data.call
+
+		str = str + data.call
 
 
-
-# print.wrong_basetype_for_unit = (data,key) ->
-
-# 	ret = [I[0] for I in data.all]
-
-# 	l do
-# 		c.er ("[#{module-name}][error]")
-# 		c.warn "map/on can only be used for basetype object and array."
-
-# 	l help
-
-# 	show_stack!
+	return str
 
 
-# print.noapi = (data,key)-> 
+print.call_has_to_be_function = (data,key) !->
+
+	l do
+		c.er ("[#{module-name}][error]")
+		(c.ok gen_chain data) + (c.er "(~~)") + (c.warn " <<--\n")
+
+	l c.warn "   only functions can be passed into unit function.\n"
+
+	l help
+
+	show_stack!
+
+print.wrong_type_for_object_on = (data,key) !->
+
+	l do
+		c.er ("[#{module-name}][error]")
+		(c.ok gen_chain data) + (c.er "(...)") + (c.warn " <<--\n")
+
+	l c.warn "   wrong type/argument for #{data.type}.on\n"
+
+	l help
+
+	show_stack!
+
+print.wrong_basetype_for_on = (data,key) !->
+
+	l do
+		c.er ("[#{module-name}][error]")
+		c.er ("#{data.type}.#{key}") + (c.warn " <<--\n")
+
+	l c.warn "   on cannot be used for basetype #{data.type}.\n"
+
+	l help
+
+	show_stack!
 
 
-# 	l do
-# 		c.er ("[#{module-name}][error]")
-# 		c.warn "top level object is not a function."
+print.fail = (num) !->
 
-# 	l help
+	l do
+		c.er "[TEST ERROR] originating from module"
+		c.warn "[#{repo-url}]"
+		c.er "\n\n\t - 'npm test' failed at TEST #{num}. \n"
 
-# 	show_stack!
+	process.exitCode = 1
 
+print.not_unit = (data,key) ->
 
-# print.not_unit = (data,key) ->
+	l do
+		c.er ("[#{module-name}][error]")
+		(c.ok (gen_chain data)) + (c.er ("." + key)) + (c.warn " <<--\n")
 
-# 	ret = [I[0] for I in data.all]
+	l (c.warn "   #{(c.er ("." + key))} is not a valid unit function for basetype #{data.type}.\n")
 
+	l help
 
-# 	gap = "(..)."
-
-# 	l do
-# 		c.er ("[#{module-name}][error]")
-# 		(c.ok (ret.join gap)) + (c.ok "(..)") + (c.er "." + key) + (c.warn " <<--\n")
-
-# 	l (c.warn "#{c.er ("." + key)} is not a unit function.\n")
-
-# 	l help
-
-# 	show_stack!
+	show_stack!
 
 
 print.not_in_base_or_help = (data,key) !->
@@ -126,29 +176,59 @@ print.not_in_base_or_help = (data,key) !->
 	show_stack!
 
 
-# print.not_an_object = (data,prop) !->
+print.not_an_object = (data,prop) !->
 
-# 	l do
-# 		c.er (module-name + "[error]")
-# 		(c.ok data.call) + c.er ("." + prop) + (c.warn " <<--\n")
+	l do
+		c.er (module-name + "[error]")
+		(c.ok data.call) + c.er ("." + prop) + (c.warn " <<--\n")
 
-# 	l (c.ok data.call) + (c.warn " is a function, not a object.")
+	l (c.ok data.call) + (c.warn " is a function, not a object.")
 
-# 	l help
+	l help
 
-# print.unit_not_on_top = (data,prop) !->
 
-# 	l do
-# 		c.er ("[#{module-name}][error]")
-# 		c.er ("." + prop) + (c.warn " <<--\n")
+print.top_level_is_not_function = (data,prop) !->
 
-# 	l (c.warn " unit function #{c.ok "." + prop} cannot be called on top level object.\n")
+	l do
+		c.er ("[#{module-name}][error] validator chain is empty.\n")
 
-# 	l help
+	l c.warn "   top level object is not a function that can be called.\n"
 
-# 	show_stack!
+	l help
 
-top = (data) ->
+	show_stack!
+
+
+
+print.unknown_ap_call = (data,prop) !->
+
+	l do
+		c.er ("[#{module-name}][error]\n")
+
+	l c.warn "   Error not defined, please contact author or raise an issue.\n"
+
+
+	l help
+
+	show_stack!
+
+
+print.unit_not_on_top = (data,prop) !->
+
+	l do
+		c.er ("[#{module-name}][error]")
+		c.er ("." + prop) + (c.warn " <<--\n")
+
+	l c.warn " unit function #{c.ok "." + prop} cannot be called on top level object.\n"
+
+	l c.warn " only basetypes and helper are allowed.\n\n"
+
+	l help
+
+	show_stack!
+
+
+top = ->
 
 	help = Object.keys registry.helper
 	base = Object.keys registry.basetype

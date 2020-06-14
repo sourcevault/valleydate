@@ -84,7 +84,7 @@ with basetypes.
 
 - `number`,`array`,`string`,`null`,`undefined`,`object`,`function`, and `string`.
 
-This idea combined with immutability makes it really easy to build validator chains that are quite difficult to express under a different set of functions.
+This idea combined with immutability makes it really easy to build validator chains that are quite difficult to express using a different set of functions.
 
 
 #### initializing validators ..

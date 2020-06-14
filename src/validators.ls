@@ -10,13 +10,16 @@ local = {}
 
 local.sanatize = (f,val,path)->
 
-	ret = f val,path
+	ret = switch typeof f
+	| "function" => f val,path
+	| otherwise => f
 
 	if booly.has (typeof ret)
+
 		if ret
 			return (continue:true,error:false,value:val)
 		else
-			return (coninue:false,error:true,value:val)
+			return (continue:false,error:true,value:val)
 
 	else if (Array.isArray ret)
 
@@ -72,6 +75,7 @@ createError = (localRet,topValue,loc) ->
 		out.message = localRet.message
 
 	else
+
 		out.message = ""
 
 	out
@@ -82,7 +86,7 @@ registry.router =
 		or      :(data,funs) -> (val) -> registry.unit.or data,funs,val
 		edit    :(data,[f]) -> (val) -> registry.unit.edit data,f,val
 		map     :(data,[f]) -> (val) -> registry.unit.map[data.type] data,f,val
-		on      :(data,config) -> (val) -> registry.unit.on[data.type] data,config,val
+		on      :(data,config) -> (val) -> onn.entry data,config,val
 
 
 
@@ -158,59 +162,58 @@ registry.unit.map.array = (data,f,value) ->
 	return topRet
 
 
-obj = {}
-	..entry = null
-	..single = null
-	..obj = null
+onn = {}
+	..entry  = null
+	..obja   = null
+	..array  = null
+	..object = null
+	..number = null
+	..string = null
 
-obj.single = (data,args,UFO) ->
+
+onn.string = (pattern,result,UFO) -> 
+
+	if (UFO is pattern) then return local.sanatize result,UFO
+
+	(continue:true,error:false,value:UFO)
+
+onn.number = onn.string
+
+onn.object = (pos,f,ob) ->
+
+	localRet = registry.sanatize f,ob[pos]
+
+	if localRet.error then return createError localRet,ob,pos
+
+	ob[pos] = localRet.value
+
+	localRet
+
+onn.array = onn.object
+
+onn.obja = (data,[funs],UFO) ->
 
 	topRet = data.validator UFO
 
 	if topRet.continue
 
-		[pos,f] = args
+		for loc,f of funs
 
-		onValue = topRet.value[pos]
+			localRet = onn[data.type] loc,f,topRet.value
 
-		if not (onValue is undefined)
+			if localRet.error then return localRet
 
-			localRet = registry.sanatize f,onValue
-
-			if localRet.error
-
-				return createError localRet,topRet.value,pos
-
-			else
-
-				topRet.value[pos] = localRet.value
-
-				return (continue:true,error:false,value:topRet.value)
+	topRet
 
 
-	return topRet
-
-obj.obj = (data,[funs],UFO) ->
-
-	for loc,f of funs
-
-		localRet = obj.single data,[loc,f],UFO
-
-		if localRet.error then return localRet
-
-	(continue:true,error:false,value:UFO)
-
-
-obj.entry = guard do
+onn.entry = guard do
 	(data,args,UFO) -> (typeof args[0]) is 'object'
-	obj.obj
+	onn.obja
 .when do
 	(data,args,UFO) -> args.length is 2
-	obj.single
+	(data,args,UFO) -> onn.obja data,[{"#{args[0]}":args[1]}],UFO
 
-registry.unit.on.object = obj.entry
 
-registry.unit.on.array = obj.entry
 
 registry.unit.map.object = (data,f,UFO) ->
 
@@ -239,7 +242,6 @@ registry.unit.edit = (data,f,UFO) ->
 				value:f topRet.value
 
 	return topRet
-
 
 
 registry.sanatize = (f,val,path) ->

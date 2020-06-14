@@ -1,4 +1,4 @@
-{l,SI,R,guard,noops,module-name} = require "./common"
+{l,SI,R,guard,guardjs,noops,module-name} = require "./common"
 
 {unfinished,sim,util-inspect-custom} = require "./common"
 
@@ -77,7 +77,7 @@ validator_basetype = (data,args) ->
 
 
 validator_call = (data,args) ->
-
+	
 	update =
 		*call:null
 			validator:registry.router[data.call] data,args
@@ -91,10 +91,9 @@ ap_call = (data,[val])->
 
 	rets = data.validator val
 
-	registry.sideEffects data, rets
+	registry.sideEffects data,rets
 
 	rets
-
 
 registry.router.continue = (data,f) ->
 
@@ -110,32 +109,90 @@ registry.router.continue = (data,f) ->
 
 registry.router.error = registry.router.continue
 
+
+verify-get = guard do
+	(data,key) -> (key is 'map')
+	guard do
+		(data) -> (data.type in ['array','object'])
+		validator_get
+	.any print.wrong_basetype_for_map
+.when do
+	(data,key) -> (key is 'on')
+	guard do
+		(data) -> registry.unit.on[data.type]
+		validator_get
+	.any print.wrong_basetype_for_on
+.when do
+	(data,key) -> 
+		registry.router[key]
+	validator_get
+
+.any print.not_unit
+
+
 get = guard do
 	(data,key) -> (key is util-inspect-custom)
 	print.pretty
 .when incache,incache
 .when do
-	(d,k) -> d.type and registry.router[k]
-	validator_get
+	(d,k) -> d.type
+	verify-get
 .when do
 	(d,k) -> registry.basetype[k]
 	validator_initial
 .when do
 	(d,k) -> registry.helper[k]
 	(d,k) -> registry.helper[k]
+.when do
+	(d,k) -> registry.router[k]
+	print.unit_not_on_top
+
 .any print.not_in_base_or_help
+
+verify = {}
+
+verify.ap = {}
+
+verify.ap.on_object = (data,args) ->
+
+	switch args.length
+
+		| 1 => ((typeof args[0]) is "object")
+		| 2 =>
+
+			if not ((typeof args[0]) in ["string","number"]) then return false
+
+			switch data.type
+			| "number","string" => Array.isArray args[1]
+			| "object", "array" => (((typeof args[1]) is "function"))
+
+		| otherwise => return false
+
+
+verify.ap.on_rest = (data,args) -> (typeof args[0] is 'function')
+
+verify.ap.main = guardjs!
+	.when do
+		(data,args) -> ((data.call is 'on') and (registry.unit.on[data.type]))
+		guardjs!
+			.when verify.ap.on_object,validator_call
+			.any print.wrong_type_for_object_on
+	.when do
+		verify.ap.on_rest
+		validator_call
+	.any print.call_has_to_be_function
 
 
 ap = guard do
 	(data,args) -> registry.router[data.call]
-	validator_call
+	verify.ap.main
 .when do
-	(data,args) -> (not data.validator) and (not data.type)
-	validator_basetype
-.when do
-	(data) -> data.validator and data.type
+	(data) -> (data.validator and data.type)
 	ap_call
-.any print.noapi
+.when do
+	(data,args) -> (not data.validator) and (not data.type) and (data.all.length is 0)
+	print.top_level_is_not_function
+.any print.unknown_ap_call
 
 
 handle = (data) ->

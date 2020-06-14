@@ -20,6 +20,7 @@
   y$.string = null;
   y$.boolean = null;
   y$['function'] = null;
+  y$.undefined = null;
   z$ = x$.unit = {};
   z$.and = null;
   z$.or = null;
@@ -27,19 +28,11 @@
   z1$ = z$.map = {};
   z1$.array = null;
   z1$.object = null;
-  z1$.number = null;
-  z1$['null'] = null;
-  z1$.string = null;
-  z1$.boolean = null;
-  z1$['function'] = null;
   z2$ = z$.on = {};
   z2$.array = null;
   z2$.object = null;
-  z2$.number = null;
-  z2$['null'] = null;
   z2$.string = null;
-  z2$.boolean = null;
-  z2$['function'] = null;
+  z2$.number = null;
   z$['continue'] = null;
   z$.error = null;
   z$.tap = null;

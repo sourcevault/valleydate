@@ -41,8 +41,6 @@ check_if_string = ->
 	return true
 
 
-
-
 registry.helper.required = guard do
 	check_if_string
 	->
@@ -51,11 +49,16 @@ registry.helper.required = guard do
 .any noops
 
 
+is_integer = (val) ->
 
+	residue = Math.abs (val - Math.round(val))
 
+	if residue > 0
 
+		return [false,"not an integer"]
 
+	else
 
+		return [true]
 
-
-
+registry.helper.integer = (val)-> (registry.is.number.and is_integer) val
