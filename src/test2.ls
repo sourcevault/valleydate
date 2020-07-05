@@ -7,15 +7,12 @@ IS = require "./main"
 V = IS.object.on "foo",(x) -> true
 
 
-G = V.edit (x)->
-
-	x.foo = 0
-
-	x
 
 
-out = G {foo:69}
+# out = G {foo:69}
 
-if not (out.value.foo is 0)
+# if not (out.value.foo is 0)
 
-	print.fail "test2.js"
+# 	printfail "test2.js"
+
+

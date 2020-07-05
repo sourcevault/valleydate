@@ -1,21 +1,21 @@
-{l,noops} = require "./common"
+{z,noops} = require "./common"
+
+print = require "./print"
+
+p = print.fail "test.js"
+
+# ----------
 
 IS = require "./main"
 
-V1 = IS.array
 
-V2 = V1.continue !-> l "first"
+city = IS.array.or do
+	IS.undef.cont \delhi
+	IS.string.cont (x) -> [x]
 
-
-V3 = V2.continue !-> l "second"
-
-
-V4 = V3.error !-> l "error V3"
-
-# l V3
-
-V4 1
-
-# l V3.continue -> true
+V = IS.object
+.on \country, IS.undef.cont \india
+.on \city, city
 
 
+z V {}

@@ -1,4 +1,4 @@
-{l,SI,R,guard,noops,module-name} = require "./common"
+{z,l,SI,R,guard,noops,module-name} = require "./common"
 
 {unfinished,sim,util-inspect-custom} = require "./common"
 
@@ -11,7 +11,9 @@ local = {}
 local.sanatize = (f,val,path)->
 
 	ret = switch typeof f
+
 	| "function" => f val,path
+
 	| otherwise => f
 
 	if booly.has (typeof ret)
@@ -19,44 +21,66 @@ local.sanatize = (f,val,path)->
 		if ret
 			return (continue:true,error:false,value:val)
 		else
-			return (continue:false,error:true,value:val)
+			return (continue:false,error:true,value:val,message:[])
+
+# -----------------------------------------------------------------------------------
 
 	else if (Array.isArray ret)
 
-		[cont,message] = ret
+		[cont,unknown] = ret
 
 		if cont
 			return (continue:true,error:false,value:val)
 		else
-			return (continue:false,error:true,value:val,message:message)
+			out = (continue:false,error:true)
+
+			switch (typeof unknown)
+			| \string =>
+				out.message = [unknown]
+			|	otherwise =>
+				out.message = ["[#{module-name}][error][user-supplied-validator] message has to be string."]
+
+			return out
+
+# -----------------------------------------------------------------------------------
 
 	else
 
 		out = (continue:false,error:true,value:val)
-		out.message = "#{module-name}[error] unknown return type from user supplied validator."
+		out.message = ["[#{module-name}][error][user-supplied-validator] unknown return type."]
 
 		return out
 
 
+checkF = (ret,xf) ->
+
+	switch typeof xf
+	| \function => return xf ret
+	| otherwise => return xf
+
 registry.sideEffects = (data,ret) ->
 
-	if ret.continue and data.continue
+	if (ret.continue)
 
-		for f in data.continue
+		if data.continue
 
-			f ret.value
+			ret.value = checkF ret.value,data.continue
+
+			return ret
 
 	else if data.error
 
-			for f in data.error
+		data.error ret
 
-				f ret.value
+		return ret
 
-	if data.tap
+	else if data.fix
 
-		for f in data.tap
+		val = checkF ret.value,data.fix
 
-			f ret.value
+		return (continue:true,error:false,value:val)
+
+	return ret
 
 
 createError = (localRet,topValue,loc) ->
@@ -64,19 +88,24 @@ createError = (localRet,topValue,loc) ->
 	out = (continue:false,error:true,value:topValue)
 
 	if loc
+
 		out.path = [loc]
+
 	else
+
 		out.path = []
 
 	if localRet.path
+
 		out.path = out.path.concat localRet.path
 
 	if localRet.message
+
 		out.message = localRet.message
 
 	else
 
-		out.message = ""
+		out.message = []
 
 	out
 
@@ -84,7 +113,6 @@ createError = (localRet,topValue,loc) ->
 registry.router =
 	*and      :(data,funs) -> (val) -> registry.unit.and data,funs,val
 		or      :(data,funs) -> (val) -> registry.unit.or data,funs,val
-		edit    :(data,[f]) -> (val) -> registry.unit.edit data,f,val
 		map     :(data,[f]) -> (val) -> registry.unit.map[data.type] data,f,val
 		on      :(data,config) -> (val) -> onn.entry data,config,val
 
@@ -113,36 +141,22 @@ registry.unit.and = (data,funs,value) ->
 
 	return topRet
 
+
 registry.unit.or = (data,funs,value) ->
 
 	topRet = data.validator value
 
-	if topRet.continue
-		return
-			*continue:true
-				error:false
-				value:topRet.value
-
-
-	messages = [topRet.message]
+	if topRet.continue then return topRet
 
 	for f in funs
 
 		localRet = registry.sanatize f,value
 
-		if localRet.continue
-			return
-				*continue:true
-					error:false
-					value:localRet.value
+		if localRet.continue then return localRet
 
-		messages.push localRet.message
+		topRet.message.push ...localRet.message
 
-	return
-		*continue:false
-			error:true
-			value:value
-			message:messages.join " or "
+	return topRet
 
 
 registry.unit.map.array = (data,f,value) ->
@@ -213,8 +227,6 @@ onn.entry = guard do
 	(data,args,UFO) -> args.length is 2
 	(data,args,UFO) -> onn.obja data,[{"#{args[0]}":args[1]}],UFO
 
-
-
 registry.unit.map.object = (data,f,UFO) ->
 
 	topRet = data.validator UFO
@@ -226,20 +238,6 @@ registry.unit.map.object = (data,f,UFO) ->
 			localRet = registry.sanatize f,value,key
 
 			if localRet.error then return createError localRet,topRet.value,key
-
-	return topRet
-
-
-registry.unit.edit = (data,f,UFO) ->
-
-	topRet = data.validator UFO
-
-	if topRet.continue
-
-		return
-			*continue:true
-				error:false
-				value:f topRet.value
 
 	return topRet
 
@@ -260,23 +258,35 @@ create_atomic = (name) -> (UFO) ->
 
 	else
 
-		(error:true,continue:false,message:"not a #{name}")
+		(error:true,continue:false,message:["not a #{name}"],value:UFO)
 
 
 R.forEach do
 	(name) -> registry.basetype[name] = create_atomic name
-	["function","boolean","number","string","undefined"]
+	["function","boolean","number","string"]
 
 registry.basetype.null = (UFO) ->
 
 	if UFO is null then return (error:false,continue:true,value:UFO)
-	else return (error:true,continue:false,message:"not a null")
+	else return (error:true,continue:false,message:["not a null"],value:UFO)
+
+registry.basetype.undef = (UFO) ->
+
+	Type = typeof UFO
+
+	if (Type is \undefined)
+
+		(error:false,continue:true,value:UFO)
+
+	else
+
+		(error:true,continue:false,message:["not undefined"],value:UFO)
 
 registry.basetype.array = (UFO) ->
 
 	if (Array.isArray UFO) then return (error:false,continue:true,value:UFO)
 
-	else return (error:true,continue:false,message:"not a array")
+	else return (error:true,continue:false,message:["not a array"],value:UFO)
 
 registry.basetype.object = (UFO) ->
 
@@ -288,7 +298,7 @@ registry.basetype.object = (UFO) ->
 
 	else
 
-		(error:true,continue:false,message:"not an object")
+		(error:true,continue:false,message:["not an object"],value:UFO)
 
 
 [registry.cache.all.add val for key,val in registry.basetype]

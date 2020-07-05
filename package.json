@@ -8,6 +8,7 @@
   "repository": "https://github.com/sourcevault/valleydate.git",
   "version": "0.0.1",
   "main": "dist/main.js",
+  "test": "test.js,test1.js",
   "dependencies": {
     "seamless-immutable": "*",
     "ramda": "*",

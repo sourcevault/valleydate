@@ -12,7 +12,7 @@
 [![Build Status](https://travis-ci.org/sourcevault/valleydate.svg?branch=dev)](https://travis-ci.org/sourcevault/valleydate)
 
 
-valleydate is a functional approach to schema validation, addressing concerns such as composability and extensibility that seems absent with current schema validators.
+valleydate is a functional approach to schema validation that puts composability and extensibility as it's main features. 
 
 
 .. **quick examples** ..
@@ -72,22 +72,34 @@ console.log(V(sample));
 ```
 
 
-##### Why introduce another schema validator ?
 
-Current schema validators were not easy to extend with custom validators, valleydate makes custom validators first class citizens. 
+####  *why another schema validator ?*
 
-It relies on the realization that there are few key operations that abstract away the building of arbitrarily complex data types.
+- Small API surface that can handle arbitrarily complex validators for arbitrarily complex data types.
 
-- `and`,`or`,`map`,`on` and `edit`.
+- Monadic chainable functions. 
 
-with basetypes.
+- custom validators are first class citizens, and easy to build and extend.
 
-- `number`,`array`,`string`,`null`,`undefined`,`object`,`function`, and `string`.
+Current schema validators were not easy to extend with custom validators, nor did they offer  valleydate makes custom validators first class citizens. 
 
-This idea combined with immutability makes it really easy to build validator chains that are quite difficult to express using a different set of functions.
+It relies on the fact that there are few key operations that abstract away the building of arbitrarily complex data types.
 
 
-#### initializing validators ..
+First we define basetypes:
+
+- `number`,`array`,`string`,`null`,`undef`,`object`,`function`, and `string`.
+
+.. then chainable units :
+
+- `and`,`or`,`map`,`on`.
+
+.. and finally consumption units :
+
+- `continue`, `error` and `fix`.
+
+
+### ***Initializing Validator***
 
 Each validator chain starts with a *basetype*.
 
@@ -111,16 +123,32 @@ var V = IS.object;
 V([]) // {continue: false, error: true, message:"not an array",path:[]}
 ```
 
-the return value can have attributes `.continue`,`.error`,`.message`,`path` and `value`.
+the return object will always return `.continue`, `.error` and `.value`. First two are boolean types, and hold opposite values to each other. `.value` is just the input,( which may be **modified** if consumption units are used in the chain ), so be careful.
 
-- on success it provides `.value`, that just returns the original value ( it's possible use `.edit` to change the original value ).
-- on `.error` you have two important attributes `.message` that pass along error messages from the validator and `path` in case the value is of type array or object.
+the return value ***can*** also have attributes :
 
-## API
+- `message`- `Array` type, with `string` values, containing messages from the validator functions that failed.
+- `path` - `Array` type, with `string` values, path to error value, provided for array and object type.
+- `value`- the return value, same as input.
 
-#### *unit functions*
 
-After initilizating a validator with its basetype, you are returned a unit object that can be infinitely chained using a few functions:
+`{cotinue:true,error:false,...}`
+
+on success it provides :
+
+- `value` - that just returns the original value ( it's possible to use consumption units to change the original value ).
+
+`{cotinue:false,error:true,...}`
+
+on `.error` you have two important **new** attributes:
+
+- `.message` -  that pass along error messages from the validator 
+
+- `path` - in case the input is of type array or object, the path within the object where the validator function failed.
+
+## *chainables functions*
+
+After initilizating a validator with its basetype, you are returned a unit object that can be chained ( infinitely ) using a few functions:
 
 ### - `and`
 
@@ -130,17 +158,16 @@ After initilizating a validator with its basetype, you are returned a unit objec
 
 - when validators need to be combined, here data can satisfy **either** validator.
 
-- a useful example would be accepting single or multiple ipaddress to send data.
+- a useful example would be accepting a single string or multiple strings in an array to define ipaddress to use in an application.
 
 ```js
 var canbeIP = IS.string.or(IS.array.map(IS.string));
 ```
-
 ### - `map`
 
 - map allows to run validators on each value in an array or object.
 
-- an example of this with objects would be an object of names with age.
+- an example of this would be an object of names with age.
 
 	```js
 	  var example = {
@@ -157,11 +184,14 @@ var canbeIP = IS.string.or(IS.array.map(IS.string));
 	var ratifydata = IS.object.map(IS.number);
 	```
 
+
 ### - `on`
 
 - apply validator to specific value in an object or array.
 
-- **NOTE:** if value doesn't exist then validator is not called, combine it with `IS.required` if value should also exist.
+- **NOTE:** if value is `undefined` then validator would not throw an error, combine it with `IS.required` if value should also exist.
+
+You could alternati
 
 - if there are multiple `on`, instead of chaining them, you can also pass an object for describing validators.
 
@@ -174,44 +204,17 @@ V((foo:1,bar:2))
 
 ```
 
-### - `edit`
-
-- edit allows to change value **in place** for arrays and objects ( other basetypes are immutable by default ).
-
-- lets take the IP example from before :
-
-	```js
-	var canbeIP = IS.string.or(IS.array.map(IS.string));
-	```
-
-	Imagine the IP addresses are locations to send data to, allowing user to provide a string type **or** an array type reduces user hassle but we still have to deal with two different types. 
-
-	In this application senario a single string IP can be considered equivalent to an array of string IP where the size of the array is just **one**, hence we can use edit to unify our types into just arrays of strings.
-
-
-	```js
-	var canbeIP = IS.string.edit ((str) => [str]) 
-	.or(IS.array.map(IS.string));
-	```
-
-
-	Traditionally validation assumes two binary outcomes for data - error or ok, but sometimes it is possible to fix data by making small changes, in many situations a `null` or `undefined` should be changed to `0`, empty string, array or object.
-
-	Finally for arrays and objects, a tricky question arises when edit is used, should we **mutate** the original value or create a new value ?
-
-	valleydate was created to work on data extracted from configration files, it makes little sense to deeply clone the "dirty" values.
-
-
 ### - `continue` and `error`
 
 - accepts functions that run based on output of validation.
 
 - normally after validating some data, it needs to be consumed (if valid) or throws an error.
 
-- `.continue` and `.error` are helper unit function that can be used to do just that.
+- `.continue` and `.error`  are consumption unit function that can be used to do just that.
 
-- using the IP example from above.
+- return value of consumption units are important, they replace final `.value` of output.
 
+using the IP example from above:
 
 	```js
 	var sendData = function(data){...}
@@ -226,10 +229,23 @@ V((foo:1,bar:2))
 	```
 
 
-### - `tap`
+### - `def`
 
-- takes callback that is run regardless of error or success state, mainly used for debugging.
+- `def` stands for default. 
 
+- Useful in scenarios where errors can be dealt with locally without passing it upstream.
+
+example :
+
+```js
+
+IS = require "valleydate"
+
+var isCountry = IS.string
+
+
+
+```
 
 #### *custom validators*
 

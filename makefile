@@ -1,26 +1,34 @@
 SRC_NAME = $(shell ls src)
 
-TEST_FILES = ${SRC_NAME:% = node %}
-
-FILE_NAME = ${SRC_NAME:%= src/%} 
+FILE_NAME = ${SRC_NAME:%= src/%}
 
 WATCH = ${FILE_NAME:%=--watch %}
 
+MAKEFLAGS += --no-print-directory
 
 file = test.js
-
-test:
-	@echo "hello"
-	echo ${TEST_FILES}
 
 compile:
 	lsc -co dist src
 	yaml2json src/package.yaml > package.json
 	node dist/${file}
 
-cmd = make --no-print-directory compile || exit 1
+watch:
+	nodemon  --exec "make compile || exit 1" ${WATCH}
 
-watch: 
-	yaml2json src/package.yaml > package.json
-	nodemon  --exec "${cmd}" ${WATCH}
+.ONESHELL:
+SHELL = /bin/bash
+.SHELLFLAGS = -ec
+
+test:
+	@lsc -co dist src
+	@for i in dist/test*
+	do
+		node $$i
+	done
+
+
+w.test:
+	nodemon --exec "make test" ${WATCH}
+
 

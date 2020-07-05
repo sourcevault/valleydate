@@ -1,3 +1,5 @@
+z = console.log
+
 l = console.log
 
 R = require "ramda"
@@ -34,7 +36,6 @@ else
 
 
 c = {}
-
 	..ok   = chalk.green.bold
 	..er   = chalk.hex "FF0000"
 	..warn = chalk.hex "FFFFCD"
@@ -47,7 +48,8 @@ guard = (whn,fn) -> (guardjs!).when whn,fn
 
 
 module.exports =
-	*l:l
+	*z:z
+		l:l
 		chalk:chalk
 		guard:guard
 		guardjs:guardjs

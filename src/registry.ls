@@ -22,30 +22,29 @@ registry = {}
 		..string = null
 		..boolean = null
 		..function = null
-		..undefined = null
+		..undef = null
 
 	..unit = {}
 		..and = null
 		..or = null
-		..edit = null
 		..map = {}
 			..array  = null
 			..object = null
 
 		..on       = {}
-			..array = null
+			..array = null 
 			..object = null
 			..string = null
 			..number = null
 
-		..continue = null
-		..error    = null
-		..tap      = null
 
 	..cache = {}
-		..common = new WeakMap! # simple optimization for basetype prox
+		..common = {} # simple optimization for basetype prox
 		..all = new WeakSet! # all proxs
 
+	..fault = {}
+		..ap = null
+		..get = null
 
 	..helper = {}
 		..required = null
@@ -59,16 +58,43 @@ registry = {}
 	..router = {}
 		..and      = null
 		..or       = null
-		..edit     = null
 		..map      = null
 		..on       = null
-		..continue = null
-		..error    = null
-		..tap      = null
+
+	..verify = {}
+		..get = {}
+			..init   = null
+			..chain  = null
+			..on     = null
+			..map    = null
+			..end    = null
+			..def    = null
+			..fix    = null
+			..consumption_error = null
+		..ap  = {}
+			..main   = null
+			..custom = null
+			..object = null
+			..end    = null
+
+	..emit = {}
+		..prox = null
+		..get = {}
+			..chain    = null
+			..fault    = null
+			..end      = null
+			..basetype = null
+
+		..ap  = {}
+			..chain    = null
+			..fault    = null
+			..end      = null
+			..resolve  = null
+			..custom   = null
+
+	..genprox = null
 
 	..is = null
-
-
 
 ALL = create_filler_function registry
 
