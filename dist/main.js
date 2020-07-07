@@ -9,22 +9,17 @@
   print = require("./print");
   emit = registry.emit, verify = registry.verify;
   validator = {};
-  verify.ap.object = function(data, args){
+  verify.ap.on.types = function(data, args){
     var ref$;
     switch (args.length) {
     case 1:
       return typeof args[0] === "object";
     case 2:
-      if (!((ref$ = typeof args[0]) === "string" || ref$ === "number")) {
+      if (!((ref$ = typeof args[0]) === 'string' || ref$ === 'number')) {
         return false;
       }
-      switch (data.type) {
-      case "number":
-      case "string":
-        return Array.isArray(args[1]);
-      case "object":
-      case "array":
-        return typeof args[1] === "function";
+      if (!(typeof args[1] === 'function')) {
+        return false;
       }
       break;
     default:
@@ -193,10 +188,8 @@
     }());
     return F(data, key);
   });
-  verify.ap.on = guardjs().when(function(data, args){
-    return registry.unit.on[data.type] && verify.ap.object(data, args);
-  }, emit.ap.chain).any(print.wrong_type_for_object_on);
-  verify.ap.main = guardjs().when(function(data, args){
+  verify.ap.on.entry = guard(verify.ap.on.types, emit.ap.chain).any(print.wrong_type_for_object_on);
+  verify.ap.chain = guardjs().when(function(data, args){
     var Fns, i$, len$, F;
     Fns = R.flatten(args);
     for (i$ = 0, len$ = Fns.length; i$ < len$; ++i$) {
@@ -242,9 +235,9 @@
       case 'chain':
         switch (data.call) {
         case 'on':
-          return verify.ap.on;
+          return verify.ap.on.entry;
         default:
-          return verify.ap.main;
+          return verify.ap.chain;
         }
       case 'end':
         return verify.ap.end;

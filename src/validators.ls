@@ -1,4 +1,4 @@
-{z,l,SI,R,guard,noops,module-name} = require "./common"
+{z,l,SI,R,guard,guardjs,noops,module-name} = require "./common"
 
 {unfinished,sim,util-inspect-custom} = require "./common"
 
@@ -185,7 +185,7 @@ onn = {}
 	..string = null
 
 
-onn.string = (pattern,result,UFO) -> 
+onn.string = (pattern,result,UFO) ->
 
 	if (UFO is pattern) then return local.sanatize result,UFO
 
@@ -210,7 +210,7 @@ onn.obja = (data,[funs],UFO) ->
 	topRet = data.validator UFO
 
 	if topRet.continue
-
+ 
 		for loc,f of funs
 
 			localRet = onn[data.type] loc,f,topRet.value
@@ -219,9 +219,9 @@ onn.obja = (data,[funs],UFO) ->
 
 	topRet
 
-
-onn.entry = guard do
-	(data,args,UFO) -> (typeof args[0]) is 'object'
+onn.entry = guardjs!
+.when do
+	(data,args,UFO) -> ((typeof args[0]) is 'object')
 	onn.obja
 .when do
 	(data,args,UFO) -> args.length is 2

@@ -14,21 +14,17 @@ print = require "./print"
 
 validator = {}
 
-verify.ap.object = (data,args) ->
+verify.ap.on.types = (data,args) ->
 
 	switch args.length
 
 		| 1 => ((typeof args[0]) is "object")
 		| 2 =>
 
-			if not ((typeof args[0]) in ["string","number"]) then return false
+			if not ((typeof args[0]) in [\string \number]) then return false
+			if not ((typeof args[1]) is \function) then return false
 
-			switch data.type
-			| "number","string" => Array.isArray args[1]
-			| "object", "array" => (((typeof args[1]) is "function"))
-
-		| otherwise => return false
-
+		| otherwise => false
 
 emit.prox = (data) ->
 
@@ -184,7 +180,7 @@ get = guardjs!
 	F = switch data.state
 	| \init   => verify.get.init
 	| \chain  => verify.get.chain
-	| \end    => 
+	| \end    =>
 
 		switch key
 		| \continue \error \fix => verify.get.end
@@ -197,14 +193,13 @@ get = guardjs!
 
 # -------------------------------------------------------------------------------------------------------
 
-verify.ap.on = guardjs!
-.when do
-	(data,args) -> (registry.unit.on[data.type]) and (verify.ap.object data,args)
+
+verify.ap.on.entry = guard do
+	verify.ap.on.types
 	emit.ap.chain
 .any print.wrong_type_for_object_on
 
-
-verify.ap.main = guardjs!
+verify.ap.chain = guardjs!
 .when do
 	(data,args) ->
 		Fns = R.flatten args
@@ -260,9 +255,9 @@ ap = guardjs!
 
 			switch data.call
 
-			| \on => verify.ap.on
+			| \on => verify.ap.on.entry
 
-			| otherwise => verify.ap.main
+			| otherwise => verify.ap.chain
 
 		| \end      => verify.ap.end
 

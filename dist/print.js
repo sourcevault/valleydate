@@ -84,13 +84,13 @@
     return close(data);
   };
   print.wrong_type_for_object_on = function(data, key){
-    l(c.er("[" + moduleName + "][error]"), c.ok(gen_chain(data)) + c.er("." + data.call + "(...)") + c.warn(" <<--\n"));
+    l(c.er("[" + moduleName + "][error]"), c.ok(gen_chain(data)) + c.er("." + data.call + "(..)") + c.warn(" <<--\n"));
     l(c.warn("   wrong type/argument for " + data.type + ".on\n"));
     return close(data);
   };
   print.wrong_basetype_for_on = function(data, key){
     l(c.er("[" + moduleName + "][error]"), c.er((data.type + "." + key) + c.warn(" <<--\n")));
-    l(c.warn("   on cannot be used for basetype " + data.type + ".\n"));
+    l(c.warn("   .on cannot be used for basetype " + data.type + ".\n"));
     return close(data);
   };
   print.fail = function(message){

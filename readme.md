@@ -12,13 +12,24 @@
 [![Build Status](https://travis-ci.org/sourcevault/valleydate.svg?branch=dev)](https://travis-ci.org/sourcevault/valleydate)
 
 
-valleydate is a functional approach to schema validation that puts composability and extensibility as it's main features. 
-
+valleydate is a functional approach to schema validation that puts composability and extensibility as it's core feature.
+1. [Introduction](#introduction)
+1. [Initializing Validator](#initializing-validator)
+1. [Chainable Functions](#chainable-functions)
+	- [and](#--and)
+	- [or](#--or)
+	- [map](#--map)
+	- [on](#--on)
+	- [continue and error](#--continue-and-error)
+	- [fix](#--fix)
+1. [Creating Custom Validators](#creating-custom-validators)
+1. [Helper Validators](#helper-validators)
+	- [required](#helper-validators)
+	- [integer](#helper-validators)
 
 .. **quick examples** ..
 
-
-1. Object with required properties `foo` and `bar`.
+🟡 Object with required properties `foo` and `bar`.
 
 ```js
 var V = IS.required("foo","bar")
@@ -34,7 +45,7 @@ console.log(V({foo:1}))
 */
 ```
 
-2. Object with required properties `name` `age` and `address`, with `address` having required fields of `city` and `country.`
+🟡 Object with required properties `name` `age` and `address`, with `address` having required fields of `city` and `country.`
 
 
 ```js
@@ -60,7 +71,7 @@ var sample =
       }
   }
 
-console.log(V(sample));
+console.log(V(sample))
 /*
 {                                                                      
   continue: false,                                                     
@@ -73,20 +84,16 @@ console.log(V(sample));
 
 
 
-####  *why another schema validator ?*
+#### Introduction
+***.. why another schema validator ?***
 
-- Small API surface that can handle arbitrarily complex validators for arbitrarily complex data types.
+- Monadic chainable functions.
 
-- Monadic chainable functions. 
+- custom validators which are easy to build and extend.
 
-- custom validators are first class citizens, and easy to build and extend.
+`valleydate` uses few operators to abstract away building complex data validator for handling arbitrary complex data types.
 
-Current schema validators were not easy to extend with custom validators, nor did they offer  valleydate makes custom validators first class citizens. 
-
-It relies on the fact that there are few key operations that abstract away the building of arbitrarily complex data types.
-
-
-First we define basetypes:
+We start by defining our basetypes:
 
 - `number`,`array`,`string`,`null`,`undef`,`object`,`function`, and `string`.
 
@@ -99,7 +106,8 @@ First we define basetypes:
 - `continue`, `error` and `fix`.
 
 
-### ***Initializing Validator***
+
+#### Initializing Validator
 
 Each validator chain starts with a *basetype*.
 
@@ -123,36 +131,53 @@ var V = IS.object;
 V([]) // {continue: false, error: true, message:"not an array",path:[]}
 ```
 
-the return object will always return `.continue`, `.error` and `.value`. First two are boolean types, and hold opposite values to each other. `.value` is just the input,( which may be **modified** if consumption units are used in the chain ), so be careful.
+The return object will always return `.continue`, `.error` and `.value`. First two are boolean, and will always be opposite in value. The final output is kept in the `.value` attribute.
 
-the return value ***can*** also have attributes :
+⚠️ `.value` may be **modified** if consumption units are used in the chain , so be careful. ⚠️
 
-- `message`- `Array` type, with `string` values, containing messages from the validator functions that failed.
-- `path` - `Array` type, with `string` values, path to error value, provided for array and object type.
-- `value`- the return value, same as input.
+If `{cotinue:false,error:true,...}` the return object would also have attributes `.message` and `.path`, both are `Array` , with `string` values :
 
-
-`{cotinue:true,error:false,...}`
-
-on success it provides :
-
-- `value` - that just returns the original value ( it's possible to use consumption units to change the original value ).
-
-`{cotinue:false,error:true,...}`
-
-on `.error` you have two important **new** attributes:
-
-- `.message` -  that pass along error messages from the validator 
-
+- `message`- that passes along error messages from the validator.
 - `path` - in case the input is of type array or object, the path within the object where the validator function failed.
 
-## *chainables functions*
 
-After initilizating a validator with its basetype, you are returned a unit object that can be chained ( infinitely ) using a few functions:
+#### Chainable Functions
+
+After initilizating a validator with its basetype, you are returned a unit object that can be chained ( infinitely ) using a few operators.
+
+These operators all accept custom validators but also other `valleydate` objects.
 
 ### - `and`
 
 - when validators need to be combined, and data has to satisfy conditions set by **both** validator.
+
+- a common situation is validating string enums. 
+
+```js
+
+var G7 = new Set(["USA","EU","UK","Japan","Italy","Germany","France"]);
+
+var valG7 = function(s){
+  if (G7.has(s)){
+   return true
+  }
+  else {
+   return [false,"not in G7"]
+  }
+}
+var isG7 = IS.string.and(valG7)
+
+isG7("UK")
+
+//{ continue: true, error: false, value: 'UK' }
+
+isG7("Spain")
+
+// { continue: false, error: true, message: [ 'not in G7' ] }
+
+```
+
+⛔️ `valG7` is a **custom validator** in the above example, they can be any function that returns `boolean` or `[boolean,string]`.
 
 ### - `or`
 
@@ -161,9 +186,13 @@ After initilizating a validator with its basetype, you are returned a unit objec
 - a useful example would be accepting a single string or multiple strings in an array to define ipaddress to use in an application.
 
 ```js
-var canbeIP = IS.string.or(IS.array.map(IS.string));
+var canbeIP = IS.string.or(IS.array.map(IS.string))
 ```
+
+
 ### - `map`
+
+###### `⛔️ .map only works for basetype Array and Object. ⛔️`
 
 - map allows to run validators on each value in an array or object.
 
@@ -175,7 +204,7 @@ var canbeIP = IS.string.or(IS.array.map(IS.string));
 	  "charles":35,
 	  "henry":30,
 	  "joe":24
-	  };
+	  }
 	```
 
 	A validator for it would look something like this :
@@ -187,113 +216,124 @@ var canbeIP = IS.string.or(IS.array.map(IS.string));
 
 ### - `on`
 
+###### `⛔️ .on only works for basetype Array and Object. ⛔️`
+
 - apply validator to specific value in an object or array.
 
-- **NOTE:** if value is `undefined` then validator would not throw an error, combine it with `IS.required` if value should also exist.
-
-You could alternati
-
-- if there are multiple `on`, instead of chaining them, you can also pass an object for describing validators.
+- if there are multiple `on`, instead of chaining them, you could just pass an object with the validator for each key.
 
 ```js
 
 var V = IS.object.on({foo:IS.number,bar:IS.number})
 
 V((foo:1,bar:2))
-
-
 ```
 
 ### - `continue` and `error`
 
 - accepts functions that run based on output of validation.
 
-- normally after validating some data, it needs to be consumed (if valid) or throws an error.
+- After validating some data, it needs to be consumed ( if valid ) or throw an error.
 
 - `.continue` and `.error`  are consumption unit function that can be used to do just that.
 
 - return value of consumption units are important, they replace final `.value` of output.
 
-using the IP example from above:
-
-	```js
-	var sendData = function(data){...}
-
-	var data = ["209.85.231.104","207.46.170.123"]
-
-	var V = canbeIP
-	.continue(sendDate) // <-- only this is called as data is valid
-	.error(console.log) 
-
-	V(data);
-	```
-
-
-### - `def`
-
-- `def` stands for default. 
-
-- Useful in scenarios where errors can be dealt with locally without passing it upstream.
-
-example :
+using the IP example from above :
 
 ```js
+var sendData = function(data){...}
 
-IS = require "valleydate"
+var data = ["209.85.231.104","207.46.170.123"]
 
-var isCountry = IS.string
-
-
+var V = canbeIP
+.continue(sendDate) // <-- only this is called as data is valid
+.error(console.log) 
 
 ```
 
-#### *custom validators*
+🟡 `.contine` can be used to making values **consistent**, using the IP address validator from above :
 
-all unit operators accept functions that can describe custom logic for validation :
 
 ```js
+IS = require("valleydate")
 
-var simpleEmail = function(value)
-{
+var canbeIP = IS.array.map(IS.string)
+.or(IS.string.continue (x) => [x]) // <-- we want string to go inside an array 
+// so we do not have to do extra prcessing downstream.
 
- var isemail = value.match (/[\w-]+@([\w-]+\.)+[\w-]+/)
+var ret = canbeIP("209.85.231.104")
 
- if (isemail)
- {
-  return true
- }
- else
- {
-  return [false,"not a valid email address"]
- }
+console.log (ret) 
+//{ error: false, continue: true, value: [ '209.85.231.104' ] } <-- value is an array.
+```
+
+### - `fix`
+
+- When errors can be dealt with locally without being passed upstream.
+
+- Used commonly in creating default, using the IP address from above :
+
+```js
+IS = require("valleydate")
+
+var canbeIP = IS.array.map(IS.string)
+.or(IS.string.continue (x) => [x])
+.fix(["127.0.0.1"])
+
+var ret = canbeIP(null)
+
+console.log (ret) // ["127.0.0.1"]
+```
+
+#### Creating Custom Validators
+
+In case defaults are not sufficient, clean validators can be easily created.
+
+1. create a validator function with return types :
+	- `boolean` 
+	- `[boolean,string]`
+
+2. pass it into `IS` :
+
+```js
+var simpleEmail = function(value){
+
+var isemail = value.match (/[\w-]+@([\w-]+\.)+[\w-]+/)
+
+if (isemail) {return true}
+else {return [false,"not a valid email address"] }
 }
 
-var isEmail = IS.string.and(simpleEmail);
-
-
+var isEmail = IS(simpleEmail) 
+// isEmail is now a valleydate validator with .and, .or, .continue, .error and .fix methods.
 ```
 
-The function passed to a unit function recieve the value being passed along the chain and *should* return tuple ( array of 2 values ), the first value being a boolean where false means error, and the second value an error mesaage.
-
-
-The only exception is `.edit` which doesn't help with validation  change the value itself.
-
-#### *common validators*
+#### Helper Validators
 
 Some validators are common enough to be added in core.
 
-### - `required`
+- `required` - accepts a list of strings and checks if they are present as keys in an object.
 
-- accepts a list of strings and checks if they are present as keys on an object. 
+- `integer` - checks if input is a integer. 
 
+🟡 using `IS.integer` :
 
+```js
+IS = require("valleydate")
 
+IS.integer(2) // { continue: true, error: false, value: 1 }
 
+IS.integer(-1.1) // { continue: false, error: true, message: [ 'not an integer' ] }
+
+IS.integer(2.1) // { continue: false, error: true, message: [ 'not an integer' ] }
+```
 
 ## LICENCE
  
-- Code, documentation and images released under MIT Licence, see [LICENSE](https://github.com/sourcevault/binapi/blob/dist/LICENCE) for details.
+- Code released under MIT Licence, see [LICENSE](https://github.com/sourcevault/valleydate/blob/dist/LICENCE) for details.
 
+- Documentation and Images released under CC-BY-4.0 see [LICENSE](https://github.com/sourcevault/test/blob/dist/LICENCE1) for details.
 
 
 

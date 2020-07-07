@@ -32,11 +32,8 @@ registry = {}
 			..object = null
 
 		..on       = {}
-			..array = null 
+			..array = null
 			..object = null
-			..string = null
-			..number = null
-
 
 	..cache = {}
 		..common = {} # simple optimization for basetype prox
@@ -49,7 +46,6 @@ registry = {}
 	..helper = {}
 		..required = null
 		..integer = null
-		..alphanum = null
 
 	..sanatize = null
 
@@ -71,11 +67,15 @@ registry = {}
 			..def    = null
 			..fix    = null
 			..consumption_error = null
+
 		..ap  = {}
-			..main   = null
+			..chain  = null
 			..custom = null
 			..object = null
 			..end    = null
+			..on = {}
+				..entry = null
+				..types = null
 
 	..emit = {}
 		..prox = null

@@ -73,8 +73,6 @@ print.wrong_basetype_for_map = (data,key) ->
 
 	close data
 
-
-
 gen_chain = (data) ->
 
 	str = data.type
@@ -102,7 +100,7 @@ print.wrong_type_for_object_on = (data,key) ->
 
 	l do
 		c.er ("[#{module-name}][error]")
-		(c.ok gen_chain data) + (c.er ".#{data.call}(...)") + (c.warn " <<--\n")
+		(c.ok gen_chain data) + (c.er ".#{data.call}(..)") + (c.warn " <<--\n")
 
 	l c.warn "   wrong type/argument for #{data.type}.on\n"
 
@@ -114,7 +112,7 @@ print.wrong_basetype_for_on = (data,key) ->
 		c.er ("[#{module-name}][error]")
 		c.er ("#{data.type}.#{key}") + (c.warn " <<--\n")
 
-	l c.warn "   on cannot be used for basetype #{data.type}.\n"
+	l c.warn "   .on cannot be used for basetype #{data.type}.\n"
 
 	close data
 
