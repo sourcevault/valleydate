@@ -5,35 +5,37 @@
 
 
 ```js
-//                                npm |
-npm install valleydate 
-// much install                github |
+npm install valleydate
+////| github.com | much install
 npm install sourcevault/valleydate#dist
 ```
 
 [![Build Status](https://travis-ci.org/sourcevault/valleydate.svg?branch=test)](https://travis-ci.org/sourcevault/valleydate)
 
 
+
 valleydate is a functional approach to schema validation that puts composability and extensibility as it's core feature.
 1. [Introduction](#introduction)
 1. [Initializing Validator](#initializing-validator)
 1. [Chainable Functions](#chainable-functions)
-	- [and](#--and)
-	- [or](#--or)
-	- [map](#--map)
-	- [on](#--on)
-	- [continue and error](#--continue-and-error)
-	- [fix](#--fix)
+      - [and](#--and)
+      - [or](#--or)
+      - [map](#--map)
+      - [on](#--on)
+      - [continue and error](#--continue-and-error)
+      - [fix](#--fix)
 1. [Creating Custom Validators](#creating-custom-validators)
 1. [Helper Validators](#helper-validators)
-	- [required](#helper-validators)
-	- [integer](#helper-validators)
+      - [required](#helper-validators)
+      - [integer](#helper-validators)
 
 .. **quick examples** ..
 
 🟡 Object with required properties `foo` and `bar`.
 
 ```js
+var IS = require("valleydate")
+
 var V = IS.required("foo","bar")
 
 console.log(V({foo:1}))
@@ -52,6 +54,8 @@ console.log(V({foo:1}))
 
 ```js
 
+var IS = require("valleydate")
+
 var address = IS.required("city","country")
 .on("city",IS.string)
 .on("country",IS.string)
@@ -62,9 +66,9 @@ var V = IS.required("address","name","age")
 .on("age",IS.number)
 
 
-var sample = 
+var sample =
   {
-    name:"Fred",
+name:"Fred",
     age:30,
     address:
       {
@@ -74,14 +78,14 @@ var sample =
   }
 
 console.log(V(sample))
-/*
-{                                                                      
-  continue: false,                                                     
-  error: true,                                                         
+
+/*{
+  continue: false,
+  error: true,
   value: {name:"Fred", age:30, address: {city:"foocity", country:null}},
-  path: [ 'address', "country" ],                                                 
-  message: 'required value .country not present.'                      
-}                                                                      */
+  path: [ 'address', "country" ],
+  message: 'required value .country not present.'
+}*/
 ```
 
 
@@ -93,7 +97,7 @@ console.log(V(sample))
 
 - custom validators which are easy to build and extend.
 
-`valleydate` uses few operators to abstract away building complex data validator for handling arbitrary complex data types.
+`valleydate` exposes few key operators for creating data validators, for arbitrary complex data types.
 
 We start by defining our basetypes:
 
@@ -153,7 +157,7 @@ These operators all accept custom validators but also other `valleydate` objects
 
 - when validators need to be combined, and data has to satisfy conditions set by **both** validator.
 
-- a common situation is validating string enums. 
+- a common situation is validating string enums.
 
 ```js
 
@@ -200,20 +204,20 @@ var canbeIP = IS.string.or(IS.array.map(IS.string))
 
 - an example of this would be an object of names with age.
 
-	```js
-	  var example = {
-	  "adam":22,
-	  "charles":35,
-	  "henry":30,
-	  "joe":24
-	  }
-	```
+  ```js
+    var example = {
+    "adam":22,
+    "charles":35,
+    "henry":30,
+    "joe":24
+    }
+  ```
 
-	A validator for it would look something like this :
+  A validator for it would look something like this :
 
-	```js
-	var ratifydata = IS.object.map(IS.number);
-	```
+  ```js
+  var ratifydata = IS.object.map(IS.number);
+  ```
 
 
 ### - `on`
@@ -237,9 +241,11 @@ V((foo:1,bar:2))
 
 - After validating some data, it needs to be consumed ( if valid ) or throw an error.
 
-- `.continue` and `.error`  are consumption unit function that can be used to do just that.
+- `.continue` and `.error` are consumption unit function that can be used to do just that.
 
 - return value of consumption units are important, they replace final `.value` of output.
+
+- `.cont`, and `.err` are shorthands for `.continue` and `.error`.
 
 using the IP example from above :
 
@@ -250,7 +256,7 @@ var data = ["209.85.231.104","207.46.170.123"]
 
 var V = canbeIP
 .continue(sendDate) // <-- only this is called as data is valid
-.error(console.log) 
+.error(console.log)
 
 ```
 
@@ -261,12 +267,12 @@ var V = canbeIP
 IS = require("valleydate")
 
 var canbeIP = IS.array.map(IS.string)
-.or(IS.string.continue (x) => [x]) // <-- we want string to go inside an array 
+.or(IS.string.cont (x) => [x]) // <-- we want string to go inside an array
 // so we do not have to do extra prcessing downstream.
 
 var ret = canbeIP("209.85.231.104")
 
-console.log (ret) 
+console.log (ret)
 //{ error: false, continue: true, value: [ '209.85.231.104' ] } <-- value is an array.
 ```
 
@@ -293,8 +299,8 @@ console.log (ret) // ["127.0.0.1"]
 In case defaults are not sufficient, clean validators can be easily created.
 
 1. create a validator function with return types :
-	- `boolean` 
-	- `[boolean,string]`
+    - `boolean`
+    - `[boolean,string]`
 
 2. pass it into `IS` :
 
@@ -307,8 +313,14 @@ if (isemail) {return true}
 else {return [false,"not a valid email address"] }
 }
 
-var isEmail = IS(simpleEmail) 
-// isEmail is now a valleydate validator with .and, .or, .continue, .error and .fix methods.
+var isEmail = IS(simpleEmail)
+// isEmail is now a valleydate validator which means it gets
+
+// .and, .or, .continue, .error and .fix methods.
+
+isEmail.and
+isEmail.or
+isEmail.continue
 ```
 
 #### Helper Validators
@@ -317,7 +329,7 @@ Some validators are common enough to be added in core.
 
 - `required` - accepts a list of strings and checks if they are present as keys in an object.
 
-- `integer` - checks if input is a integer. 
+- `integer` - checks if input is a integer.
 
 🟡 using `IS.integer` :
 
@@ -332,10 +344,10 @@ IS.integer(2.1) // { continue: false, error: true, message: [ 'not an integer' ]
 ```
 
 ## LICENCE
- 
-- Code released under MIT Licence, see [LICENSE](https://github.com/sourcevault/valleydate/blob/dist/LICENCE) for details.
 
-- Documentation and Images released under CC-BY-4.0 see [LICENSE](https://github.com/sourcevault/test/blob/dist/LICENCE1) for details.
+- Code released under MIT Licence, see [LICENSE](https://github.com/sourcevault/valleydate/blob/test/LICENCE) for details.
+
+- Documentation and Images released under CC-BY-4.0 see [LICENSE](https://github.com/sourcevault/valleydate/blob/test/LICENCE1) for details.
 
 
 

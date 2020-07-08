@@ -8,31 +8,35 @@ TEST_FILES = ${TEST_NAME:%=--watch test/%}
 
 MAKEFLAGS += --no-print-directory
 
-file = test.js
+file = test/test.js
 
 compile:
 	lsc -co dist src
 	lsc -c test
 	yaml2json src/package.yaml > package.json
-	node dist/${file}
+	node ${file}
 
-watch:
+w.compile:
 	nodemon  --exec "make compile || exit 1" ${SRC_FILES}
 
 .ONESHELL:
 SHELL = /bin/bash
 .SHELLFLAGS = -ec
 
-try:
-	@lsc -co dist src
-	@lsc -c test/*.ls
-	yaml2json src/package.yaml > package.json
+travis:
 	@for i in test/*.js
 	do
 		node $$i
 	done
 
-w.try:
-	nodemon --exec "make try" ${TEST_FILES}
+testy:
+	@lsc -co dist src
+	@lsc -c test/*.ls
+	yaml2json src/package.yaml > package.json
+	make travis
+
+w.testy:
+	nodemon --exec "make testy" ${TEST_FILES}
+
 
 
