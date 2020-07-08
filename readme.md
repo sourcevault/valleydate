@@ -5,11 +5,13 @@
 
 
 ```js
-//                                              npm | github                                             ..much install
-                             npm install valleydate | npm install sourcevault/valleydate#dist
+//                                npm |
+npm install valleydate 
+// much install                github |
+npm install sourcevault/valleydate#dist
 ```
 
-[![Build Status](https://travis-ci.org/sourcevault/valleydate.svg?branch=dev)](https://travis-ci.org/sourcevault/valleydate)
+[![Build Status](https://travis-ci.org/sourcevault/valleydate.svg?branch=test)](https://travis-ci.org/sourcevault/valleydate)
 
 
 valleydate is a functional approach to schema validation that puts composability and extensibility as it's core feature.

@@ -62,3 +62,6 @@ is_integer = (val) ->
 		return [true]
 
 registry.helper.integer = (val)-> (registry.is.number.and is_integer) val
+
+
+

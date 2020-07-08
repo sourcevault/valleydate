@@ -1,8 +1,10 @@
 SRC_NAME = $(shell ls src)
 
-FILE_NAME = ${SRC_NAME:%= src/%}
+TEST_NAME = $(shell ls test | grep ".ls")
 
-WATCH = ${FILE_NAME:%=--watch %}
+SRC_FILES = ${SRC_NAME:%=--watch src/%}
+
+TEST_FILES = ${TEST_NAME:%=--watch test/%}
 
 MAKEFLAGS += --no-print-directory
 
@@ -10,25 +12,27 @@ file = test.js
 
 compile:
 	lsc -co dist src
+	lsc -c test
 	yaml2json src/package.yaml > package.json
 	node dist/${file}
 
 watch:
-	nodemon  --exec "make compile || exit 1" ${WATCH}
+	nodemon  --exec "make compile || exit 1" ${SRC_FILES}
 
 .ONESHELL:
 SHELL = /bin/bash
 .SHELLFLAGS = -ec
 
-test:
+try:
 	@lsc -co dist src
-	@for i in dist/test*
+	@lsc -c test/*.ls
+	yaml2json src/package.yaml > package.json
+	@for i in test/*.js
 	do
 		node $$i
 	done
 
-
-w.test:
-	nodemon --exec "make test" ${WATCH}
+w.try:
+	nodemon --exec "make try" ${TEST_FILES}
 
 

@@ -16,13 +16,16 @@ validator = {}
 
 verify.ap.on.types = (data,args) ->
 
+
 	switch args.length
 
 		| 1 => ((typeof args[0]) is "object")
 		| 2 =>
-
+	
 			if not ((typeof args[0]) in [\string \number]) then return false
 			if not ((typeof args[1]) is \function) then return false
+
+			return true
 
 		| otherwise => false
 
@@ -311,5 +314,6 @@ start = ->
 
 	IS
 
+IS = start!
 
-module.exports = start!
+module.exports = IS

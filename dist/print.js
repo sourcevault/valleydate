@@ -93,9 +93,12 @@
     l(c.warn("   .on cannot be used for basetype " + data.type + ".\n"));
     return close(data);
   };
-  print.fail = function(message){
-    return function(){
-      l(c.er("[TEST ERROR] originating from module"), c.warn("[" + repoUrl + "]"), c.er("\n\n\t - 'npm test' failed at TEST " + message + ". \n"));
+  print.fail = function(filename){
+    return function(message){
+      l(c.er("[TEST ERROR] originating from module"), c.warn("[" + repoUrl + "]"), c.er("\n\n- 'npm test' failed at " + filename + ":"));
+      if (typeof message === 'string') {
+        l(c.er("\n   " + message + "\n"));
+      }
       process.exitCode = 1;
     };
   };

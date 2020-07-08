@@ -118,12 +118,20 @@ print.wrong_basetype_for_on = (data,key) ->
 
 
 
-print.fail = (message) -> !->
+print.fail = (filename) -> (message) !->
+
 
 	l do
 		c.er "[TEST ERROR] originating from module"
 		c.warn "[#{repo-url}]"
-		c.er "\n\n\t - 'npm test' failed at TEST #{message}. \n"
+		c.er "\n\n- 'npm test' failed at #{filename}:"
+
+
+
+	if ((typeof message) is \string)
+
+		l c.er "\n   #{message}\n"
+
 
 	process.exitCode = 1
 
