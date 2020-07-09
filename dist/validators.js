@@ -42,7 +42,8 @@
       } else {
         out = {
           'continue': false,
-          error: true
+          error: true,
+          value: val
         };
         switch (typeof unknown) {
         case 'string':

@@ -29,10 +29,9 @@ if not ((Array.isArray ret2.message) and (ret2.message[0] is "not in G7"))
 
 	p!
 
+if (ret2.value is undefined)
 
-if not (ret2.value is undefined)
-
-	p ".value can't be passed to {..error:true..}."
+	p ".value has not been passed to {..error:true..}."
 
 
 

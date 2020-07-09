@@ -36,7 +36,7 @@ testy:
 	make travis
 
 w.testy:
-	nodemon --exec "make testy" ${TEST_FILES}
+	nodemon --exec "make testy" ${TEST_FILES} ${SRC_FILES}
 
 
 

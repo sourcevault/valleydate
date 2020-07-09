@@ -6,7 +6,7 @@
   "license": "MIT",
   "description": "immutable object validator",
   "repository": "https://github.com/sourcevault/valleydate.git",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "dist/main.js",
   "scripts": {
     "test": "make travis"
@@ -21,5 +21,22 @@
     "traverse": "0.6.6",
     "at-line": "1.0.0",
     "pretty-error": "2.1.1"
-  }
+  },
+  "keywords": [
+    "schema-validator",
+    "validator",
+    "simple",
+    "type-check",
+    "types",
+    "objects",
+    "JSON",
+    "monadic",
+    "functional",
+    "validate",
+    "Array",
+    "error-messages",
+    "mostjs",
+    "immutable",
+    "chainable"
+  ]
 }

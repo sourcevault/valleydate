@@ -22,7 +22,7 @@
   if (!(Array.isArray(ret2.message) && ret2.message[0] === "not in G7")) {
     p();
   }
-  if (!(ret2.value === undefined)) {
-    p(".value can't be passed to {..error:true..}.");
+  if (ret2.value === undefined) {
+    p(".value has not been passed to {..error:true..}.");
   }
 }).call(this);

@@ -32,7 +32,8 @@ local.sanatize = (f,val,path)->
 		if cont
 			return (continue:true,error:false,value:val)
 		else
-			out = (continue:false,error:true)
+
+			out = (continue:false,error:true,value:val)
 
 			switch (typeof unknown)
 			| \string =>
@@ -210,7 +211,7 @@ onn.obja = (data,[funs],UFO) ->
 	topRet = data.validator UFO
 
 	if topRet.continue
- 
+
 		for loc,f of funs
 
 			localRet = onn[data.type] loc,f,topRet.value

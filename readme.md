@@ -68,7 +68,7 @@ var V = IS.required("address","name","age")
 
 var sample =
   {
-name:"Fred",
+    name:"Fred",
     age:30,
     address:
       {
@@ -95,9 +95,9 @@ console.log(V(sample))
 
 - Monadic chainable functions.
 
-- custom validators which are easy to build and extend.
+- custom validators that are easy to build and extend.
 
-`valleydate` exposes few key operators for creating data validators, for arbitrary complex data types.
+`valleydate` exposes few key operators for creating data validators, for handling arbitrary complex data types.
 
 We start by defining our basetypes:
 
@@ -179,8 +179,12 @@ isG7("UK")
 
 isG7("Spain")
 
-// { continue: false, error: true, message: [ 'not in G7' ] }
-
+/*{ continue: false,
+  error: true,
+  message: [ 'not in G7' ],
+  value: 'Spain'
+  }
+*/
 ```
 
 ⛔️ `valG7` is a **custom validator** in the above example, they can be any function that returns `boolean` or `[boolean,string]`.
