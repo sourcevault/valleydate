@@ -132,9 +132,9 @@
     l(c.warn("   chain can't be modified in consumption mode.\n"));
     return close(data);
   };
-  print.def_and_error = function(data, key){
+  print.multi_error = function(data, key){
     l(c.er("[" + moduleName + "][error]"), c.ok(gen_chain(data)) + c.er("." + key) + c.warn(" <<--\n"));
-    l(c.warn("  both .error and .fix can't exist in the same validation chain\n\n"), c.warn(" .def (stands for default) is a substitute for error path.\n"));
+    l(c.warn("  .error/.err, .dispatch/.dis or .fix can't exist in the same validation chain\n"), c.warn(" .dispatch/.dis and .fix is a substitute for error path.\n\n"));
     return close(data);
   };
   print.def_argument_is_function = function(data, key){

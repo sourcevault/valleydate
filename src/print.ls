@@ -204,15 +204,15 @@ print.in_consumption_mode = (data,key) ->
 
 	close data
 
-print.def_and_error = (data,key) ->
+print.multi_error = (data,key) ->
 
 	l do
 		c.er ("[#{module-name}][error]")
 		(c.ok (gen_chain data)) + (c.er ".#{key}") + (c.warn " <<--\n")
 
 	l do
-		c.warn "  both .error and .fix can't exist in the same validation chain\n\n"
-		c.warn " .def (stands for default) is a substitute for error path.\n"
+		c.warn "  .error/.err, .dispatch/.dis or .fix can't exist in the same validation chain\n"
+		c.warn " .dispatch/.dis and .fix is a substitute for error path.\n\n"
 
 
 	close data
@@ -283,7 +283,7 @@ print.not_in_base_or_help = (data,key) ->
 	l do
 		c.er "[#{module-name}][error]"
 		(c.ok (ret.join ".")) + (c.er "." + key) + (c.warn " <<--\n")
-	
+
 	l (c.warn "   #{c.er ("." + key)} is not part of module.\n")
 
 	close data
@@ -387,7 +387,7 @@ print.requiredError = (loc) ->
 
 	show_stack!
 
-print.fault = (data,key) -> 
+print.fault = (data,key) ->
 
 	c.er ("<! fault !> " + internal data)
 

@@ -1,4 +1,4 @@
-{z,l,SI,R,guard,guardjs,noops,module-name} = require "./common"
+{z,j,l,SI,R,guard,guardjs,noop,module-name} = require "./common"
 
 {unfinished,sim,util-inspect-custom} = require "./common"
 
@@ -69,11 +69,11 @@ registry.sideEffects = (data,ret) ->
 
 			return ret
 
+# Handling
+
 	else if data.error
 
-		data.error ret
-
-		return ret
+		out = data.error ret
 
 	else if data.fix
 
@@ -81,7 +81,14 @@ registry.sideEffects = (data,ret) ->
 
 		return (continue:true,error:false,value:val)
 
+	else if data.dispatch
+
+		ret.dispatch = data.dispatch
+
+		return ret
+
 	return ret
+
 
 
 createError = (localRet,topValue,loc) ->
@@ -98,7 +105,7 @@ createError = (localRet,topValue,loc) ->
 
 	if localRet.path
 
-		out.path = out.path.concat localRet.path
+		out.path.push ...localRet.path
 
 	if localRet.message
 
@@ -139,9 +146,7 @@ registry.unit.and = (data,funs,value) ->
 
 		return (continue:true,error:false,value:value)
 
-
 	return topRet
-
 
 registry.unit.or = (data,funs,value) ->
 
@@ -155,7 +160,13 @@ registry.unit.or = (data,funs,value) ->
 
 		if localRet.continue then return localRet
 
-		topRet.message.push ...localRet.message
+		topRet.message = [":or",topRet.message, localRet.message]
+
+		if localRet.dispatch
+
+			topRet.dispatch = localRet.dispatch
+
+			return topRet
 
 	return topRet
 
@@ -178,23 +189,12 @@ registry.unit.map.array = (data,f,value) ->
 
 
 onn = {}
-	..entry  = null
-	..obja   = null
-	..array  = null
-	..object = null
-	..number = null
-	..string = null
 
+	..entry = null
+	..user_object = null
+	..main = null
 
-onn.string = (pattern,result,UFO) ->
-
-	if (UFO is pattern) then return local.sanatize result,UFO
-
-	(continue:true,error:false,value:UFO)
-
-onn.number = onn.string
-
-onn.object = (pos,f,ob) ->
+onn.main = (pos,f,ob) ->
 
 	localRet = registry.sanatize f,ob[pos]
 
@@ -204,9 +204,7 @@ onn.object = (pos,f,ob) ->
 
 	localRet
 
-onn.array = onn.object
-
-onn.obja = (data,[funs],UFO) ->
+onn.user_object = (data,[funs],UFO) ->
 
 	topRet = data.validator UFO
 
@@ -214,19 +212,23 @@ onn.obja = (data,[funs],UFO) ->
 
 		for loc,f of funs
 
-			localRet = onn[data.type] loc,f,topRet.value
+			localRet = onn.main loc,f,topRet.value
 
-			if localRet.error then return localRet
+			if localRet.error
+
+				localRet.message = [":on",loc,localRet.message]
+
+				return localRet
 
 	topRet
 
 onn.entry = guardjs!
 .when do
 	(data,args,UFO) -> ((typeof args[0]) is 'object')
-	onn.obja
+	onn.user_object
 .when do
 	(data,args,UFO) -> args.length is 2
-	(data,args,UFO) -> onn.obja data,[{"#{args[0]}":args[1]}],UFO
+	(data,args,UFO) -> onn.user_object data,[{"#{args[0]}":args[1]}],UFO
 
 registry.unit.map.object = (data,f,UFO) ->
 

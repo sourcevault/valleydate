@@ -1,26 +1,26 @@
-z = console.log
+z            = console.log
 
-l = console.log
+l            = console.log
 
-R = require "ramda"
+R            = require "ramda"
 
-chalk  = require "chalk"
+chalk        = require "chalk"
 
-util  = require "util"
+util         = require "util"
 
-render = require "json-stringify-pretty-compact"
+show-ob      = require "json-stringify-pretty-compact"
 
-SI = require "seamless-immutable"
+SI           = require "seamless-immutable"
 
-guardjs = require "guard-js"
+guardjs      = require "guard-js"
 
-sim = require "seamless-immutable-mergers"
+sim          = require "seamless-immutable-mergers"
 
-traverse = require "traverse"
+traverse     = require "traverse"
 
 pretty-error = require "pretty-error"
 
-noops = !->
+noop = !->
 
 if (typeof window is "undefined") and (typeof module is "object")
 
@@ -28,7 +28,7 @@ if (typeof window is "undefined") and (typeof module is "object")
 
 	util-inspect-custom = util.inspect.custom
 
-	noops[util-inspect-custom] = -> @[util-inspect-custom]
+	noop[util-inspect-custom] = -> @[util-inspect-custom]
 
 else
 
@@ -55,12 +55,12 @@ module.exports =
 		guardjs:guardjs
 		unfinished:unfinished
 		SI:SI
-		j:(j)-> console.log render j 
+		j:(j)-> console.log show-ob j
 		R:R
 		immutable:SI["static"]
 		sim:sim
 		util-inspect-custom:util-inspect-custom
-		noops:noops
+		noop:noop
 		module-name:module-name
 		traverse:traverse
 		pretty-error:pretty-error

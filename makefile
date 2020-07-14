@@ -10,14 +10,19 @@ MAKEFLAGS += --no-print-directory
 
 file = test/test.js
 
+pgk:
+	yaml2json src/package.yaml > package.json
+
 compile:
+	make pgk
 	lsc -co dist src
 	lsc -c test
-	yaml2json src/package.yaml > package.json
 	node ${file}
 
 w.compile:
-	nodemon  --exec "make compile || exit 1" ${SRC_FILES}
+	make pgk
+	nodemon  --exec "make compile || exit 1" ${SRC_FILES} ${TEST_FILES}
+
 
 .ONESHELL:
 SHELL = /bin/bash
@@ -32,7 +37,7 @@ travis:
 testy:
 	@lsc -co dist src
 	@lsc -c test/*.ls
-	yaml2json src/package.yaml > package.json
+	make pkg
 	make travis
 
 w.testy:

@@ -4,7 +4,7 @@ print = require "../dist/print"
 
 IS = require "../dist/main"
 
-p = print.fail "test/test1.js"
+p = print.fail "test/test2.js"
 
 G7 = new Set ["USA","EU","UK","Japan","Italy","Germany","France"]
 
@@ -15,7 +15,6 @@ valG7 = (s)->
 	else return [false,"not in G7"]
 
 isG7 = IS.string.and valG7
-
 
 ret1 = isG7 "UK"
 

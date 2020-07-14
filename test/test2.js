@@ -4,7 +4,7 @@
   ref$ = require("../dist/common"), z = ref$.z, noops = ref$.noops;
   print = require("../dist/print");
   IS = require("../dist/main");
-  p = print.fail("test/test1.js");
+  p = print.fail("test/test2.js");
   G7 = new Set(["USA", "EU", "UK", "Japan", "Italy", "Germany", "France"]);
   valG7 = function(s){
     if (G7.has(s)) {

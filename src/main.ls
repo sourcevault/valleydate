@@ -1,4 +1,4 @@
-{z,SI,R,guard,guardjs,noops,module-name} = require "./common"
+{z,SI,R,guard,guardjs,noop,module-name} = require "./common"
 
 {unfinished,sim,util-inspect-custom} = require "./common"
 
@@ -12,8 +12,6 @@ print = require "./print"
 
 {emit,verify} = registry
 
-validator = {}
-
 verify.ap.on.types = (data,args) ->
 
 
@@ -21,7 +19,7 @@ verify.ap.on.types = (data,args) ->
 
 		| 1 => ((typeof args[0]) is "object")
 		| 2 =>
-	
+
 			if not ((typeof args[0]) in [\string \number]) then return false
 			if not ((typeof args[1]) is \function) then return false
 
@@ -31,13 +29,13 @@ verify.ap.on.types = (data,args) ->
 
 emit.prox = (data) ->
 
-	P = data |> handle.of |> new Proxy(noops,_)
+	P = data |> handle.of |> new Proxy(noop,_)
 
 	registry.cache.all.add P
 
 	P
 
-emit.get.chain = (data,key) -> 
+emit.get.chain = (data,key) ->
 
 	neo = data.set \call,key
 
@@ -55,7 +53,7 @@ emit.get.basetype = (data,key) ->
 
 		neo = SI.merge data,(validator:baseF,type:key,state:\chain)
 
-		P = new Proxy(noops,(handle.of neo))
+		P = new Proxy(noop,(handle.of neo))
 
 		common[key] = P
 
@@ -83,7 +81,15 @@ emit.ap.chain = (data,args) ->
 
 registry.fault.get = (data,call) -> {fault:true,call:call} |> data.merge |> emit.prox
 
-emit.end = (data,key) -> {call:key,state:\end} |> data.merge |> emit.prox
+emit.end = (data,key) ->
+
+	info = {call:key,state:\end}
+
+	if key in ["error","fix"]
+
+		info.lockE = true
+
+	info |> data.merge |> emit.prox
 
 emit.ap.resolve = (data,[val])->
 
@@ -124,8 +130,8 @@ verify.get.end = guard do
 	(data,key) -> data[key]
 	print.accepts_only_single_consumer_for_unit
 .when do
-	(data,key) -> (((key is \fix) and (data.error)) or ((key is \error) and data.fix))
-	print.def_and_error
+	(data,key) -> (not (key is \continue)) and (data.lockE)
+	print.multi_error
 .any emit.end
 
 
@@ -147,7 +153,6 @@ verify.get.chain = (data,key) ->
 	| \on      => verify.get.on
 	| \and,\or => emit.get.chain
 	| \continue,\error,\fix => verify.get.end
-
 	| otherwise => print.not_unit
 
 	F data,key
@@ -172,12 +177,11 @@ get = guardjs!
 .when do
 	(data,key) -> (key is util-inspect-custom)
 	print.pretty
-.any (data,key) -> 
+.any (data,key) ->
 
 	key = switch key
-	| \cont => \continue
 	| \err => \error
-
+	| \con,\cont => \continue
 	| otherwise => key
 
 	F = switch data.state
@@ -210,7 +214,7 @@ verify.ap.chain = guardjs!
 			if (not ((typeof F) is 'function'))
 				return true
 		false
-	print.call_has_to_be_function 
+	print.call_has_to_be_function
 .any emit.ap.chain
 
 # -------------------------------------------------------------------------------------------------------
@@ -223,13 +227,8 @@ verify.ap.end = guardjs!
 
 # -------------------------------------------------------------------------------------------------------
 
-verify.ap.def = guard do
-	(data,args) -> (typeof args[0] is 'function')
-	print.def_argument_is_function
-.any emit.ap.end
 
-
-emit.ap.custom = (data,[f]) -> 
+emit.ap.custom = (data,[f]) ->
 
 	custom = (v) -> registry.sanatize f,v
 
@@ -293,22 +292,21 @@ start = ->
 			call:null
 			continue:null
 			error:null
-			def:null
 			fix:null
+			lockE:false
 			state:\init
 
 	all = registry.cache.all
 
 	init = SI defData
 
-	IS = new Proxy(noops,(handle.of init))
+	IS = new Proxy(noop,(handle.of init))
 
 	registry.is = IS
 
 	# ------------
 
 	registry.emit.ap.fault = {state:\fault} |> init.merge |> emit.prox
-
 
 	# ------------
 
