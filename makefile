@@ -8,19 +8,19 @@ TEST_FILES = ${TEST_NAME:%=--watch test/%}
 
 MAKEFLAGS += --no-print-directory
 
-file = test/test.js
+file = dist/main.js
 
-pgk:
+pkg:
 	yaml2json src/package.yaml > package.json
 
 compile:
-	make pgk
+	make pkg
 	lsc -co dist src
 	lsc -c test
 	node ${file}
 
 w.compile:
-	make pgk
+	make pkg
 	nodemon  --exec "make compile || exit 1" ${SRC_FILES} ${TEST_FILES}
 
 
@@ -35,8 +35,8 @@ travis:
 	done
 
 testy:
-	@lsc -co dist src
-	@lsc -c test/*.ls
+	lsc -co dist src
+	lsc -c test/*.ls
 	make pkg
 	make travis
 

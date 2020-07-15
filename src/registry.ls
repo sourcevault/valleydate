@@ -1,104 +1,97 @@
-commonjs = require "./common"
+com = require "./common"
 
-{l,noops,unfinished,traverse} = commonjs
+reg = {}
 
-unfinshed_to_leaf = (x) !->
+  ..module-name = "valleydate"
+  ..repo-url    = "https://github.com/sourcevault/valleydate"
 
-	if x is null
+  ..com = com
 
-		@update (unfinished @path.join ".")
+  ..cache = {}
+    # ..common = {}  # simple optimization for basetype prox
+    ..all = new WeakSet! # all proxs
 
-create_filler_function = (main) ->
+  ..entry      = null
+  ..main       = null
+  ..is         = null
 
-	(traverse main).forEach unfinshed_to_leaf
+  ..basetype  = {}
+    ..arr     = null
+    ..obj     = null
+    ..num     = null
+    ..null    = null
+    ..str     = null
+    ..bool    = null
+    ..fun     = null
+    ..undef   = null
 
-registry = {}
+  # ..unit = {}
+  #   ..and = null
+  #   ..or = null
+  #   ..map = {}
+  #     ..array  = null
+  #     ..object = null
 
-	..basetype = {}
-		..array = null
-		..object = null
-		..number = null
-		..null = null
-		..string = null
-		..boolean = null
-		..function = null
-		..undef = null
+  #   ..on       = {}
+  #     ..array = null
+  #     ..object = null
 
-	..unit = {}
-		..and = null
-		..or = null
-		..map = {}
-			..array  = null
-			..object = null
 
-		..on       = {}
-			..array = null
-			..object = null
+  # ..fault = {}
+  #   ..ap = null
+  #   ..get = null
 
-	..cache = {}
-		..common = {} # simple optimization for basetype prox
-		..all = new WeakSet! # all proxs
+  # ..helper = {}
+  #   ..required = null
+  #   ..integer = null
 
-	..fault = {}
-		..ap = null
-		..get = null
+  ..sanatize = null
 
-	..helper = {}
-		..required = null
-		..integer = null
+  ..sideEffects = null
 
-	..sanatize = null
+  ..router = {}
+    ..and      = null
+    ..or       = null
+    ..map      = null
+    ..on       = null
 
-	..sideEffects = null
+  # ..verify = {}
+    ..get = {}
+      ..init   = null
+      ..chain  = null
+      ..on     = null
+      ..map    = null
+      ..end    = null
+      ..def    = null
+      ..fix    = null
+      ..consumption_error = null
 
-	..router = {}
-		..and      = null
-		..or       = null
-		..map      = null
-		..on       = null
+    ..ap  = {}
+      ..chain  = null
+      ..custom = null
+      ..object = null
+      ..end    = null
+      ..on = {}
+        ..entry = null
+        ..types = null
 
-	..verify = {}
-		..get = {}
-			..init   = null
-			..chain  = null
-			..on     = null
-			..map    = null
-			..end    = null
-			..def    = null
-			..fix    = null
-			..consumption_error = null
+  ..emit = {}
+    ..prox = null
+    ..get = {}
+      ..chain    = null
+      ..fault    = null
+      ..end      = null
+      ..basetype = null
 
-		..ap  = {}
-			..chain  = null
-			..custom = null
-			..object = null
-			..end    = null
-			..on = {}
-				..entry = null
-				..types = null
+    ..ap  = {}
+      ..chain    = null
+      ..fault    = null
+      ..end      = null
+      ..resolve  = null
+      ..custom   = null
 
-	..emit = {}
-		..prox = null
-		..get = {}
-			..chain    = null
-			..fault    = null
-			..end      = null
-			..basetype = null
 
-		..ap  = {}
-			..chain    = null
-			..fault    = null
-			..end      = null
-			..resolve  = null
-			..custom   = null
-
-	..genprox = null
-
-	..is = null
-
-ALL = create_filler_function registry
-
-module.exports = ALL
+module.exports = reg
 
 
 

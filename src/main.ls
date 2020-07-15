@@ -1,317 +1,217 @@
-{z,SI,R,guard,guardjs,noop,module-name} = require "./common"
+reg = require "./registry"
 
-{unfinished,sim,util-inspect-custom} = require "./common"
+require "./print"
 
-registry = require "./registry"
+{com} = reg
 
-require "./validators"
+{z,l,SI,R,noop} = com
 
-require "./helper"
+{binapi,hop} = com
 
-print = require "./print"
+data = {}
 
-{emit,verify} = registry
+data.dirty =
+  all:[]
+  type:null
+  continue:null
+  error:null
+  def:null
+  fix:null
+  state:\init
 
-verify.ap.on.types = (data,args) ->
+data.def = SI data.dirty
 
+V = {}
 
-	switch args.length
+map = {}
 
-		| 1 => ((typeof args[0]) is "object")
-		| 2 =>
+map.basetype = ([prop]) !->
 
-			if not ((typeof args[0]) in [\string \number]) then return false
-			if not ((typeof args[1]) is \function) then return false
+  name = switch prop
+  | \obj,\object      => \obj
+  | \arr,\array       => \arr
 
-			return true
+  if name then return [\struct,name]
 
-		| otherwise => false
+  name = switch prop
+  | \str,\string      => \str
+  | \null             => \null
+  | \num,\number      => \num
+  | \undef            => \undef
+  | \fun,\function    => \fun
+  | \bool,\boolean    => \bool
 
-emit.prox = (data) ->
+  if name then return [\atom,name]
 
-	P = data |> handle.of |> new Proxy(noop,_)
+map.ending = ([prop]) !->
 
-	registry.cache.all.add P
+  unit = switch prop
+  | \fix              => \fix
+  | \err,\erro,\error => \erro
+  | \cont,\continue   => \cont
 
-	P
+  if unit then return [\ending,unit]
 
-emit.get.chain = (data,key) ->
+map.router = ([prop]) !->
 
-	neo = data.set \call,key
+  unit = switch prop
+  | \and      => \and
+  | \or       => \or
+  | \map      => \map
+  | \on       => \on
 
-	emit.prox neo
+  if unit then return [\router,unit]
 
-emit.get.basetype = (data,key) ->
+map.hepler = ([prop]) !->
 
-	{common,all} = registry.cache
+  prop = switch prop
+  | \req,\required        => \req
+  | \int,\integer         => \int
+  | \reqf,\required_fuzzy => \reqf
 
-	stored = common[key]
+  if prop then return [\helper,prop]
 
-	if not stored
 
-		baseF = registry.basetype[key]
+E = {} #entry
 
-		neo = SI.merge data,(validator:baseF,type:key,state:\chain)
+E.V = {}
 
-		P = new Proxy(noop,(handle.of neo))
+E.F = {} # functions
 
-		common[key] = P
+E.H = {}
 
-		all.add P
+E.H.type =  hop
+.ma do
+  map.basetype
+  map.router
+  map.hepler
+  map.ending
+.def [\fault]
 
-		return P
+veri = {}
 
-	else
+veri.on = hop.arwh do
+  1,([user]) ->
+    switch R.type user
+    | \Object => []
+    | otherwise =>
+  noop
+.u
 
-		return stored
+# veri.on = (user) ->
 
 
-emit.ap.chain = (data,args) ->
+#   z user
 
-	Fns = R.flatten args
+#   if not (user.length is 2)
+#     return [\fault,\arglen]
 
-	update =
-		*call:null
-			validator:registry.router[data.call] data,Fns
-			all:[[data.call,args]]
+#   [str,f] = user
 
-	neo = data.merge update,(merger:sim.concatArrayMerger)
 
-	emit.prox neo
+  # ar = []
 
-registry.fault.get = (data,call) -> {fault:true,call:call} |> data.merge |> emit.prox
+  # switch R.type str
+  # | \String,\Number =>
 
-emit.end = (data,key) ->
+  #   ar.push '',str
 
-	info = {call:key,state:\end}
+  # | \Array    =>
+  #   for I in str
+  #     switch R.type I
+  #     | \String,\Number =>
+  #       ar.push ['a',str]
+  #     | otherwise => return  [\fault,\first]
+  # | otherwise => return [\fault]
 
-	if key in ["error","fix"]
+  # switch typeof f
+  # | \function =>
+  #   ar.push f
+  # | otherwise => return [\fault,\second]
 
-		info.lockE = true
+  # ['ok',user]
 
-	info |> data.merge |> emit.prox
+verify_f = (user) ->
 
-emit.ap.resolve = (data,[val])->
+  if not (user.length is 1)
+    return [\fault,\arglen]
 
-	ret = data.validator val
+  switch typeof user[0]
+  | \function => return ['ok',user]
+  | otherwise => return [\fault,\first]
 
-	registry.sideEffects data,ret
+E.F.one = ([fname]) ->
 
+  ret = E.H.type fname
 
-emit.ap.end = (data,f) ->
+  [type]  = ret
 
-	update =
-		*call:null
-			all:[[data.call,f]]
+  switch type
 
-	update[data.call] = f[0]
+  | \router   => [\fault,[\one,\is_router]]
+  | \ending   => [\fault,[\one,\is_ending]]
+  | \fault    => [\fault,[\one,\is_unknown]]
+  | otherwise => [\re,ret]
 
-	neo = data.merge update,(merger:sim.concatArrayMerger)
+E.F.two = ([base,unit],user)->
 
-	emit.prox neo
+  ret = E.H.type base
 
-# -------------------------------------------------------------------------------------------------------
+  [baseT,bName] = ret
 
-verify.get.map = guard do
-	(data) -> (data.type in ['array','object'])
-	emit.get.chain
-.any print.wrong_basetype_for_map
-
-# -------------------------------------------------------------------------------------------------------
+  switch baseT
+  | \router,\ending   => return [\fault,[\two.base,baseT]]
+  | \fault            => return [\fault,[\two.base,\is_unknown]]
 
-verify.get.on = guard do
-	(data) -> registry.unit.on[data.type]
-	emit.get.chain
-.any print.wrong_basetype_for_on
-
-# -------------------------------------------------------------------------------------------------------
+  ret = E.H.type unit
 
-verify.get.end = guard do
-	(data,key) -> data[key]
-	print.accepts_only_single_consumer_for_unit
-.when do
-	(data,key) -> (not (key is \continue)) and (data.lockE)
-	print.multi_error
-.any emit.end
+  [unitT,uName] = ret
 
+  switch unitT
+  | \fault                 => return [\fault,[\two.unit,\unknown]]
+  | \atom,\struct,\hepler  => return [\fault,[\two.unit,unitT]]
 
-verify.get.consumption_error = guardjs!
-.when do
-	(data,key) -> registry.basetype[key]
-	print.in_consumption_mode
-.when do
-	(data,key) -> registry.router[key]
-	print.in_consumption_mode
-.any print.not_in_end
+  switch uName
+  | \map,\on =>
+    switch baseT
+    | \atom   => return [\fault,[\two.map_on_atom]]
 
-# -------------------------------------------------------------------------------------------------------
 
-verify.get.chain = (data,key) ->
+  ret = switch uName
+  | \on       => veri.on user
+  # | otherwise => verify_f user
 
-	F = switch key
-	| \map     => verify.get.map
-	| \on      => verify.get.on
-	| \and,\or => emit.get.chain
-	| \continue,\error,\fix => verify.get.end
-	| otherwise => print.not_unit
+  # [cont,data] = ret
 
-	F data,key
+  # z return/
 
-# -------------------------------------------------------------------------------------------------------
+  # switch cont
+  # | \fault => return [\fault,"two.input.#{arg}"]
 
-verify.get.init = guardjs!
-.when do
-	(d,k) -> registry.basetype[k]
-	emit.get.basetype
-.when do
-	(d,k) -> registry.helper[k]
-	(d,k) -> registry.helper[k]
-.when do
-	(d,k) -> registry.router[k]
-	print.unit_not_on_top
-.any print.not_in_base_or_help
 
-# -------------------------------------------------------------------------------------------------------
+  # return [\base.chain,[bName,uName,data]]
 
-get = guardjs!
-.when do
-	(data,key) -> (key is util-inspect-custom)
-	print.pretty
-.any (data,key) ->
+E.F.path = ([p,ar]) ->
 
-	key = switch key
-	| \err => \error
-	| \con,\cont => \continue
-	| otherwise => key
+  switch p.length
+  | 1 => E.F.one p
+  | 2 => E.F.two p,ar
+  | otherwise =>  [\fault,\path_too_long]
 
-	F = switch data.state
-	| \init   => verify.get.init
-	| \chain  => verify.get.chain
-	| \end    =>
 
-		switch key
-		| \continue \error \fix => verify.get.end
-		| otherwise => verify.get.consumption_error
 
-	| \fault  => print.fix_top_error.get
-	| otherwise => print.unknown_ap_call
+E.main = hop.wh do
+  ([p,ar,d]) -> d.state is \init
+  E.F.path
 
-	F data,key
+be = binapi E.main,data.def
 
-# -------------------------------------------------------------------------------------------------------
 
+be.obj.on do
+  \foo,->
+  \bar,->
 
-verify.ap.on.entry = guard do
-	verify.ap.on.types
-	emit.ap.chain
-.any print.wrong_type_for_object_on
+be.obj.on {foo:->,bar:->}
 
-verify.ap.chain = guardjs!
-.when do
-	(data,args) ->
-		Fns = R.flatten args
-		for F in Fns
-			if (not ((typeof F) is 'function'))
-				return true
-		false
-	print.call_has_to_be_function
-.any emit.ap.chain
+be.obj.on [\foo,\bar],->
 
-# -------------------------------------------------------------------------------------------------------
-
-verify.ap.end = guardjs!
-.when do
-	(data,args) -> (1 < args.length)
-	print.accepts_only_a_single_argument
-.any emit.ap.end
-
-# -------------------------------------------------------------------------------------------------------
-
-
-emit.ap.custom = (data,[f]) ->
-
-	custom = (v) -> registry.sanatize f,v
-
-	(type:\custom,validator:custom,state:\chain) |> data.merge |> emit.prox
-
-
-
-verify.ap.custom = guardjs!
-.when do
-	(data,args) -> not ((typeof args[0]) is \function)
-	print.custom_only_function
-.when do
-	(data,args) -> (args.length > 1)
-	print.single_init_function
-.any emit.ap.custom
-
-
-ap = guardjs!
-.when do
-	(data,args) -> ((data.call is null) and (data.state in [\end,\chain]))
-	emit.ap.resolve
-.any (data,args) ->
-
-		F = switch data.state
-		| \chain =>
-
-			switch data.call
-
-			| \on => verify.ap.on.entry
-
-			| otherwise => verify.ap.chain
-
-		| \end      => verify.ap.end
-
-		| \init     => verify.ap.custom
-
-		| \fault    => print.fix_top_error.ap
-
-		| otherwise => print.unknown_ap_call
-
-		F data,args
-
-handle = (data) ->
-
-	@data = data
-
-	@
-
-handle.prototype.get = (__,key,___)->  get @data,key
-
-handle.prototype.apply = (__,___,args) -> ap @data,args
-
-handle.of = (data)-> new handle(data)
-
-start = ->
-
-	defData =
-		*all:[]
-			validator:null
-			type:null
-			call:null
-			continue:null
-			error:null
-			fix:null
-			lockE:false
-			state:\init
-
-	all = registry.cache.all
-
-	init = SI defData
-
-	IS = new Proxy(noop,(handle.of init))
-
-	registry.is = IS
-
-	# ------------
-
-	registry.emit.ap.fault = {state:\fault} |> init.merge |> emit.prox
-
-	# ------------
-
-	IS
-
-IS = start!
-
-module.exports = IS

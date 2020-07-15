@@ -5,7 +5,7 @@ homepage: https://github.com/sourcevault/valleydate#readme.md
 license: MIT
 description: immutable object validator
 repository: https://github.com/sourcevault/valleydate.git
-version: 0.0.3
+version: 0.0.4
 main: dist/main.js
 scripts:
   "test": "make travis"
@@ -19,6 +19,8 @@ dependencies:
   traverse: "0.6.6"
   at-line: "1.0.0"
   pretty-error: "2.1.1"
+  binapi: sourcevault/binapi#unstable
+  hoplon: sourcevault/hoplon#unstable
 keywords:
   - "schema-validator"
   - "validator"
@@ -35,4 +37,4 @@ keywords:
   - "mostjs"
   - "immutable"
   - "chainable"
-
+  - "monad"

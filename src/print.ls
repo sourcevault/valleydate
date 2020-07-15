@@ -1,9 +1,16 @@
 
-{l,z,chalk,R,guard,guardjs,module-name} = require "./common"
+{l,z,chalk,R} = require "./common"
 
-{pretty-error,noops} = require "./common"
+{binapi,pretty-error} = require "./common"
 
 registry = require "./registry"
+
+{module-name} = registry
+
+c = {}
+	..ok   = chalk.green.bold
+	..er   = chalk.hex "FF0000"
+	..warn = chalk.hex "FFFFCD"
 
 c = {}
 
@@ -31,8 +38,6 @@ pe.filterParsedError (Error) ->
 
 pe.skip (traceLine,lineNumber) ->
 
-	if traceLine.packageName is  "guard-js" then return true
-
 	if traceLine.dir is "internal/modules/cjs" then return true
 
 	if traceLine.what is "Object.print.stack" then return true
@@ -50,17 +55,19 @@ pe.appendStyle do
 
 show_stack = !->
 
+	l help
+
 	E = pe.render new Error!
 
 	l E
 
-close = (data) ->
 
-	l help
+
+close = (data) ->
 
 	show_stack!
 
-	{state:\fault,call:\fault} |> data.merge |> registry.emit.prox
+	{continue:false,error:true,message:['fault in validator chain'],path:[]}
 
 
 print.wrong_basetype_for_map = (data,key) ->
@@ -382,8 +389,6 @@ print.requiredError = (loc) ->
 		c.er ("key in position #{loc} is not string type.\n")
 
 	l (c.warn "keys passed to helper function #{c.ok '\.required'} has to be string or number.\n")
-
-	l help
 
 	show_stack!
 
