@@ -101,7 +101,7 @@ console.log(V(sample))
 
 We start by defining our basetypes:
 
-- `number`,`array`,`string`,`null`,`undef`,`object`,`function`, and `string`.
+- `number`,`array`,`string`,`null`,`undefined`,`object` and `function`.
 
 .. then chainable units :
 
@@ -111,29 +111,39 @@ We start by defining our basetypes:
 
 - `continue`, `error` and `fix`.
 
+🧡 **API shorthand**
 
+- Can be used to reduce the need to type longer method names.
+
+```
+|                 basetype                    |  consumption unit   |
+|---------------------------------------------|---------------------|
+|number|array|string|undefined|object|function|  continue  | error  |
+|------|-----|------|---------|------|--------|------------|--------|
+|  num | arr | str  |  undef  | obj  |  fun   |  con/cont  |  err   |
+```
 
 #### Initializing Validator
 
 Each validator chain starts with a *basetype*.
 
 ```js
-var V = IS.number;
+var V = IS.number
 V(1) // {continue: true, error: false, value:1}
 ```
 
 ```js
-var V = IS.object;
+var V = IS.object
 V({}) // {continue: true, error: false, value:{}}
 ```
 
 ```js
-var V = IS.array;
+var V = IS.array
 V([]) // {continue: true, error: false, value:[]}
 ```
 
 ```js
-var V = IS.object;
+var V = IS.object
 V([]) // {continue: false, error: true, message:"not an array",path:[]}
 ```
 
@@ -249,8 +259,6 @@ V((foo:1,bar:2))
 
 - return value of consumption units are important, they replace final `.value` of output.
 
-- `.cont`, and `.err` are shorthands for `.continue` and `.error`.
-
 using the IP example from above :
 
 ```js
@@ -264,7 +272,7 @@ var V = canbeIP
 
 ```
 
-🟡 `.contine` can be used to making values **consistent**, using the IP address validator from above :
+🟡 `.continue` can be used to making values **consistent**, using the IP address validator from above :
 
 
 ```js

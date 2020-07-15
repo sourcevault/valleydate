@@ -12,7 +12,7 @@
     var ref$;
     switch (args.length) {
     case 1:
-      return typeof args[0] === "object";
+      return typeof args[0] === 'object';
     case 2:
       if (!((ref$ = typeof args[0]) === 'string' || ref$ === 'number')) {
         return false;
@@ -166,6 +166,16 @@
       case 'con':
       case 'cont':
         return 'continue';
+      case 'arr':
+        return 'array';
+      case 'obj':
+        return 'object';
+      case 'num':
+        return 'number';
+      case 'str':
+        return 'string';
+      case 'undef':
+        return 'undefined';
       default:
         return key;
       }

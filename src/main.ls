@@ -14,10 +14,9 @@ print = require "./print"
 
 verify.ap.on.types = (data,args) ->
 
-
 	switch args.length
 
-		| 1 => ((typeof args[0]) is "object")
+		| 1 => ((typeof args[0]) is \object)
 		| 2 =>
 
 			if not ((typeof args[0]) in [\string \number]) then return false
@@ -180,9 +179,14 @@ get = guardjs!
 .any (data,key) ->
 
 	key = switch key
-	| \err => \error
+	| \err       => \error
 	| \con,\cont => \continue
-	| otherwise => key
+	| \arr       => \array
+	| \obj       => \object
+	| \num       => \number
+	| \str       => \string
+	| \undef     => \undefined
+	| otherwise  => key
 
 	F = switch data.state
 	| \init   => verify.get.init
@@ -232,7 +236,9 @@ emit.ap.custom = (data,[f]) ->
 
 	custom = (v) -> registry.sanatize f,v
 
-	(type:\custom,validator:custom,state:\chain) |> data.merge |> emit.prox
+	(type:\custom,validator:custom,state:\chain)
+	|> data.merge
+	|> emit.prox
 
 
 

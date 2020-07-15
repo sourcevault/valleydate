@@ -10,20 +10,16 @@ local = {}
 
 local.sanatize = (f,val,path)->
 
-	ret = switch typeof f
-
-	| "function" => f val,path
-
-	| otherwise => f
+	ret = f val,path
 
 	if booly.has (typeof ret)
 
 		if ret
 			return (continue:true,error:false,value:val)
 		else
-			return (continue:false,error:true,value:val,message:[])
+			return (continue:false,error:true,value:val,message:[],path:[])
 
-# -----------------------------------------------------------------------------------
+	# -----------------------------------------------------------------------------------
 
 	else if (Array.isArray ret)
 
@@ -33,7 +29,7 @@ local.sanatize = (f,val,path)->
 			return (continue:true,error:false,value:val)
 		else
 
-			out = (continue:false,error:true,value:val)
+			out = (continue:false,error:true,value:val,path:[])
 
 			switch (typeof unknown)
 			| \string =>
@@ -47,7 +43,8 @@ local.sanatize = (f,val,path)->
 
 	else
 
-		out = (continue:false,error:true,value:val)
+		out = (continue:false,error:true,value:val,path:[])
+
 		out.message = ["[#{module-name}][error][user-supplied-validator] unknown return type."]
 
 		return out
@@ -69,7 +66,7 @@ registry.sideEffects = (data,ret) ->
 
 			return ret
 
-# Handling
+	# Error Handling
 
 	else if data.error
 
@@ -81,14 +78,7 @@ registry.sideEffects = (data,ret) ->
 
 		return (continue:true,error:false,value:val)
 
-	else if data.dispatch
-
-		ret.dispatch = data.dispatch
-
-		return ret
-
 	return ret
-
 
 
 createError = (localRet,topValue,loc) ->
@@ -148,11 +138,45 @@ registry.unit.and = (data,funs,value) ->
 
 	return topRet
 
+
+flator = (init,inner) ->
+
+	ret = [":or"]
+
+	if (init.length > 1) and ((init[0]) is ":or")
+
+		init.shift!
+
+		ret.push ...init
+
+	else
+
+		ret.push init
+
+# --------------------------------------------
+
+	if (inner.length > 1) and (inner[0] is ":or")
+
+		inner.shift!
+
+		ret.push ...inner
+
+	else
+
+		ret.push inner
+
+	ret
+
+
 registry.unit.or = (data,funs,value) ->
 
 	topRet = data.validator value
 
 	if topRet.continue then return topRet
+
+# ----------------------------------------------------------------
+
+	# topRet = {continue:false,error:true,value:value,message:.....}
 
 	for f in funs
 
@@ -160,15 +184,12 @@ registry.unit.or = (data,funs,value) ->
 
 		if localRet.continue then return localRet
 
-		topRet.message = [":or",topRet.message, localRet.message]
-
-		if localRet.dispatch
-
-			topRet.dispatch = localRet.dispatch
-
-			return topRet
+		topRet.message = flator topRet.message,localRet.message
+		topRet.path.push ...localRet.path
 
 	return topRet
+
+# ------------------------------------
 
 
 registry.unit.map.array = (data,f,value) ->
@@ -179,17 +200,16 @@ registry.unit.map.array = (data,f,value) ->
 
 		val = topRet.value
 
-		for I,n in val
+		for value,key in val
 
-			localRet = register.sanatize f,I,n
+			localRet = register.sanatize f,value,key
 
-			if localRet.error then return createError localRet,topRet.value,n
+			if localRet.error then return createError localRet,topRet.value,key
 
 	return topRet
 
 
 onn = {}
-
 	..entry = null
 	..user_object = null
 	..main = null
@@ -198,7 +218,11 @@ onn.main = (pos,f,ob) ->
 
 	localRet = registry.sanatize f,ob[pos]
 
-	if localRet.error then return createError localRet,ob,pos
+	if localRet.error
+
+		eR = createError localRet,ob,pos
+
+		return eR
 
 	ob[pos] = localRet.value
 
@@ -230,6 +254,7 @@ onn.entry = guardjs!
 	(data,args,UFO) -> args.length is 2
 	(data,args,UFO) -> onn.user_object data,[{"#{args[0]}":args[1]}],UFO
 
+
 registry.unit.map.object = (data,f,UFO) ->
 
 	topRet = data.validator UFO
@@ -240,7 +265,11 @@ registry.unit.map.object = (data,f,UFO) ->
 
 			localRet = registry.sanatize f,value,key
 
-			if localRet.error then return createError localRet,topRet.value,key
+			if localRet.error then
+
+				eR = createError localRet,topRet.value,key
+
+				return eR
 
 	return topRet
 
@@ -261,7 +290,7 @@ create_atomic = (name) -> (UFO) ->
 
 	else
 
-		(error:true,continue:false,message:["not a #{name}"],value:UFO)
+		(error:true,continue:false,value:UFO,message:["not a #{name}"],path:[])
 
 
 R.forEach do
@@ -271,9 +300,9 @@ R.forEach do
 registry.basetype.null = (UFO) ->
 
 	if UFO is null then return (error:false,continue:true,value:UFO)
-	else return (error:true,continue:false,message:["not a null"],value:UFO)
+	else return (error:true,continue:false,value:UFO,message:["not a null"],path:[])
 
-registry.basetype.undef = (UFO) ->
+registry.basetype.undefined = (UFO) ->
 
 	Type = typeof UFO
 
@@ -283,13 +312,17 @@ registry.basetype.undef = (UFO) ->
 
 	else
 
-		(error:true,continue:false,message:["not undefined"],value:UFO)
+		(error:true,continue:false,value:UFO,message:["not undefined"],path:[])
 
 registry.basetype.array = (UFO) ->
 
 	if (Array.isArray UFO) then return (error:false,continue:true,value:UFO)
 
-	else return (error:true,continue:false,message:["not a array"],value:UFO)
+	else
+
+		(error:true,continue:false,value:UFO,message:["not an array"],path:[])
+
+
 
 registry.basetype.object = (UFO) ->
 
@@ -301,7 +334,9 @@ registry.basetype.object = (UFO) ->
 
 	else
 
-		(error:true,continue:false,message:["not an object"],value:UFO)
-
+		(error:true,continue:false,value:UFO,message:["not an object"],path:[])
 
 [registry.cache.all.add val for key,val in registry.basetype]
+
+
+
