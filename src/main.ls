@@ -1,323 +1,533 @@
-{z,SI,R,guard,guardjs,noop,module-name} = require "./common"
+reg = require "./registry"
 
-{unfinished,sim,util-inspect-custom} = require "./common"
+require "./print" # [....]
 
-registry = require "./registry"
+require "./tightloop" # [....]
 
-require "./validators"
+# ------------------------------------------------------------------
 
-require "./helper"
+{com,print,pkgname,tightloop,already_created} = reg
 
-print = require "./print"
+{z,l,R,hop,j,uic} = com
 
-{emit,verify} = registry
+init-state =
+  all     :[]
+  type    :null
+  cont    :null
+  err     :null
+  phase   :\init
+  str     :[]
 
-verify.ap.on.types = (data,args) ->
+# ------------------------------------------------------------------
 
-	switch args.length
 
-		| 1 => ((typeof args[0]) is \object)
-		| 2 =>
+loopError = ->
 
-			if not ((typeof args[0]) in [\string \number]) then return false
-			if not ((typeof args[1]) is \function) then return false
+  noop  = ->
+  apply = -> new Proxy(noop,{apply:apply,get:get})
+  get   = -> new Proxy(noop,{apply:apply,get:get})
 
-			return true
+  new Proxy(noop,{apply:apply,get:get})
 
-		| otherwise => false
+reg.loopError = loopError
 
-emit.prox = (data) ->
+# ------------------------------------------------------------------
 
-	P = data |> handle.of |> new Proxy(noop,_)
+define = {}
 
-	registry.cache.all.add P
+# ------------------------------------------------------------------
 
-	P
+cato = (arg) ->
 
-emit.get.chain = (data,key) ->
+  switch R.type arg
 
-	neo = data.set \call,key
+  | \Function =>
 
-	emit.prox neo
+    switch already_created.has arg
+    | false => [\f,arg]
+    | true  => [\s,arg]
 
-emit.get.basetype = (data,key) ->
+  | \Arguments =>
 
-	{common,all} = registry.cache
+    fun = []
 
-	stored = common[key]
+    for I from 0 til arg.length
 
-	if not stored
+      F = arg[I]
 
-		baseF = registry.basetype[key]
+      block = switch already_created.has F
 
-		neo = SI.merge data,(validator:baseF,type:key,state:\chain)
+      | false => [\f,F]
+      | true  => [\s,F]
 
-		P = new Proxy(noop,(handle.of neo))
+      fun.push block
 
-		common[key] = P
+    fun
 
-		all.add P
+define.base = (name) -> (UFO) ->
 
-		return P
+  ut = R.type UFO
 
-	else
+  if (ut is name)
 
-		return stored
+    {continue:true,error:false,value:UFO}
 
+  else
 
-emit.ap.chain = (data,args) ->
+    str = R.toLower "not #{name}"
 
-	Fns = R.flatten args
+    {error:true,continue:false,message:str,value:UFO}
 
-	update =
-		*call:null
-			validator:registry.router[data.call] data,Fns
-			all:[[data.call,args]]
 
-	neo = data.merge update,(merger:sim.concatArrayMerger)
+define.notbase = (name) -> (UFO) ->
 
-	emit.prox neo
+  ut = R.type UFO
 
-registry.fault.get = (data,call) -> {fault:true,call:call} |> data.merge |> emit.prox
+  if (ut is name)
 
-emit.end = (data,key) ->
+    str =  R.toLower "is #{name}"
 
-	info = {call:key,state:\end}
+    {error:true,continue:false,message:str,value:UFO}
 
-	if key in ["error","fix"]
+  else
 
-		info.lockE = true
+    {continue:true,error:false,value:UFO}
 
-	info |> data.merge |> emit.prox
 
-emit.ap.resolve = (data,[val])->
+custom = hop
+.arn 1, -> print.route [[\fault \custom \arg_count]] ; loopError!
 
-	ret = data.validator val
+.whn do
 
-	registry.sideEffects data,ret
+  (f) -> ((R.type f) is \Function)
 
+  -> print.route [[\fault \custom \not_function]] ; loopError!
 
-emit.ap.end = (data,f) ->
+.def (F) ->
 
-	update =
-		*call:null
-			all:[[data.call,f]]
+  neo = Object.assign do
+    {}
+    init-state
+    {
+      type     :\custom
+      all      :[[(cato F)]]
+      phase    :\chain
+      str      :[pkgname]
+    }
 
-	update[data.call] = f[0]
+  define.forward \custom,neo
 
-	neo = data.merge update,(merger:sim.concatArrayMerger)
 
-	emit.prox neo
+main_wrap = (type,state) -> -> main type,state,arguments
 
-# -------------------------------------------------------------------------------------------------------
+define.forward = (type,neo,fun)->
 
-verify.get.map = guard do
-	(data) -> (data.type in ['array','object'])
-	emit.get.chain
-.any print.wrong_basetype_for_map
-
-# -------------------------------------------------------------------------------------------------------
-
-verify.get.on = guard do
-	(data) -> registry.unit.on[data.type]
-	emit.get.chain
-.any print.wrong_basetype_for_on
-
-# -------------------------------------------------------------------------------------------------------
-
-verify.get.end = guard do
-	(data,key) -> data[key]
-	print.accepts_only_single_consumer_for_unit
-.when do
-	(data,key) -> (not (key is \continue)) and (data.lockE)
-	print.multi_error
-.any emit.end
+  if fun
 
+    forward       = fun
 
-verify.get.consumption_error = guardjs!
-.when do
-	(data,key) -> registry.basetype[key]
-	print.in_consumption_mode
-.when do
-	(data,key) -> registry.router[key]
-	print.in_consumption_mode
-.any print.not_in_end
+  else
 
-# -------------------------------------------------------------------------------------------------------
+    forward       = tightloop neo
 
-verify.get.chain = (data,key) ->
+  forward[uic]    = print.log
 
-	F = switch key
-	| \map     => verify.get.map
-	| \on      => verify.get.on
-	| \and,\or => emit.get.chain
-	| \continue,\error,\fix => verify.get.end
-	| otherwise => print.not_unit
+  forward.and     = main_wrap \and,neo
 
-	F data,key
+  forward.or      = main_wrap \or,neo
 
-# -------------------------------------------------------------------------------------------------------
+  forward.cont    = main_wrap \cont,neo
 
-verify.get.init = guardjs!
-.when do
-	(d,k) -> registry.basetype[k]
-	emit.get.basetype
-.when do
-	(d,k) -> registry.helper[k]
-	(d,k) -> registry.helper[k]
-.when do
-	(d,k) -> registry.router[k]
-	print.unit_not_on_top
-.any print.not_in_base_or_help
+  forward.jam     = main_wrap \jam,neo
 
-# -------------------------------------------------------------------------------------------------------
+  forward.fix     = main_wrap \fix,neo
 
-get = guardjs!
-.when do
-	(data,key) -> (key is util-inspect-custom)
-	print.pretty
-.any (data,key) ->
+  forward.err     = main_wrap \err,neo
 
-	key = switch key
-	| \err       => \error
-	| \con,\cont => \continue
-	| \arr       => \array
-	| \obj       => \object
-	| \num       => \number
-	| \str       => \string
-	| \undef     => \undefined
-	| otherwise  => key
+  if type in [\obj,\arr]
 
-	F = switch data.state
-	| \init   => verify.get.init
-	| \chain  => verify.get.chain
-	| \end    =>
+    forward.map   = main_wrap \map,neo
 
-		switch key
-		| \continue \error \fix => verify.get.end
-		| otherwise => verify.get.consumption_error
+    forward.on    = main_wrap \on,neo
 
-	| \fault  => print.fix_top_error.get
-	| otherwise => print.unknown_ap_call
+  already_created.add forward
 
-	F data,key
+  forward
 
-# -------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 
+define.and = (state,funs) ->
 
-verify.ap.on.entry = guard do
-	verify.ap.on.types
-	emit.ap.chain
-.any print.wrong_type_for_object_on
+  all = state.all
 
-verify.ap.chain = guardjs!
-.when do
-	(data,args) ->
-		Fns = R.flatten args
-		for F in Fns
-			if (not ((typeof F) is 'function'))
-				return true
-		false
-	print.call_has_to_be_function
-.any emit.ap.chain
+  switch (all.length%2)
+  | 0 =>
 
-# -------------------------------------------------------------------------------------------------------
+    all.concat [funs]
 
-verify.ap.end = guardjs!
-.when do
-	(data,args) -> (1 < args.length)
-	print.accepts_only_a_single_argument
-.any emit.ap.end
+  | 1 =>
 
-# -------------------------------------------------------------------------------------------------------
+    last = R.last all
 
+    init = R.init all
 
-emit.ap.custom = (data,[f]) ->
+    nlast = [...last,...funs]
 
-	custom = (v) -> registry.sanatize f,v
+    block = [...init,nlast]
 
-	(type:\custom,validator:custom,state:\chain)
-	|> data.merge
-	|> emit.prox
+    block
 
 
+define.or = (state,funs) ->
 
-verify.ap.custom = guardjs!
-.when do
-	(data,args) -> not ((typeof args[0]) is \function)
-	print.custom_only_function
-.when do
-	(data,args) -> (args.length > 1)
-	print.single_init_function
-.any emit.ap.custom
+  all = state.all
 
+  switch (all.length%2)
+  | 0 =>
 
-ap = guardjs!
-.when do
-	(data,args) -> ((data.call is null) and (data.state in [\end,\chain]))
-	emit.ap.resolve
-.any (data,args) ->
+    last = R.last all
 
-		F = switch data.state
-		| \chain =>
+    init = R.init all
 
-			switch data.call
+    nlast = [...last,...funs]
 
-			| \on => verify.ap.on.entry
+    block = [...init,nlast]
 
-			| otherwise => verify.ap.chain
+    block
 
-		| \end      => verify.ap.end
+  | 1 =>
 
-		| \init     => verify.ap.custom
+    all.concat [funs]
 
-		| \fault    => print.fix_top_error.ap
+# ------------------------------------------------------------------
 
-		| otherwise => print.unknown_ap_call
 
-		F data,args
+verify_on = hop
+.arn [1,2],[\fault \on \arg_count]
+.arma do
+  1
+  (maybe-object) ->
 
-handle = (data) ->
+    if ((R.type maybe-object) is \Object)
 
-	@data = data
+      for I,val of maybe-object
 
-	@
+        if not ((R.type val) is \Function)
 
-handle.prototype.get = (__,key,___)->  get @data,key
+          return [\fault \on \object \not_function]
 
-handle.prototype.apply = (__,___,args) -> ap @data,args
+      return [\object]
 
-handle.of = (data)-> new handle(data)
+    else
 
-start = ->
+      false
 
-	defData =
-		*all:[]
-			validator:null
-			type:null
-			call:null
-			continue:null
-			error:null
-			fix:null
-			lockE:false
-			state:\init
+.arma do
+  2
+  (maybe-array,maybe-function)->
 
-	all = registry.cache.all
+    if ((R.type maybe-array) is \Array)
 
-	init = SI defData
+      for I in maybe-array
 
-	IS = new Proxy(noop,(handle.of init))
+        if not ((R.type I) is \String)
 
-	registry.is = IS
+          return [\fault \on \array]
 
-	# ------------
+      if not ((R.type maybe-function) is \Function)
 
-	registry.emit.ap.fault = {state:\fault} |> init.merge |> emit.prox
+          return [\fault \on \array]
 
-	# ------------
+      return [\array]
 
-	IS
+    else
 
-IS = start!
+      return false
 
-module.exports = IS
+  (maybe-string,maybe-function) ->
+
+    if not ((R.type maybe-string) is \String)
+
+      return false
+
+    if not ((R.type maybe-function) is \Function)
+
+      return [\fault \on \string]
+
+    return [\string]
+
+.def [\fault \on \typeError]
+
+define.on = (type,state,args) ->
+
+  switch type
+  | \array =>
+
+    [props,F] = args
+
+    put = [\on,[\array,[(R.uniq props),...(cato F)]]]
+
+  | \string =>
+
+    [key,F] = args
+
+    put = [\on,[\string,[key,...(cato F)]]]
+
+    put
+
+  | \object =>
+
+    [ob] = args
+
+    fun   = [[key,...(cato val)] for key,val of ob]
+
+    put = [\on,[\object,fun]]
+
+
+  block = define.and state,[put]
+
+
+  neo = Object.assign do
+    {}
+    state
+    {
+      phase :\chain
+      all   :block
+      str   :state.str.concat \on
+    }
+
+
+  define.forward state.type,neo
+
+
+main = hop
+.wh do
+
+  (type,state,args) -> (type in [\cont,\jam]) and (state.phase is \chain)
+
+  (type,state,[f]) ->
+
+    neo = Object.assign do
+      {}
+      state
+      {
+        phase:\end
+        cont:[type,f]
+        str:state.str.concat type
+      }
+
+    forward      = tightloop neo
+
+    forward.fix  = main_wrap \fix,neo
+
+    forward.err  = main_wrap \err,neo
+
+    forward[uic] = print.log
+
+    already_created.add forward
+
+    forward
+
+.wh do
+
+  (type,state,args) -> (type in [\err,\fix]) and (state.phase is \chain)
+
+  (type,state,[f]) ->
+
+    neo = Object.assign do
+      {}
+      state
+      {
+        phase:\end
+        str:state.str.concat type
+      }
+
+    neo.err       = [type,f]
+
+    forward       = tightloop neo
+
+    forward.cont  = main_wrap \cont,neo
+
+    forward.jam  = main_wrap \jam,neo
+
+    forward[uic]    = print.log
+
+    already_created.add forward
+
+    forward
+
+
+.wh do
+
+  (type,state,args) -> state.phase is \end
+
+  (type,state,[f]) ->
+
+    neo = Object.assign state,{}
+
+    switch type
+
+    | \err,\fix =>
+
+      neo.err = [type,f]
+
+    | \cont,\jam =>
+
+      neo.cont = [type,f]
+
+    F = tightloop neo
+
+    already_created.add F
+
+    F
+
+.wh do
+  (type) -> type is \on
+
+  (type,state,args) ->
+
+    patt = verify_on ...args
+
+    [type] = patt
+
+    switch type
+    | \fault =>
+
+      print.route [patt,[state.str,\on]]
+
+      return loopError!
+
+    define.on type,state,args
+
+.wh do
+
+  (type,state,funs) ->
+
+    switch type
+    | \and \or  =>
+
+      for F in funs
+
+        if not ((R.type F) is \Function)
+
+          print.route [[\fault , type , \not_function],[state.str,type]]
+
+          false
+
+      true
+
+    | \map      =>
+
+      if not (funs.length is 1)
+
+        print.route [[\fault,type,\arg_count],[state.str,type]]
+
+        return false
+
+      [f] = funs
+
+      if not ((R.type f) is \Function)
+
+        print.route [[\fault,type,\not_function],[state.str,type]]
+
+        return false
+
+      return true
+
+    | otherwise => return false
+
+
+  (type,state,args) ->
+
+    # ----------------------------------
+
+    funs = cato args
+
+    block = switch type
+    | \and => define.and state,funs
+    | \or  => define.or state,funs
+    | \map => define.and state,[[\map,funs[0]]]
+
+
+    neo = Object.assign do
+      {}
+      state
+      {
+        phase :\chain
+        all   :block
+        str   :state.str.concat type
+      }
+
+    define.forward state.type,neo
+
+
+.def loopError
+
+# ------------------------------------------------------------------
+
+props =
+  [\obj \Object]
+  [\arr \Array]
+  [\undef \Undefined]
+  [\null \Null]
+  [\num \Number]
+  [\str \String]
+  [\fun \Function]
+
+boot = ->
+
+  for [name,type] in props
+
+    F = define.base type
+
+    already_created.add F
+
+    neo = Object.assign do
+        {}
+        init-state
+        {
+          type:name
+          all:[[[\s,F]]]
+          phase:\chain
+          str:[name]
+        }
+
+    define.forward name,neo,F
+
+    custom[name] = F
+
+
+  # -------------------------------
+
+  custom.not = {}
+
+  # -------------------------------
+
+  for [name,type] in props
+
+    F = define.notbase type
+
+    already_created.add F
+
+    neo = Object.assign do
+        {}
+        init-state
+        {
+          type:name
+          all:[[[\s,F]]]
+          phase:\chain
+          str:[name]
+        }
+
+    define.forward name,neo,F
+
+    custom.not[name] = F
+
+
+  custom
+
+reg.pkg = boot!
+
+require "./helper" # [....]
+
+module.exports = reg.pkg

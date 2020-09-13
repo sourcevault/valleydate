@@ -1,67 +1,77 @@
-{l,SI,R,guard,noops,module-name} = require "./common"
+reg = require "./registry"
 
-{unfinished,sim,util-inspect-custom} = require "./common"
+{com,pkg,loopError,print} = reg
 
-registry = require "./registry"
+{z,l,R,j,hop} = com
 
-print = require "./print"
+be = pkg
 
-is-string = R.is String
+internal = {}
 
-is-number = R.is Number
+internal.integer = (val) ->
 
-noops = !->
+  residue = Math.abs (val - Math.round(val))
 
-required = (props,val) ->
+  if residue > 0
 
-	for I in props
+    return [false,"not an integer"]
 
-		if (val[I] is undefined) then
+  else
 
-			return [
-				false
-				"required value .#{I} is not present (or is undefined)."
-			]
-
-	return [true]
+    return [true]
 
 
-check_if_string = ->
+pkg.int = pkg.num.and internal.integer
 
-	args = R.flatten [...arguments]
+#--------------------------------------------------------
 
-	for I,n in args
+internal.required = (props) -> (val) ->
 
-		if not ((is-string I) or (is-number I))
+  I  = 0
 
-			print.requiredError n
+  nI = props.length
 
-			return false
+  while I < nI
 
-	return true
+    key = props[I]
 
+    if (val[key] is undefined)
 
-registry.helper.required = guard do
-	check_if_string
-	->
-		args = R.flatten [...arguments]
-		registry.is.object.and (val) -> required args,val
-.any noops
+      return [
+        false
+        "required value .#{I} is not present (or is undefined)."
+      ]
 
+    I += 1
 
-is_integer = (val) ->
+  return true
 
-	residue = Math.abs (val - Math.round(val))
-
-	if residue > 0
-
-		return [false,"not an integer"]
-
-	else
-
-		return [true]
-
-registry.helper.integer = (val)-> (registry.is.number.and is_integer) val
+#--------------------------------------------------------
 
 
+pkg.required = hop
+
+.wh do
+
+  ->
+
+    args = R.flatten [...arguments]
+
+    for key in args
+
+      if not ((R.type key) in [\String \Number])
+
+        print.route [[\required_input]]
+
+        return true
+
+    return false
+
+  loopError
+
+.def ->
+
+  props = R.flatten [...arguments]
+
+  be.obj.and internal.required props
 

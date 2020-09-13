@@ -16,11 +16,13 @@
     "ramda": "0.26.1",
     "chalk": "2.4.2",
     "json-stringify-pretty-compact": "2.0.0",
-    "guard-js": "0.1.1",
     "seamless-immutable-mergers": "7.1.0",
     "traverse": "0.6.6",
     "at-line": "1.0.0",
-    "pretty-error": "2.1.1"
+    "pretty-error": "2.1.1",
+    "hoplon": "*",
+    "color-json": "2.0.1",
+    "@aitodotai/json-stringify-pretty-compact": "*"
   },
   "keywords": [
     "schema-validator",

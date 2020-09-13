@@ -8,7 +8,7 @@ TEST_FILES = ${TEST_NAME:%=--watch test/%}
 
 MAKEFLAGS += --no-print-directory
 
-file = test/test.js
+file = dist/main.js
 
 pkg:
 	yaml2json src/package.yaml > package.json

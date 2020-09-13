@@ -2,7 +2,7 @@
 
 print = require "../dist/print"
 
-IS = require "../dist/main"
+be = require "../dist/main"
 
 p = print.fail "test/test2.js"
 
@@ -14,7 +14,7 @@ valG7 = (s)->
 
 	else return [false,"not in G7"]
 
-isG7 = IS.string.and valG7
+isG7 = be.str.and valG7
 
 ret1 = isG7 "UK"
 
@@ -24,7 +24,7 @@ if not (ret1.value is \UK)
 
 	p!
 
-if not ((Array.isArray ret2.message) and (ret2.message[0] is "not in G7"))
+if not (ret2.message is "not in G7")
 
 	p!
 

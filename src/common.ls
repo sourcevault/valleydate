@@ -1,66 +1,40 @@
-z            = console.log
+z                = console.log
 
-l            = console.log
+l                = console.log
 
-R            = require "ramda"
+R                = require "ramda"
 
-chalk        = require "chalk"
+chalk            = require "chalk"
 
-util         = require "util"
+hoplon           = require "hoplon"
 
-show-ob      = require "json-stringify-pretty-compact"
+pretty-error     = require "pretty-error"
 
-SI           = require "seamless-immutable"
-
-guardjs      = require "guard-js"
-
-sim          = require "seamless-immutable-mergers"
-
-traverse     = require "traverse"
-
-pretty-error = require "pretty-error"
-
-noop = !->
+jspc             = require "@aitodotai/json-stringify-pretty-compact"
 
 if (typeof window is "undefined") and (typeof module is "object")
 
-	util = require "util"
+  util = require "util"
 
-	util-inspect-custom = util.inspect.custom
-
-	noop[util-inspect-custom] = -> @[util-inspect-custom]
+  util_inspect_custom = util.inspect.custom
 
 else
 
-	util-inspect-custom = Symbol "spam"
+  util_inspect_custom = Symbol.for "nodejs.util.inspect.custom"
 
-
-c = {}
-	..ok   = chalk.green.bold
-	..er   = chalk.hex "FF0000"
-	..warn = chalk.hex "FFFFCD"
-
-module-name = "valleydate"
-
-unfinished = (name)-> !-> l " <| #{name} |>"
-
-guard = (whn,fn) -> (guardjs!).when whn,fn
+j = (x) -> l jspc do
+  x
+  {
+    maxLength:30
+    margins:true
+  }
 
 module.exports =
-	*z:z
-		l:l
-		chalk:chalk
-		guard:guard
-		guardjs:guardjs
-		unfinished:unfinished
-		SI:SI
-		j:(j)-> console.log show-ob j
-		R:R
-		immutable:SI["static"]
-		sim:sim
-		util-inspect-custom:util-inspect-custom
-		noop:noop
-		module-name:module-name
-		traverse:traverse
-		pretty-error:pretty-error
-
+  *z:z
+   j:j
+   l:l
+   R:R
+   chalk:chalk
+   hop:hoplon
+   uic:util_inspect_custom
+   pretty-error:pretty-error
