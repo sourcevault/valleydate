@@ -1,33 +1,41 @@
-z            = console.log
+z                = console.log
 
-l            = console.log
+l                = console.log
 
-R            = require "ramda"
+R                = require "ramda"
 
-chalk        = require "chalk"
+chalk            = require "chalk"
 
-show-ob      = require "json-stringify-pretty-compact"
+hoplon           = require "hoplon"
 
-SI           = require "seamless-immutable"
+pretty-error     = require "pretty-error"
 
-sim          = require "seamless-immutable-mergers"
+jspc             = require "@aitodotai/json-stringify-pretty-compact"
 
-pretty-error = require "pretty-error"
+if (typeof window is "undefined") and (typeof module is "object")
 
-binapi       = require "binapi"
+  util = require "util"
 
-hoplon       = require "hoplon"
+  util_inspect_custom = util.inspect.custom
+
+else
+
+  util_inspect_custom = Symbol.for "nodejs.util.inspect.custom"
+
+j = (x) -> l jspc do
+  x
+  {
+    maxLength:30
+    margins:true
+  }
+
 
 module.exports =
   *z:z
+   j:j
    l:l
-   noop:->
-   chalk:chalk
-   binapi:binapi
-   hop:hoplon
-   SI:SI
-   j:(j)-> console.log show-ob j
    R:R
-   sim:sim
+   chalk:chalk
+   hop:hoplon
+   uic:util_inspect_custom
    pretty-error:pretty-error
-

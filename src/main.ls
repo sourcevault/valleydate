@@ -1,217 +1,533 @@
 reg = require "./registry"
 
-require "./print"
+require "./print" # [....]
 
-{com} = reg
+require "./tightloop" # [....]
 
-{z,l,SI,R,noop} = com
+# ------------------------------------------------------------------
 
-{binapi,hop} = com
+{com,print,pkgname,tightloop,already_created} = reg
 
-data = {}
+{z,l,R,hop,j,uic} = com
 
-data.dirty =
-  all:[]
-  type:null
-  continue:null
-  error:null
-  def:null
-  fix:null
-  state:\init
+init-state =
+  all     :[]
+  type    :null
+  cont    :null
+  err     :null
+  phase   :\init
+  str     :[]
 
-data.def = SI data.dirty
-
-V = {}
-
-map = {}
-
-map.basetype = ([prop]) !->
-
-  name = switch prop
-  | \obj,\object      => \obj
-  | \arr,\array       => \arr
-
-  if name then return [\struct,name]
-
-  name = switch prop
-  | \str,\string      => \str
-  | \null             => \null
-  | \num,\number      => \num
-  | \undef            => \undef
-  | \fun,\function    => \fun
-  | \bool,\boolean    => \bool
-
-  if name then return [\atom,name]
-
-map.ending = ([prop]) !->
-
-  unit = switch prop
-  | \fix              => \fix
-  | \err,\erro,\error => \erro
-  | \cont,\continue   => \cont
-
-  if unit then return [\ending,unit]
-
-map.router = ([prop]) !->
-
-  unit = switch prop
-  | \and      => \and
-  | \or       => \or
-  | \map      => \map
-  | \on       => \on
-
-  if unit then return [\router,unit]
-
-map.hepler = ([prop]) !->
-
-  prop = switch prop
-  | \req,\required        => \req
-  | \int,\integer         => \int
-  | \reqf,\required_fuzzy => \reqf
-
-  if prop then return [\helper,prop]
+# ------------------------------------------------------------------
 
 
-E = {} #entry
+loopError = ->
 
-E.V = {}
+  noop  = ->
+  apply = -> new Proxy(noop,{apply:apply,get:get})
+  get   = -> new Proxy(noop,{apply:apply,get:get})
 
-E.F = {} # functions
+  new Proxy(noop,{apply:apply,get:get})
 
-E.H = {}
+reg.loopError = loopError
 
-E.H.type =  hop
-.ma do
-  map.basetype
-  map.router
-  map.hepler
-  map.ending
-.def [\fault]
+# ------------------------------------------------------------------
 
-veri = {}
+define = {}
 
-veri.on = hop.arwh do
-  1,([user]) ->
-    switch R.type user
-    | \Object => []
-    | otherwise =>
-  noop
-.u
+# ------------------------------------------------------------------
 
-# veri.on = (user) ->
+cato = (arg) ->
+
+  switch R.type arg
+
+  | \Function =>
+
+    switch already_created.has arg
+    | false => [\f,arg]
+    | true  => [\s,arg]
+
+  | \Arguments =>
+
+    fun = []
+
+    for I from 0 til arg.length
+
+      F = arg[I]
+
+      block = switch already_created.has F
+
+      | false => [\f,F]
+      | true  => [\s,F]
+
+      fun.push block
+
+    fun
+
+define.base = (name) -> (UFO) ->
+
+  ut = R.type UFO
+
+  if (ut is name)
+
+    {continue:true,error:false,value:UFO}
+
+  else
+
+    str = R.toLower "not #{name}"
+
+    {error:true,continue:false,message:str,value:UFO}
 
 
-#   z user
+define.notbase = (name) -> (UFO) ->
 
-#   if not (user.length is 2)
-#     return [\fault,\arglen]
+  ut = R.type UFO
 
-#   [str,f] = user
+  if (ut is name)
+
+    str =  R.toLower "is #{name}"
+
+    {error:true,continue:false,message:str,value:UFO}
+
+  else
+
+    {continue:true,error:false,value:UFO}
 
 
-  # ar = []
+custom = hop
+.arn 1, -> print.route [[\fault \custom \arg_count]] ; loopError!
 
-  # switch R.type str
-  # | \String,\Number =>
+.whn do
 
-  #   ar.push '',str
+  (f) -> ((R.type f) is \Function)
 
-  # | \Array    =>
-  #   for I in str
-  #     switch R.type I
-  #     | \String,\Number =>
-  #       ar.push ['a',str]
-  #     | otherwise => return  [\fault,\first]
-  # | otherwise => return [\fault]
+  -> print.route [[\fault \custom \not_function]] ; loopError!
 
-  # switch typeof f
-  # | \function =>
-  #   ar.push f
-  # | otherwise => return [\fault,\second]
+.def (F) ->
 
-  # ['ok',user]
+  neo = Object.assign do
+    {}
+    init-state
+    {
+      type     :\custom
+      all      :[[(cato F)]]
+      phase    :\chain
+      str      :[pkgname]
+    }
 
-verify_f = (user) ->
+  define.forward \custom,neo
 
-  if not (user.length is 1)
-    return [\fault,\arglen]
 
-  switch typeof user[0]
-  | \function => return ['ok',user]
-  | otherwise => return [\fault,\first]
+main_wrap = (type,state) -> -> main type,state,arguments
 
-E.F.one = ([fname]) ->
+define.forward = (type,neo,fun)->
 
-  ret = E.H.type fname
+  if fun
 
-  [type]  = ret
+    forward       = fun
+
+  else
+
+    forward       = tightloop neo
+
+  forward[uic]    = print.log
+
+  forward.and     = main_wrap \and,neo
+
+  forward.or      = main_wrap \or,neo
+
+  forward.cont    = main_wrap \cont,neo
+
+  forward.jam     = main_wrap \jam,neo
+
+  forward.fix     = main_wrap \fix,neo
+
+  forward.err     = main_wrap \err,neo
+
+  if type in [\obj,\arr]
+
+    forward.map   = main_wrap \map,neo
+
+    forward.on    = main_wrap \on,neo
+
+  already_created.add forward
+
+  forward
+
+# ------------------------------------------------------------------
+
+define.and = (state,funs) ->
+
+  all = state.all
+
+  switch (all.length%2)
+  | 0 =>
+
+    all.concat [funs]
+
+  | 1 =>
+
+    last = R.last all
+
+    init = R.init all
+
+    nlast = [...last,...funs]
+
+    block = [...init,nlast]
+
+    block
+
+
+define.or = (state,funs) ->
+
+  all = state.all
+
+  switch (all.length%2)
+  | 0 =>
+
+    last = R.last all
+
+    init = R.init all
+
+    nlast = [...last,...funs]
+
+    block = [...init,nlast]
+
+    block
+
+  | 1 =>
+
+    all.concat [funs]
+
+# ------------------------------------------------------------------
+
+
+verify_on = hop
+.arn [1,2],[\fault \on \arg_count]
+.arma do
+  1
+  (maybe-object) ->
+
+    if ((R.type maybe-object) is \Object)
+
+      for I,val of maybe-object
+
+        if not ((R.type val) is \Function)
+
+          return [\fault \on \object \not_function]
+
+      return [\object]
+
+    else
+
+      false
+
+.arma do
+  2
+  (maybe-array,maybe-function)->
+
+    if ((R.type maybe-array) is \Array)
+
+      for I in maybe-array
+
+        if not ((R.type I) is \String)
+
+          return [\fault \on \array]
+
+      if not ((R.type maybe-function) is \Function)
+
+          return [\fault \on \array]
+
+      return [\array]
+
+    else
+
+      return false
+
+  (maybe-string,maybe-function) ->
+
+    if not ((R.type maybe-string) is \String)
+
+      return false
+
+    if not ((R.type maybe-function) is \Function)
+
+      return [\fault \on \string]
+
+    return [\string]
+
+.def [\fault \on \typeError]
+
+define.on = (type,state,args) ->
 
   switch type
+  | \array =>
 
-  | \router   => [\fault,[\one,\is_router]]
-  | \ending   => [\fault,[\one,\is_ending]]
-  | \fault    => [\fault,[\one,\is_unknown]]
-  | otherwise => [\re,ret]
+    [props,F] = args
 
-E.F.two = ([base,unit],user)->
+    put = [\on,[\array,[(R.uniq props),...(cato F)]]]
 
-  ret = E.H.type base
+  | \string =>
 
-  [baseT,bName] = ret
+    [key,F] = args
 
-  switch baseT
-  | \router,\ending   => return [\fault,[\two.base,baseT]]
-  | \fault            => return [\fault,[\two.base,\is_unknown]]
+    put = [\on,[\string,[key,...(cato F)]]]
 
-  ret = E.H.type unit
+    put
 
-  [unitT,uName] = ret
+  | \object =>
 
-  switch unitT
-  | \fault                 => return [\fault,[\two.unit,\unknown]]
-  | \atom,\struct,\hepler  => return [\fault,[\two.unit,unitT]]
+    [ob] = args
 
-  switch uName
-  | \map,\on =>
-    switch baseT
-    | \atom   => return [\fault,[\two.map_on_atom]]
+    fun   = [[key,...(cato val)] for key,val of ob]
+
+    put = [\on,[\object,fun]]
 
 
-  ret = switch uName
-  | \on       => veri.on user
-  # | otherwise => verify_f user
-
-  # [cont,data] = ret
-
-  # z return/
-
-  # switch cont
-  # | \fault => return [\fault,"two.input.#{arg}"]
+  block = define.and state,[put]
 
 
-  # return [\base.chain,[bName,uName,data]]
-
-E.F.path = ([p,ar]) ->
-
-  switch p.length
-  | 1 => E.F.one p
-  | 2 => E.F.two p,ar
-  | otherwise =>  [\fault,\path_too_long]
-
-
-
-E.main = hop.wh do
-  ([p,ar,d]) -> d.state is \init
-  E.F.path
-
-be = binapi E.main,data.def
+  neo = Object.assign do
+    {}
+    state
+    {
+      phase :\chain
+      all   :block
+      str   :state.str.concat \on
+    }
 
 
-be.obj.on do
-  \foo,->
-  \bar,->
+  define.forward state.type,neo
 
-be.obj.on {foo:->,bar:->}
 
-be.obj.on [\foo,\bar],->
+main = hop
+.wh do
 
+  (type,state,args) -> (type in [\cont,\jam]) and (state.phase is \chain)
+
+  (type,state,[f]) ->
+
+    neo = Object.assign do
+      {}
+      state
+      {
+        phase:\end
+        cont:[type,f]
+        str:state.str.concat type
+      }
+
+    forward      = tightloop neo
+
+    forward.fix  = main_wrap \fix,neo
+
+    forward.err  = main_wrap \err,neo
+
+    forward[uic] = print.log
+
+    already_created.add forward
+
+    forward
+
+.wh do
+
+  (type,state,args) -> (type in [\err,\fix]) and (state.phase is \chain)
+
+  (type,state,[f]) ->
+
+    neo = Object.assign do
+      {}
+      state
+      {
+        phase:\end
+        str:state.str.concat type
+      }
+
+    neo.err       = [type,f]
+
+    forward       = tightloop neo
+
+    forward.cont  = main_wrap \cont,neo
+
+    forward.jam  = main_wrap \jam,neo
+
+    forward[uic]    = print.log
+
+    already_created.add forward
+
+    forward
+
+
+.wh do
+
+  (type,state,args) -> state.phase is \end
+
+  (type,state,[f]) ->
+
+    neo = Object.assign state,{}
+
+    switch type
+
+    | \err,\fix =>
+
+      neo.err = [type,f]
+
+    | \cont,\jam =>
+
+      neo.cont = [type,f]
+
+    F = tightloop neo
+
+    already_created.add F
+
+    F
+
+.wh do
+  (type) -> type is \on
+
+  (type,state,args) ->
+
+    patt = verify_on ...args
+
+    [type] = patt
+
+    switch type
+    | \fault =>
+
+      print.route [patt,[state.str,\on]]
+
+      return loopError!
+
+    define.on type,state,args
+
+.wh do
+
+  (type,state,funs) ->
+
+    switch type
+    | \and \or  =>
+
+      for F in funs
+
+        if not ((R.type F) is \Function)
+
+          print.route [[\fault , type , \not_function],[state.str,type]]
+
+          false
+
+      true
+
+    | \map      =>
+
+      if not (funs.length is 1)
+
+        print.route [[\fault,type,\arg_count],[state.str,type]]
+
+        return false
+
+      [f] = funs
+
+      if not ((R.type f) is \Function)
+
+        print.route [[\fault,type,\not_function],[state.str,type]]
+
+        return false
+
+      return true
+
+    | otherwise => return false
+
+
+  (type,state,args) ->
+
+    # ----------------------------------
+
+    funs = cato args
+
+    block = switch type
+    | \and => define.and state,funs
+    | \or  => define.or state,funs
+    | \map => define.and state,[[\map,funs[0]]]
+
+
+    neo = Object.assign do
+      {}
+      state
+      {
+        phase :\chain
+        all   :block
+        str   :state.str.concat type
+      }
+
+    define.forward state.type,neo
+
+
+.def loopError
+
+# ------------------------------------------------------------------
+
+props =
+  [\obj \Object]
+  [\arr \Array]
+  [\undef \Undefined]
+  [\null \Null]
+  [\num \Number]
+  [\str \String]
+  [\fun \Function]
+
+boot = ->
+
+  for [name,type] in props
+
+    F = define.base type
+
+    already_created.add F
+
+    neo = Object.assign do
+        {}
+        init-state
+        {
+          type:name
+          all:[[[\s,F]]]
+          phase:\chain
+          str:[name]
+        }
+
+    define.forward name,neo,F
+
+    custom[name] = F
+
+
+  # -------------------------------
+
+  custom.not = {}
+
+  # -------------------------------
+
+  for [name,type] in props
+
+    F = define.notbase type
+
+    already_created.add F
+
+    neo = Object.assign do
+        {}
+        init-state
+        {
+          type:name
+          all:[[[\s,F]]]
+          phase:\chain
+          str:[name]
+        }
+
+    define.forward name,neo,F
+
+    custom.not[name] = F
+
+
+  custom
+
+reg.pkg = boot!
+
+require "./helper" # [....]
+
+module.exports = reg.pkg
