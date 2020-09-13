@@ -10,9 +10,7 @@ npm install valleydate
 npm install sourcevault/valleydate#dist
 ```
 
-[![Build Status](https://travis-ci.org/sourcevault/valleydate.svg?branch=test)](https://travis-ci.org/sourcevault/valleydate)
-
-
+[![Build Status](https://travis-ci.org/sourcevault/valleydate.svg?branch=dev)](https://travis-ci.org/sourcevault/valleydate)
 
 valleydate is a functional approach to schema validation that puts composability and extensibility as it's core feature.
 1. [Introduction](#introduction)
@@ -22,8 +20,10 @@ valleydate is a functional approach to schema validation that puts composability
       - [or](#--or)
       - [map](#--map)
       - [on](#--on)
-      - [continue and error](#--continue-and-error)
+      - [cont](#--cont)
       - [fix](#--fix)
+      - [err](#--err)
+      - [jam](#--fix)
 1. [Creating Custom Validators](#creating-custom-validators)
 1. [Helper Validators](#helper-validators)
       - [required](#helper-validators)
@@ -57,13 +57,13 @@ console.log(V({foo:1}))
 var IS = require("valleydate")
 
 var address = IS.required("city","country")
-.on("city",IS.string)
-.on("country",IS.string)
+.on("city",IS.str)
+.on("country",IS.str)
 
 var V = IS.required("address","name","age")
 .on("address",address)
-.on("name",IS.string)
-.on("age",IS.number)
+.on("name",IS.str)
+.on("age",IS.num)
 
 
 var sample =
@@ -88,7 +88,22 @@ console.log(V(sample))
 }*/
 ```
 
+🟢 Table 1 - words have been shortened, table provided to avoid confusion, the first listing shows which methods correspondence to which type check.
 
+```
+SHORTHANDS     ..FOR
+-------------------------------
+obj            Object
+arr            Array
+undef          Undefined
+null           Null
+num            Number
+str            String
+fun            Function
+-------------------------------
+cont           continue
+err            error
+```
 
 #### Introduction
 ***.. why another schema validator ?***
@@ -101,7 +116,7 @@ console.log(V(sample))
 
 We start by defining our basetypes:
 
-- `number`,`array`,`string`,`null`,`undefined`,`object` and `function`.
+- `num`,`arr`,`str`,`null`,`undef`,`obj` and `fun`.
 
 .. then chainable units :
 
@@ -109,41 +124,30 @@ We start by defining our basetypes:
 
 .. and finally consumption units :
 
-- `continue`, `error` and `fix`.
+- `cont`,`jam`, `err` and `fix`.
 
-🧡 **API shorthand**
-
-- Can be used to reduce the need to type longer method names.
-
-```
-|                 basetype                    |  consumption unit   |
-|---------------------------------------------|---------------------|
-|number|array|string|undefined|object|function|  continue  | error  |
-|------|-----|------|---------|------|--------|------------|--------|
-|  num | arr | str  |  undef  | obj  |  fun   |  con/cont  |  err   |
-```
 
 #### Initializing Validator
 
 Each validator chain starts with a *basetype*.
 
 ```js
-var V = IS.number
+var V = IS.num
 V(1) // {continue: true, error: false, value:1}
 ```
 
 ```js
-var V = IS.object
+var V = IS.obj
 V({}) // {continue: true, error: false, value:{}}
 ```
 
 ```js
-var V = IS.array
+var V = IS.arr
 V([]) // {continue: true, error: false, value:[]}
 ```
 
 ```js
-var V = IS.object
+var V = IS.obj
 V([]) // {continue: false, error: true, message:"not an array",path:[]}
 ```
 
@@ -181,7 +185,7 @@ var valG7 = function(s){
    return [false,"not in G7"]
   }
 }
-var isG7 = IS.string.and(valG7)
+var isG7 = IS.str.and(valG7)
 
 isG7("UK")
 
@@ -206,9 +210,8 @@ isG7("Spain")
 - a useful example would be accepting a single string or multiple strings in an array to define ipaddress to use in an application.
 
 ```js
-var canbeIP = IS.string.or(IS.array.map(IS.string))
+var canbeIP = IS.str.or(IS.arr.map(IS.str))
 ```
-
 
 ### - `map`
 
@@ -218,21 +221,20 @@ var canbeIP = IS.string.or(IS.array.map(IS.string))
 
 - an example of this would be an object of names with age.
 
-  ```js
-    var example = {
-    "adam":22,
-    "charles":35,
-    "henry":30,
-    "joe":24
-    }
-  ```
+```js
+var example = {
+  "adam":22,
+  "charles":35,
+  "henry":30,
+  "joe":24
+}
+```
 
-  A validator for it would look something like this :
+A validator for it would look something like this :
 
-  ```js
-  var ratifydata = IS.object.map(IS.number);
-  ```
-
+```js
+var ratifydata = IS.obj.map(IS.num);
+```
 
 ### - `on`
 
@@ -244,20 +246,36 @@ var canbeIP = IS.string.or(IS.array.map(IS.string))
 
 ```js
 
-var V = IS.object.on({foo:IS.number,bar:IS.number})
+
+var V = IS.obj
+.on("foo",IS.num)
+.on("bar",IS.num)
 
 V((foo:1,bar:2))
+
+// Also ...
+
+var V1 = IS.obj.on({foo:IS.num,bar:IS.num})
+
+V1((foo:1,bar:2))
+
+// Also ...
+
+var V2 = IS.obj.on(["foo","bar"],IS.num)
+
+V2((foo:1,bar:2))
+
 ```
 
-### - `continue` and `error`
+### - `cont`
 
 - accepts functions that run based on output of validation.
 
 - After validating some data, it needs to be consumed ( if valid ) or throw an error.
 
-- `.continue` and `.error` are consumption unit function that can be used to do just that.
+- `.cont`,`jam`,`fix` and `err` are consumption unit function that can be used to do just that.
 
-- return value of consumption units are important, they replace final `.value` of output.
+- return value of consumption units are important, they replace some parts of return object.
 
 using the IP example from above :
 
@@ -267,24 +285,24 @@ var sendData = function(data){...}
 var data = ["209.85.231.104","207.46.170.123"]
 
 var V = canbeIP
-.continue(sendDate) // <-- only this is called as data is valid
-.error(console.log)
+.cont(sendDate) // <-- only this is called as data is valid
+.err(console.log)
 
 ```
 
-🟡 `.continue` can be used to making values **consistent**, using the IP address validator from above :
+🟡 `.cont` can be used to making values **consistent**, using the IP address validator from above :
 
 
 ```js
 IS = require("valleydate")
 
-var canbeIP = IS.array.map(IS.string)
-.or(IS.string.cont (x) => [x]) // <-- we want string to go inside an array
+var canbeIP = IS.arr.map(IS.str)
+.or(IS.str.cont (x) => [x]) // <-- we want string to go inside an array
 // so we do not have to do extra prcessing downstream.
 
 var ret = canbeIP("209.85.231.104")
 
-console.log (ret)
+console.log(ret)
 //{ error: false, continue: true, value: [ '209.85.231.104' ] } <-- value is an array.
 ```
 
@@ -297,14 +315,27 @@ console.log (ret)
 ```js
 IS = require("valleydate")
 
-var canbeIP = IS.array.map(IS.string)
-.or(IS.string.continue (x) => [x])
+var canbeIP = IS.arr.map(IS.str)
+.or(IS.string.cont((x) => [x]))
 .fix(["127.0.0.1"])
 
 var ret = canbeIP(null)
 
-console.log (ret) // ["127.0.0.1"]
+console.log(ret) // ["127.0.0.1"]
 ```
+
+### - `err`
+
+- When validation fails, callback provided to `.err` is invoked.
+
+- The return value of `.err` replaces the `.error` message to be sent upstream.
+
+### - `jam`
+
+- `jam` allows to "jam" (raise an error) within a validation chain.
+
+- The return value of `.jam` replaces the `.error` message to be sent upstream.
+
 
 #### Creating Custom Validators
 
@@ -328,11 +359,11 @@ else {return [false,"not a valid email address"] }
 var isEmail = IS(simpleEmail)
 // isEmail is now a valleydate validator which means it gets
 
-// .and, .or, .continue, .error and .fix methods.
+// .and, .or, .cont, .err , .jam and .fix methods.
 
 isEmail.and
 isEmail.or
-isEmail.continue
+isEmail.cont
 ```
 
 #### Helper Validators
@@ -341,28 +372,22 @@ Some validators are common enough to be added in core.
 
 - `required` - accepts a list of strings and checks if they are present as keys in an object.
 
-- `integer` - checks if input is a integer.
+- `int` - checks if input is a integer.
 
-🟡 using `IS.integer` :
+🟡 using `IS.int` :
 
 ```js
 IS = require("valleydate")
 
-IS.integer(2) // { continue: true, error: false, value: 1 }
+IS.int(2) // { continue: true, error: false, value: 1 }
 
-IS.integer(-1.1) // { continue: false, error: true, message: [ 'not an integer' ] }
+IS.int(-1.1) // { continue: false, error: true, message: [ 'not an integer' ] }
 
-IS.integer(2.1) // { continue: false, error: true, message: [ 'not an integer' ] }
+IS.int(2.1) // { continue: false, error: true, message: [ 'not an integer' ] }
 ```
 
 ## LICENCE
 
-- Code released under MIT Licence, see [LICENSE](https://github.com/sourcevault/valleydate/blob/test/LICENCE) for details.
+- Code released under MIT Licence, see [LICENSE](https://github.com/sourcevault/valleydate/blob/dev/LICENCE) for details.
 
-- Documentation and Images released under CC-BY-4.0 see [LICENSE](https://github.com/sourcevault/valleydate/blob/test/LICENCE1) for details.
-
-
-
-
-
-
+- Documentation and Images released under CC-BY-4.0 see [LICENSE](https://github.com/sourcevault/valleydate/blob/dev/LICENCE1) for details.
