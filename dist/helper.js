@@ -37,7 +37,7 @@
     for (i$ = 0, len$ = args.length; i$ < len$; ++i$) {
       key = args[i$];
       if (!((ref$ = R.type(key)) === 'String' || ref$ === 'Number')) {
-        print.route([['required_input']]);
+        print.route(['required_input']);
         return true;
       }
     }

@@ -5,33 +5,29 @@ homepage: https://github.com/sourcevault/valleydate#readme.md
 license: MIT
 description: immutable object validator
 repository: https://github.com/sourcevault/valleydate.git
-version: 0.0.4
+version: 0.0.42
 main: dist/main.js
 scripts:
   "test": "make travis"
 dependencies:
-  seamless-immutable: "7.1.4"
   ramda: "0.26.1"
-  chalk: "2.4.2"
-  json-stringify-pretty-compact: "2.0.0"
-  seamless-immutable-mergers: "7.1.0"
-  traverse: "0.6.6"
-  at-line: "1.0.0"
   pretty-error: "2.1.1"
   hoplon: "*"
-  color-json: "2.0.1"
   "@aitodotai/json-stringify-pretty-compact": "*"
+  cli-color: "2.0.0"
 keywords:
-  - "schema-validator"
+  - "schema"
   - "validator"
+  - "JSON"
+  - "schema-validator"
+  - "json-schema-validator"
+  - "validate"
   - "simple"
   - "type-check"
   - "types"
   - "objects"
-  - "JSON"
   - "monadic"
   - "functional"
-  - "validate"
   - "Array"
   - "error-messages"
   - "mostjs"

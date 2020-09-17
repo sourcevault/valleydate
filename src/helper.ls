@@ -61,7 +61,7 @@ pkg.required = hop
 
       if not ((R.type key) in [\String \Number])
 
-        print.route [[\required_input]]
+        print.route [\required_input]
 
         return true
 

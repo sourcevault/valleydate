@@ -12,12 +12,7 @@ be = valleydate
 
 T = (x) -> true
 
-F = (x) ->
-
-  if (x is \world)
-    return [false,\foo]
-  else
-    return true
+F = (x)  -> [false,\foobar]
 
 # put = V do
 #   {
@@ -25,4 +20,17 @@ F = (x) ->
 #       bar:\world
 #     }
 #   }
+
+
+
+V = be.arr.map be.str
+.or be.str
+.and F
+
+
+ret = V null
+
+
+if not (ret.message is "not string")
+  p!
 

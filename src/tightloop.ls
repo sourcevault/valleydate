@@ -255,7 +255,13 @@ reg.tightloop = (state) -> (x) !->
           break
 
         J += 1
+
       while J < each.length
+
+      if put.continue
+        I += 2
+      else
+        I += 1
 
     | 1 =>
 
@@ -266,12 +272,15 @@ reg.tightloop = (state) -> (x) !->
         put = settle each[J],x,type
 
         if put.continue
-          return put
+          break
 
         J += 1
       while J < each.length
 
-    I += 1
+      if put.continue
+        I += 1
+      else
+        return put
 
   while I < nI
 

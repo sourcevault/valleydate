@@ -4,9 +4,9 @@ l                = console.log
 
 R                = require "ramda"
 
-chalk            = require "chalk"
-
 hoplon           = require "hoplon"
+
+cc               = require "cli-color"
 
 pretty-error     = require "pretty-error"
 
@@ -29,12 +29,13 @@ j = (x) -> l jspc do
     margins:true
   }
 
+
 module.exports =
   *z:z
    j:j
    l:l
    R:R
-   chalk:chalk
+   cc:cc
    hop:hoplon
    uic:util_inspect_custom
    pretty-error:pretty-error

@@ -95,13 +95,13 @@ define.notbase = (name) -> (UFO) ->
 
 
 custom = hop
-.arn 1, -> print.route [[\fault \custom \arg_count]] ; loopError!
+.arn 1, -> print.route [\input.fault [\custom [\arg_count]]] ; loopError!
 
 .whn do
 
   (f) -> ((R.type f) is \Function)
 
-  -> print.route [[\fault \custom \not_function]] ; loopError!
+  -> print.route [\input.fault [\custom [\not_function]]] ; loopError!
 
 .def (F) ->
 
@@ -116,7 +116,6 @@ custom = hop
     }
 
   define.forward \custom,neo
-
 
 main_wrap = (type,state) -> -> main type,state,arguments
 
@@ -202,11 +201,13 @@ define.or = (state,funs) ->
 # ------------------------------------------------------------------
 
 
-verify_on = hop
-.arn [1,2],[\fault \on \arg_count]
+verify_on = hop.unary
+
+.arn [1,2],(args,state) -> [\input.fault [\on [\arg_count,[state.str,\on]]]]
+
 .arma do
   1
-  (maybe-object) ->
+  ([maybe-object],state) ->
 
     if ((R.type maybe-object) is \Object)
 
@@ -214,7 +215,7 @@ verify_on = hop
 
         if not ((R.type val) is \Function)
 
-          return [\fault \on \object \not_function]
+          return [\input.fault [\on [\object,[state.str,\on]]]]
 
       return [\object]
 
@@ -224,7 +225,7 @@ verify_on = hop
 
 .arma do
   2
-  (maybe-array,maybe-function)->
+  ([maybe-array,maybe-function],state)->
 
     if ((R.type maybe-array) is \Array)
 
@@ -232,11 +233,11 @@ verify_on = hop
 
         if not ((R.type I) is \String)
 
-          return [\fault \on \array]
+          return [\input.fault [\on [\array ,[state.str,\on]]]]
 
       if not ((R.type maybe-function) is \Function)
 
-          return [\fault \on \array]
+          return [\input.fault [\on [\array,[state.str,\on]]]]
 
       return [\array]
 
@@ -244,7 +245,7 @@ verify_on = hop
 
       return false
 
-  (maybe-string,maybe-function) ->
+  ([maybe-string,maybe-function],state) ->
 
     if not ((R.type maybe-string) is \String)
 
@@ -252,11 +253,11 @@ verify_on = hop
 
     if not ((R.type maybe-function) is \Function)
 
-      return [\fault \on \string]
+      return [\input.fault [\on [\string,[state.str,\on]]]]
 
     return [\string]
 
-.def [\fault \on \typeError]
+.def (args,state)-> [\input.fault [\on [\typeError,[state.str,\on]]]]
 
 define.on = (type,state,args) ->
 
@@ -386,14 +387,14 @@ main = hop
 
   (type,state,args) ->
 
-    patt = verify_on ...args
+    patt = verify_on args,state
 
     [type] = patt
 
     switch type
-    | \fault =>
+    | \input.fault =>
 
-      print.route [patt,[state.str,\on]]
+      print.route patt
 
       return loopError!
 
@@ -406,11 +407,17 @@ main = hop
     switch type
     | \and \or  =>
 
+      if (funs.length is 0)
+
+        print.route [\input.fault,[type,[\arg_count,[state.str,type]]]]
+
+        return false
+
       for F in funs
 
         if not ((R.type F) is \Function)
 
-          print.route [[\fault , type , \not_function],[state.str,type]]
+          print.route [\input.fault,[type,[\not_function,[state.str,type]]]]
 
           false
 
@@ -420,7 +427,7 @@ main = hop
 
       if not (funs.length is 1)
 
-        print.route [[\fault,type,\arg_count],[state.str,type]]
+        print.route [\input.fault,[type,[\arg_count,[state.str,type]]]]
 
         return false
 
@@ -428,7 +435,7 @@ main = hop
 
       if not ((R.type f) is \Function)
 
-        print.route [[\fault,type,\not_function],[state.str,type]]
+        print.route [\input.fault,[type,[\not_function,[state.str,type]]]]
 
         return false
 
