@@ -293,7 +293,7 @@ reg.tightloop = (state) -> (x) !->
     | \jam  =>
 
       plant = switch typeof cont
-      | \function => cont put.value
+      | \function => cont put
       | otherwise => cont
 
       return {continue:false,error:true,value:put.value,message:plant}
@@ -314,7 +314,7 @@ reg.tightloop = (state) -> (x) !->
     | \fix =>
 
       pin = switch typeof F
-      | \function => F put.value
+      | \function => F put.value,put.path
       | otherwise => F
 
       return {continue:true,error:false,value:pin}

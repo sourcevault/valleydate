@@ -5,7 +5,7 @@ homepage: https://github.com/sourcevault/valleydate#readme.md
 license: lgpl-3.0
 description: immutable object validator
 repository: https://github.com/sourcevault/valleydate.git
-version: 0.0.43
+version: 0.0.44
 main: dist/main.js
 scripts:
   "test": "make travis"

@@ -299,7 +299,7 @@
           plant = (function(){
             switch (typeof cont) {
             case 'function':
-              return cont(put.value);
+              return cont(put);
             default:
               return cont;
             }
@@ -332,7 +332,7 @@
           pin = (function(){
             switch (typeof F) {
             case 'function':
-              return F(put.value);
+              return F(put.value, put.path);
             default:
               return F;
             }
