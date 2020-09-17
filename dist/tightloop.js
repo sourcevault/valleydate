@@ -281,15 +281,11 @@
           do {
             put = settle(each[J], x, type);
             if (put['continue']) {
-              break;
+              return put;
             }
             J += 1;
           } while (J < each.length);
-          if (put['continue']) {
-            I += 1;
-          } else {
-            return put;
-          }
+          return put;
         }
       } while (I < nI);
       if (put['continue'] && state.cont) {
