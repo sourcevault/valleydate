@@ -480,6 +480,7 @@ props =
   [\num \Number]
   [\str \String]
   [\fun \Function]
+  [\bool \Boolean]
 
 boot = ->
 
@@ -502,34 +503,6 @@ boot = ->
     define.forward name,neo,F
 
     custom[name] = F
-
-
-  # -------------------------------
-
-  custom.not = {}
-
-  # -------------------------------
-
-  for [name,type] in props
-
-    F = define.notbase type
-
-    already_created.add F
-
-    neo = Object.assign do
-        {}
-        init-state
-        {
-          type:name
-          all:[[[\s,F]]]
-          phase:\chain
-          str:[name]
-        }
-
-    define.forward name,neo,F
-
-    custom.not[name] = F
-
 
   custom
 

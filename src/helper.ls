@@ -2,11 +2,15 @@ reg = require "./registry"
 
 {com,pkg,loopError,print} = reg
 
+{already_created} = reg
+
 {z,l,R,j,hop} = com
 
 be = pkg
 
 internal = {}
+
+#--------------------------------------------------------
 
 internal.integer = (val) ->
 
@@ -24,6 +28,21 @@ internal.integer = (val) ->
 pkg.int = pkg.num.and internal.integer
 
 #--------------------------------------------------------
+
+internal.boolnum = (val) ->
+
+  if ((R.type val) in [\Boolean \Number])
+
+    return [true]
+
+  else
+
+    return [false,"not a number or boolean"]
+
+#--------------------------------------------------------
+
+pkg.boolnum     = pkg internal.boolnum
+
 
 internal.required = (props) -> (val) ->
 
@@ -44,7 +63,7 @@ internal.required = (props) -> (val) ->
 
     I += 1
 
-  return true
+  return [true]
 
 #--------------------------------------------------------
 
