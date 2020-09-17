@@ -6,7 +6,7 @@
   "license": "lgpl-3.0",
   "description": "immutable object validator",
   "repository": "https://github.com/sourcevault/valleydate.git",
-  "version": "0.0.44",
+  "version": "0.0.45",
   "main": "dist/main.js",
   "scripts": {
     "test": "make travis"

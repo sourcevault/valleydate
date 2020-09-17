@@ -369,7 +369,7 @@
     });
     return define.forward(state.type, neo);
   }).def(loopError);
-  props = [['obj', 'Object'], ['arr', 'Array'], ['undef', 'Undefined'], ['null', 'Null'], ['num', 'Number'], ['str', 'String'], ['fun', 'Function']];
+  props = [['obj', 'Object'], ['arr', 'Array'], ['undef', 'Undefined'], ['null', 'Null'], ['num', 'Number'], ['str', 'String'], ['fun', 'Function'], ['bool', 'Boolean']];
   boot = function(){
     var i$, ref$, len$, ref1$, name, type, F, neo;
     for (i$ = 0, len$ = (ref$ = props).length; i$ < len$; ++i$) {
@@ -384,20 +384,6 @@
       });
       define.forward(name, neo, F);
       custom[name] = F;
-    }
-    custom.not = {};
-    for (i$ = 0, len$ = (ref$ = props).length; i$ < len$; ++i$) {
-      ref1$ = ref$[i$], name = ref1$[0], type = ref1$[1];
-      F = define.notbase(type);
-      already_created.add(F);
-      neo = Object.assign({}, initState, {
-        type: name,
-        all: [[['s', F]]],
-        phase: 'chain',
-        str: [name]
-      });
-      define.forward(name, neo, F);
-      custom.not[name] = F;
     }
     return custom;
   };

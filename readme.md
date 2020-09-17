@@ -23,11 +23,12 @@ valleydate is a functional approach to schema validation that puts composability
       - [cont](#--cont)
       - [fix](#--fix)
       - [err](#--err)
-      - [jam](#--fix)
+      - [jam](#--jam)
 1. [Creating Custom Validators](#creating-custom-validators)
 1. [Helper Validators](#helper-validators)
       - [required](#helper-validators)
       - [integer](#helper-validators)
+
 
 .. **quick examples** ..
 
@@ -96,6 +97,7 @@ SHORTHANDS     ..FOR
 obj            Object
 arr            Array
 undef          Undefined
+bool           Boolean
 null           Null
 num            Number
 str            String
@@ -116,7 +118,7 @@ err            error
 
 We start by defining our basetypes:
 
-- `num`,`arr`,`str`,`null`,`undef`,`obj` and `fun`.
+- `num`,`arr`,`str`,`null`,`bool`,`undef`,`obj` and `fun`.
 
 .. then chainable units :
 
