@@ -270,18 +270,27 @@
             }
             J += 1;
           } while (J < each.length);
+          if (put['continue']) {
+            I += 2;
+          } else {
+            I += 1;
+          }
           break;
         case 1:
           J = 0;
           do {
             put = settle(each[J], x, type);
             if (put['continue']) {
-              return put;
+              break;
             }
             J += 1;
           } while (J < each.length);
+          if (put['continue']) {
+            I += 1;
+          } else {
+            return put;
+          }
         }
-        I += 1;
       } while (I < nI);
       if (put['continue'] && state.cont) {
         ref$ = state.cont, patt = ref$[0], cont = ref$[1];

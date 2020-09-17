@@ -109,12 +109,12 @@
     };
   };
   custom = hop.arn(1, function(){
-    print.route([['fault', 'custom', 'arg_count']]);
+    print.route(['input.fault', ['custom', ['arg_count']]]);
     return loopError();
   }).whn(function(f){
     return R.type(f) === 'Function';
   }, function(){
-    print.route([['fault', 'custom', 'not_function']]);
+    print.route(['input.fault', ['custom', ['not_function']]]);
     return loopError();
   }).def(function(F){
     var neo;
@@ -180,44 +180,52 @@
       return all.concat([funs]);
     }
   };
-  verify_on = hop.arn([1, 2], ['fault', 'on', 'arg_count']).arma(1, function(maybeObject){
-    var I, val;
+  verify_on = hop.unary.arn([1, 2], function(args, state){
+    return ['input.fault', ['on', ['arg_count', [state.str, 'on']]]];
+  }).arma(1, function(arg$, state){
+    var maybeObject, I, val;
+    maybeObject = arg$[0];
     if (R.type(maybeObject) === 'Object') {
       for (I in maybeObject) {
         val = maybeObject[I];
         if (!(R.type(val) === 'Function')) {
-          return ['fault', 'on', 'object', 'not_function'];
+          return ['input.fault', ['on', ['object', [state.str, 'on']]]];
         }
       }
       return ['object'];
     } else {
       return false;
     }
-  }).arma(2, function(maybeArray, maybeFunction){
-    var i$, len$, I;
+  }).arma(2, function(arg$, state){
+    var maybeArray, maybeFunction, i$, len$, I;
+    maybeArray = arg$[0], maybeFunction = arg$[1];
     if (R.type(maybeArray) === 'Array') {
       for (i$ = 0, len$ = maybeArray.length; i$ < len$; ++i$) {
         I = maybeArray[i$];
         if (!(R.type(I) === 'String')) {
-          return ['fault', 'on', 'array'];
+          return ['input.fault', ['on', ['array', [state.str, 'on']]]];
         }
       }
       if (!(R.type(maybeFunction) === 'Function')) {
-        return ['fault', 'on', 'array'];
+        return ['input.fault', ['on', ['array', [state.str, 'on']]]];
       }
       return ['array'];
     } else {
       return false;
     }
-  }, function(maybeString, maybeFunction){
+  }, function(arg$, state){
+    var maybeString, maybeFunction;
+    maybeString = arg$[0], maybeFunction = arg$[1];
     if (!(R.type(maybeString) === 'String')) {
       return false;
     }
     if (!(R.type(maybeFunction) === 'Function')) {
-      return ['fault', 'on', 'string'];
+      return ['input.fault', ['on', ['string', [state.str, 'on']]]];
     }
     return ['string'];
-  }).def(['fault', 'on', 'typeError']);
+  }).def(function(args, state){
+    return ['input.fault', ['on', ['typeError', [state.str, 'on']]]];
+  });
   define.on = function(type, state, args){
     var props, F, put, key, ob, fun, res$, val, block, neo;
     switch (type) {
@@ -302,11 +310,11 @@
     return type === 'on';
   }, function(type, state, args){
     var patt;
-    patt = verify_on.apply(null, args);
+    patt = verify_on(args, state);
     type = patt[0];
     switch (type) {
-    case 'fault':
-      print.route([patt, [state.str, 'on']]);
+    case 'input.fault':
+      print.route(patt);
       return loopError();
     }
     return define.on(type, state, args);
@@ -315,22 +323,26 @@
     switch (type) {
     case 'and':
     case 'or':
+      if (funs.length === 0) {
+        print.route(['input.fault', [type, ['arg_count', [state.str, type]]]]);
+        return false;
+      }
       for (i$ = 0, len$ = funs.length; i$ < len$; ++i$) {
         F = funs[i$];
         if (!(R.type(F) === 'Function')) {
-          print.route([['fault', type, 'not_function'], [state.str, type]]);
+          print.route(['input.fault', [type, ['not_function', [state.str, type]]]]);
           false;
         }
       }
       return true;
     case 'map':
       if (!(funs.length === 1)) {
-        print.route([['fault', type, 'arg_count'], [state.str, type]]);
+        print.route(['input.fault', [type, ['arg_count', [state.str, type]]]]);
         return false;
       }
       f = funs[0];
       if (!(R.type(f) === 'Function')) {
-        print.route([['fault', type, 'not_function'], [state.str, type]]);
+        print.route(['input.fault', [type, ['not_function', [state.str, type]]]]);
         return false;
       }
       return true;

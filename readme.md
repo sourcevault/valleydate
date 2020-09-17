@@ -388,6 +388,7 @@ IS.int(2.1) // { continue: false, error: true, message: [ 'not an integer' ] }
 
 ## LICENCE
 
-- Code released under MIT Licence, see [LICENSE](https://github.com/sourcevault/valleydate/blob/dev/LICENCE) for details.
-
-- Documentation and Images released under CC-BY-4.0 see [LICENSE](https://github.com/sourcevault/valleydate/blob/dev/LICENCE1) for details.
+- Code released under lgpl-3.0 Licence.
+- Documentation and images released under CC BY-NC-ND 4.0.
+- details can be found [here](https://github.com/sourcevault/valleydate/blob/dev/COPYING.txt).
+- Dual licence can be obtained by contacting copyright holder.
