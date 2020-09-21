@@ -2,35 +2,38 @@ name: valleydate
 author: sourcevault
 email: joykrishnamondal@gmail.com
 homepage: https://github.com/sourcevault/valleydate#readme.md
-license: lgpl-3.0
+license: BSD-3-Clause
 description: immutable object validator
 repository: https://github.com/sourcevault/valleydate.git
-version: 0.0.45
+version: 0.0.47
 main: dist/main.js
 scripts:
   "test": "make travis"
 dependencies:
-  ramda: "0.26.1"
-  pretty-error: "2.1.1"
-  hoplon: "*"
   "@aitodotai/json-stringify-pretty-compact": "*"
+  pretty-error: "2.1.1"
   cli-color: "2.0.0"
+  hoplon: "*"
+  ramda: "0.26.1"
+  flat: "*"
+  deep-freeze: "*"
+  dot-prop: "*"
 keywords:
-  - "schema"
-  - "validator"
-  - "JSON"
-  - "schema-validator"
   - "json-schema-validator"
-  - "validate"
-  - "simple"
+  - "schema-validator"
+  - "error-messages"
   - "type-check"
-  - "types"
+  - "functional"
+  - "validator"
+  - "chainable"
+  - "immutable"
+  - "validate"
   - "objects"
   - "monadic"
-  - "functional"
-  - "Array"
-  - "error-messages"
   - "mostjs"
-  - "immutable"
-  - "chainable"
+  - "simple"
+  - "schema"
+  - "types"
+  - "Array"
   - "monad"
+  - "JSON"

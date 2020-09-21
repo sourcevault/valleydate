@@ -1,7 +1,5 @@
 
-<!-- ![](https://raw.githubusercontent.com/sourcevault/valleydate/readme/logo.jpg) -->
-
-![](./logo.jpg)
+![](https://raw.githubusercontent.com/sourcevault/valleydate/dev/logo.jpg)
 
 
 ```js
@@ -91,6 +89,7 @@ console.log(V(sample))
 
 🟢 Table 1 - words have been shortened, table provided to avoid confusion, the first listing shows which methods correspondence to which type check.
 
+
 ```
 SHORTHANDS     ..FOR
 -------------------------------
@@ -177,7 +176,9 @@ These operators all accept custom validators but also other `valleydate` objects
 
 ```js
 
-var G7 = new Set(["USA","EU","UK","Japan","Italy","Germany","France"]);
+var G7 = new Set([
+  "USA","EU","UK","Japan","Italy","Germany","France"
+]);
 
 var valG7 = function(s){
   if (G7.has(s)){
@@ -305,7 +306,9 @@ var canbeIP = IS.arr.map(IS.str)
 var ret = canbeIP("209.85.231.104")
 
 console.log(ret)
-//{ error: false, continue: true, value: [ '209.85.231.104' ] } <-- value is an array.
+//{error: false, continue: true, value: ['209.85.231.104']}
+//                                           ↑  ↑  ↑
+//                                       value is an array
 ```
 
 ### - `fix`
@@ -339,17 +342,19 @@ console.log(ret) // ["127.0.0.1"]
 - The return value of `.jam` replaces the `.error` message to be sent upstream.
 
 
-#### Creating Custom Validators
+#### Creating Custom Basetypes
 
 In case defaults are not sufficient, clean validators can be easily created.
 
 1. create a validator function with return types :
-    - `boolean`
-    - `[boolean,string]`
+  - `boolean`
+  - `[boolean,string]`
 
-2. pass it into `IS` :
+2. provide it as first argument into `valleydate` as shown below :
 
 ```js
+var IS = require("valleydate")
+
 var simpleEmail = function(value){
 
 var isemail = value.match (/[\w-]+@([\w-]+\.)+[\w-]+/)
@@ -359,6 +364,7 @@ else {return [false,"not a valid email address"] }
 }
 
 var isEmail = IS(simpleEmail)
+
 // isEmail is now a valleydate validator which means it gets
 
 // .and, .or, .cont, .err , .jam and .fix methods.
@@ -372,25 +378,66 @@ isEmail.cont
 
 Some validators are common enough to be added in core.
 
-- `required` - accepts a list of strings and checks if they are present as keys in an object.
+- `required` - accepts a list of strings and checks *if they are not undefined*  in an object.
 
-- `int` - checks if input is a integer.
+- `int` - checks if input is a integer
 
-🟡 using `IS.int` :
+🟡 using `int` :
 
 ```js
 IS = require("valleydate")
 
-IS.int(2) // { continue: true, error: false, value: 1 }
+IS.int(2)
+//{continue:true,error:false,value:1}
 
-IS.int(-1.1) // { continue: false, error: true, message: [ 'not an integer' ] }
+IS.int(-1.1)
+//{continue:false,error:true,message:['not an integer']}
 
-IS.int(2.1) // { continue: false, error: true, message: [ 'not an integer' ] }
+IS.int(2.1)
+//{continue:false,error:true,message:['not an integer']}
+```
+
+#### `maybe.*`
+
+- It's common enough to have optional values in objects, however **if they do exist** we want it to conform to a type.
+
+- The function exposed through `maybe.*` using `IS.int` :
+
+🟢 Table 2 - all possible primitive and helper function provided in core.
+
+```js
+// how to see both helper and primitive validators
+> console.log((require("valleydate")))
+{.*}
+maybe.required
+maybe.list.str
+maybe.list.num
+maybe.int.pos
+maybe.int.neg
+maybe.boolnum
+maybe.bool
+maybe.obj
+maybe.arr
+maybe.num
+maybe.str
+maybe.fun
+list.str
+list.num
+required
+boolnum
+undef
+null
+bool
+obj
+arr
+num
+str
+fun
+int
 ```
 
 ## LICENCE
 
-- Code released under lgpl-3.0 Licence.
-- Documentation and images released under CC BY-NC-ND 4.0.
+- Code released under BSD-3-Clause Licence.
+- Documentation and Images released under CC BY-NC-ND 4.0.
 - details can be found [here](https://github.com/sourcevault/valleydate/blob/dev/COPYING.txt).
-- Dual licence can be obtained by contacting copyright holder.

@@ -17,7 +17,7 @@ sanatize = (F,x) ->
     if UFO
       return (continue:true,error:false,value:x)
     else
-      return (continue:false,error:true,value:x,message:"",path:[])
+      return (continue:false,error:true,value:x,message:"")
 
   | \Array =>
 
@@ -29,30 +29,68 @@ sanatize = (F,x) ->
 
     else
 
-
-      switch (typeof unknown)
-      | \string =>
+      switch R.type unknown
+      | \String   =>
         msg = unknown
       | otherwise =>
-        msg = "[#{pkgname}][error][user-supplied-validator] message has to be string."
-
+        msg = "[#{pkgname}][typeError][user-supplied-validator] message has to be string."
 
       return {
-        continue:false
-        error:true
-        value:x
-        message:msg
-        path:[]
+        continue :false
+        error    :true
+        value    :x
+        message  :msg
       }
 
+  | otherwise =>
 
-settle = (fun,x,type) ->
+    return {
+      continue : false
+      error    : true
+      value    : x
+      message  : "[#{pkgname}][typeError][user-supplied-validator] undefined return value."
+    }
+
+
+red = (fun,put) ->
 
   [patt,F] = fun
 
   switch patt
-  | \s   => F x
-  | \f   => sanatize F,x
+  | \err =>
+    message = switch typeof F
+    | \function => F put.message,put.path
+    | otherwise => F
+
+    put.message = message
+
+    put
+
+  | \fix =>
+
+    put.value = switch typeof F
+    | \function => F value,path
+    | otherwise => F
+
+    put.continue = true
+    put.error    = false
+
+    put
+
+  | otherwise => put
+
+
+
+
+settle = (fun,put,type) ->
+
+  [patt,F] = fun
+
+  {value}  = put
+
+  switch patt
+  | \s   => F value
+  | \f   => sanatize F,value
   | \map =>
 
     switch type
@@ -62,7 +100,7 @@ settle = (fun,x,type) ->
 
       I = 0
 
-      In = x.length
+      In = value.length
 
       put = null
 
@@ -71,8 +109,8 @@ settle = (fun,x,type) ->
       while I < In
 
         put = switch patt
-        | \s => G x[I]
-        | \f => sanatize G,x[I]
+        | \s => G value[I]
+        | \f => sanatize G,value[I]
 
         if put.path
           path = put.path
@@ -83,7 +121,7 @@ settle = (fun,x,type) ->
           return {
             continue:false
             error:true
-            value:x
+            value:value
             message:put.message
             path:[I,...path]
 
@@ -103,11 +141,11 @@ settle = (fun,x,type) ->
 
       [patt,G] = F
 
-      for key,val of x
+      for key,val of value
 
         put = switch patt
-        | \s => G x[key]
-        | \f => sanatize G,x[key]
+        | \s => G value[key]
+        | \f => sanatize G,value[key]
 
         if put.path
           path = put.path
@@ -118,7 +156,7 @@ settle = (fun,x,type) ->
           return {
             continue:false
             error:true
-            value:x
+            value:value
             message:put.message
             path:[key,...path]
           }
@@ -127,7 +165,7 @@ settle = (fun,x,type) ->
 
       {continue:true,error:false,value:ob}
 
-  | \on =>
+  | \on  =>
 
     [patt1,data] = F
 
@@ -137,8 +175,8 @@ settle = (fun,x,type) ->
       [key,shape,G] = data
 
       put = switch shape
-      | \s => G x[key]
-      | \f => sanatize G,x[key]
+      | \s => G value[key]
+      | \f => sanatize G,value[key]
 
       if put.path
         path = put.path
@@ -149,14 +187,14 @@ settle = (fun,x,type) ->
         return {
             continue:false
             error:true
-            value:x
+            value:value
             message:put.message
             path:[key,...path]
         }
 
-      x[key] = put.value
+      value[key] = put.value
 
-      {continue:true,error:false,value:x}
+      {continue:true,error:false,value:value}
 
     | \array =>
 
@@ -171,8 +209,8 @@ settle = (fun,x,type) ->
         key = arr[I]
 
         put = switch shape
-        | \s => G x[key]
-        | \f => sanatize G,x[key]
+        | \s => G value[key]
+        | \f => sanatize G,value[key]
 
         if put.path
           path = put.path
@@ -183,17 +221,17 @@ settle = (fun,x,type) ->
           return {
             continue:false
             error:true
-            value:x
+            value:value
             message:put.message
             path:[key,...path]
           }
 
         if not (put.value is undefined)
-          x[key] = put.value
+          value[key] = put.value
 
         I += 1
 
-      {continue:true,error:false,value:x}
+      {continue:true,error:false,value:value}
 
     | \object =>
 
@@ -206,8 +244,8 @@ settle = (fun,x,type) ->
         [key,shape,G] = data[I]
 
         put = switch shape
-        | \s => G x[key]
-        | \f => sanatize G,x[key]
+        | \s => G value[key]
+        | \f => sanatize G,value[key]
 
         if put.path
           path = put.path
@@ -218,122 +256,102 @@ settle = (fun,x,type) ->
           return {
             continue:false
             error:true
-            value:x
+            value:value
             message:put.message
             path:[key,...path]
           }
 
-        x[key] = put.value
+        value[key] = put.value
 
         I += 1
 
-      {continue:true,error:false,value:x}
+      {continue:true,error:false,value:value}
+
+  | \cont =>
+
+    put.value   = switch typeof F
+    | \function => F value
+    | otherwise => F
+
+    put
+
+  | \jam  =>
+
+    put.message   = switch typeof F
+    | \function   => F put.value,put.path
+    | otherwise   => F
+
+    put.continue  = false
+
+    put.error     = true
+
+  | otherwise => put
+
+
+
 
 
 reg.tightloop = (state) -> (x) !->
 
   {all,type} = state
 
-  I   = 0
-  put = null
-  nI  = all.length
+  I    = 0
+
+  put  = {continue:true,error:false,value:x}
+
+  nI   = all.length
 
   do
 
     each = all[I]
 
     switch I%2
-    | 0 =>
+    | 0 => # and
 
-      J = 0
+      J  = 0
+
+      nJ = each.length
 
       do
 
-        put = settle each[J],x,type
+        fun = each[J]
 
         if put.error
-          break
+          put = red fun,put
+        else
+          put = settle fun,put,type
 
         J += 1
 
-      while J < each.length
+      while J < nJ
 
-      if put.continue
-        I += 2
-      else
+      if put.error
         I += 1
+      else
+        I += 2
 
-    | 1 =>
+    | 1 => # or
 
-      J = 0
+      J    = 0
+
+      nJ   = each.length
 
       do
 
-        put = settle each[J],x,type
+        nput = settle each[J],put,type
 
-        if put.continue
+        if nput.continue
+          put = nput
           break
 
         J += 1
-      while J < each.length
+      while J < nJ
 
       if put.continue
-        I += 1
+        I = nI
       else
-        return put
+        I += 1
 
   while I < nI
 
-
-  if (put.continue and state.cont)
-
-    [patt,cont] = state.cont
-
-    switch patt
-    | \jam  =>
-
-      plant = switch typeof cont
-      | \function => cont put
-      | otherwise => cont
-
-      return {continue:false,error:true,value:put.value,message:plant}
-
-    | \cont =>
-
-      plant = switch typeof cont
-      | \function => cont put.value
-      | otherwise => cont
-
-      return {continue:true,error:false,value:plant}
-
-  else if (put.error and state.err)
-
-    [patt,F] = state.err
-
-    switch patt
-    | \fix =>
-
-      pin = switch typeof F
-      | \function => F put.value,put.path
-      | otherwise => F
-
-      return {continue:true,error:false,value:pin}
-
-    | \err =>
-
-      put.message = switch typeof F
-      | \function => F put.message,put.path
-      | otherwise => F
-
-      return put
-
-  else return put
-
-
-
-
-
-
-
-
-
+  return put

@@ -20,6 +20,6 @@ V = be.arr.map be.str
 
 ret = V null
 
-if not (ret.message is "not string")
+if not (ret.message is "not array")
   p!
 

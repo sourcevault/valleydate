@@ -4,9 +4,15 @@ l                = console.log
 
 R                = require "ramda"
 
+flat             = require "flat"
+
 hoplon           = require "hoplon"
 
+dot-prop         = require "dot-prop"
+
 cc               = require "cli-color"
+
+deep-freeze      = require "deep-freeze"
 
 pretty-error     = require "pretty-error"
 
@@ -29,13 +35,16 @@ j = (x) -> l jspc do
     margins:true
   }
 
-
 module.exports =
   *z:z
    j:j
    l:l
    R:R
    cc:cc
+   flat:flat
    hop:hoplon
+   dot-prop:dot-prop
+   deep-freeze:deep-freeze
    uic:util_inspect_custom
    pretty-error:pretty-error
+

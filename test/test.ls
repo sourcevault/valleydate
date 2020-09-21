@@ -4,7 +4,7 @@ valleydate = require "../dist/main"
 
 {com,print} = reg
 
-{z,hop} = com
+{z,hop,slist} = com
 
 p = print.fail "test/test.js"
 
@@ -21,16 +21,11 @@ F = (x)  -> [false,\foobar]
 #     }
 #   }
 
+# if not (ret.message is "not string")
+  # p!
+
+test = -> [false,'foo']
 
 
-V = be.arr.map be.str
-.or be.str
-.and F
 
-
-ret = V null
-
-
-if not (ret.message is "not string")
-  p!
-
+z be

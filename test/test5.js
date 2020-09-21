@@ -15,7 +15,7 @@
   };
   V = be.arr.map(be.str).or(be.str).and(F);
   ret = V(null);
-  if (!(ret.message === "not string")) {
+  if (!(ret.message === "not array")) {
     p();
   }
 }).call(this);

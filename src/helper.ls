@@ -4,47 +4,27 @@ reg = require "./registry"
 
 {already_created} = reg
 
-{z,l,R,j,hop} = com
+{z,l,R,j,hop,deep-freeze,uic} = com
 
 be = pkg
 
-internal = {}
+#------------------------------------------------------
 
-#--------------------------------------------------------
+list = (F) -> be.arr.map F
 
-internal.integer = (val) ->
+maybe = (F) -> (be F).or be.undef
 
-  residue = Math.abs (val - Math.round(val))
+maybe[uic] = print.inner
 
-  if residue > 0
+list[uic]  = print.inner
 
-    return [false,"not an integer"]
+be.maybe = maybe
 
-  else
+be.list  = list
 
-    return [true]
+#------------------------------------------------------
 
-
-pkg.int = pkg.num.and internal.integer
-
-#--------------------------------------------------------
-
-internal.boolnum = (val) ->
-
-  if ((R.type val) in [\Boolean \Number])
-
-    return [true]
-
-  else
-
-    return [false,"not a number or boolean"]
-
-#--------------------------------------------------------
-
-pkg.boolnum     = pkg internal.boolnum
-
-
-internal.required = (props) -> (val) ->
+required = (props) -> (UFO) ->
 
   I  = 0
 
@@ -54,22 +34,20 @@ internal.required = (props) -> (val) ->
 
     key = props[I]
 
-    if (val[key] is undefined)
+    if (UFO[key] is undefined)
 
       return [
-        false
-        "required value .#{I} is not present (or is undefined)."
+          false
+          "required value .#{key} is not present (or is undefined)."
       ]
 
     I += 1
 
   return [true]
 
-#--------------------------------------------------------
+#------------------------------------------------------
 
-
-pkg.required = hop
-
+reqE = hop.immutable
 .wh do
 
   ->
@@ -88,9 +66,145 @@ pkg.required = hop
 
   loopError
 
-.def ->
+#------------------------------------------------------
+
+
+show-attr = (props) ->
+  """
+    has to be an object with required attributes:
+    .#{props.join(" .")}
+  """
+
+G = reqE.def ->
 
   props = R.flatten [...arguments]
 
-  be.obj.and internal.required props
+  F = required props
 
+  be.obj.and F
+  .err show-attr props
+
+be.required = G
+
+#------------------------------------------------------
+
+G = reqE.def ->
+
+  props = R.flatten [...arguments]
+
+  F = required props
+
+  maybe.obj.and F
+  .err show-attr props
+
+maybe.required = G
+
+#------------------------------------------------------
+
+integer = (UFO) ->
+
+  if not ((R.type UFO) is \Number)
+
+    return {continue:false,error:true,message:"not an integer ( or number )",value:UFO}
+
+  residue = Math.abs (UFO - Math.round(UFO))
+
+  if (residue > 0)
+
+    return {continue:false,error:true,message:"not an integer",value:UFO}
+
+  else
+
+    return {continue:true,error:false,value:UFO}
+
+
+already_created.add integer
+
+#------------------------------------------------------
+
+boolnum = (UFO) ->
+
+  if ((R.type UFO) in [\Boolean \Number])
+
+    return {continue:true,error:false,value:UFO}
+
+  else
+
+    return {continue:false,error:true,message:"not a number or boolean",value:UFO}
+
+already_created.add boolnum
+
+#-------------------------------------------------------
+
+be.int     = be integer
+
+be.boolnum = be boolnum
+
+#--------------------------------------------------------
+
+maybe.int = be.int.or be.undef
+
+#--------------------------------------------------------
+
+maybe.int.pos  =
+  maybe.int.and do
+    (x) ->
+      if (x >= 0)
+        return true
+      else
+        return [false,"not a positive integer"]
+
+#--------------------------------------------------------
+
+maybe.int.neg  =
+  maybe.int.and do
+    (x) ->
+      if (x <= 0)
+        return true
+      else
+        return [false,"not a negative integer"]
+
+#--------------------------------------------------------
+
+maybe.boolnum = be.boolnum.or be.undef
+
+#--------------------------------------------------------
+
+maybe.obj = be.obj.or be.undef
+
+#--------------------------------------------------------
+
+maybe.arr = be.arr.or be.undef
+
+#--------------------------------------------------------
+
+maybe.num = be.num.or be.undef
+
+#--------------------------------------------------------
+
+maybe.str = be.str.or be.undef
+
+#--------------------------------------------------------
+
+maybe.fun = be.fun.or be.undef
+
+#--------------------------------------------------------
+
+maybe.bool = be.bool.or be.undef
+
+#--------------------------------------------------------
+
+list.str = list be.str
+.err (msg,[key]) ->
+  "value at index #{key} is not of string type"
+
+
+list.num = list be.num
+.err (msg,[key]) ->
+  "value at index #{key} is not of number type"
+
+maybe.list = {}
+
+maybe.list.str = maybe list.str
+
+maybe.list.num = maybe list.num

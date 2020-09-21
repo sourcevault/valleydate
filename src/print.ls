@@ -2,23 +2,24 @@ reg = require "./registry"
 
 {com,print} = reg
 
-{l,z,cc,R,j,pretty-error} = com
+{l,z,cc,R,j,pretty-error,hop,flat} = com
 
 {print} = reg
+
 
 pkgname = reg.pkgname
 
 c = {}
-  ..ok    = cc.greenBright
+  ..ok1   = cc.greenBright
   ..ok2   = cc.xterm 8
   ..warn  = cc.xterm 209
-  ..er    = cc.xterm 196
+  ..er1   = cc.xterm 196
   ..er2   = cc.magentaBright
   ..er3   = cc.redBright
-  ..black = cc.xterm 244
+  ..grey  = cc.xterm 8
 
 help =
-  c.black "[  docs] #{reg.homepage}"
+  c.grey "[  docs] #{reg.homepage}"
 
 # -------------------------------------------------------------------------------------------------------
 
@@ -79,7 +80,7 @@ lit = R.pipe do
 
 print.required_input = ->
 
-  lit ["[#{pkgname}]","[typeError]"],[c.er,c.e3]
+  lit ["[#{pkgname}]","[typeError]"],[c.er1,c.e3]
 
   lit ['\n',"  .required only accepts string and number.",'\n'],[0,c.e2,0]
 
@@ -101,14 +102,14 @@ show_chain = ([init,last]) ->
 
   lit do
     ["  ",((init).join "."),("."  + last),"(xx)"," <-- error here"]
-    [0,c.ok,c.er2,c.er3,c.er]
+    [0,c.ok1,c.er2,c.er3,c.er2]
 
 
 show_name = (name,type = "[inputError] ") ->
 
   lit do
     ["[#{pkgname}]",type,name]
-    [c.er,c.er2,c.er]
+    [c.er1,c.er3,c.warn]
 
 print.input_fault.andor = ([type,info])->
 
@@ -133,7 +134,7 @@ print.input_fault.andor = ([type,info])->
 
   | \not_function =>
 
-    l c.er "  one of the argument is not a function."
+    l c.er1 "  one of the argument is not a function."
 
   l ""
 
@@ -141,7 +142,7 @@ print.input_fault.andor = ([type,info])->
 
   l ""
 
-  l c.ok " - :: fun|[fun,..],..,.."
+  l c.ok1 " - :: fun|[fun,..],..,.."
 
   l ""
 
@@ -163,7 +164,7 @@ print.input_fault.custom = ([patt,loc])->
 
   | \not_function =>
 
-    l c.er "  first argument has to be a function."
+    l c.er1 "  first argument has to be a function."
 
   l ""
 
@@ -197,8 +198,6 @@ on_dtype = {}
   ..array  = "[string|number....] , function"
 
 
-
-
 print.input_fault.on = ([patt,loc])->
 
   eType = switch patt
@@ -220,20 +219,20 @@ print.input_fault.on = ([patt,loc])->
     switch patt
     | \typeError =>
 
-      l c.er "  unable to pattern match on user input."
+      l c.er1 "  unable to pattern match on user input."
 
     | \arg_count =>
 
-      l c.er "  minimum of 2 arguments required."
+      l c.er1 "  minimum of 2 arguments required."
 
     l ""
 
-    lit [" - | types that may match ",".on"," | -"],[c.ok2,c.ok,c.white]
+    lit [" - | types that may match ",".on"," | -"],[c.ok2,c.ok1,c.white]
 
     l ""
 
 
-    lines = [(" - :: " + c.ok val) for key,val of on_dtype].join "\n\n"
+    lines = [(" - :: " + c.ok1 val) for key,val of on_dtype].join "\n\n"
 
     l lines
 
@@ -244,7 +243,7 @@ print.input_fault.on = ([patt,loc])->
 
     lit do
       [" .on"," :: ",dtype," <-- what may match"]
-      [c.warn,c.white,c.ok,c.black]
+      [c.warn,c.white,c.ok1,c.grey]
 
   l ""
 
@@ -265,16 +264,57 @@ print.log = ->
 
   prop = [name for [name] in all]
 
-  str = (c.ok "[ #{pkgname} ]") + c.warn "[ "
+  str = c.ok1 "{.*}"
+
+  str += c.ok1 " "
 
   for I in prop
 
-    str += c.warn (I + " ")
-
-  str += c.warn "]"
+    str += c.ok2 (I + " ")
 
   str
 
+
+sort = R.sort (a,b) -> b.length - a.length
+
+includes = R.flip R.includes
+
+same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on']
+
+myflat = hop
+.ma do
+  (ob) ->
+    switch (R.type ob)
+    | \Function,\Object => false
+    | otherwise => {}
+
+.def (ob,fin = {}) ->
+
+  keys = Object.keys ob
+
+  for I in keys
+
+    if not (same I)
+
+      prop = myflat ob[I]
+
+      fin[I] = prop
+
+  fin
+
+
+print.inner = ->
+
+  props =  [ I for I of flat myflat @]
+
+  str = c.ok1 "{.*}\n"
+
+  str += props
+  |> sort
+  |> R.join "\n"
+  |> c.grey
+
+  str
 
 
 module.exports = print

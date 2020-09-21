@@ -8,18 +8,30 @@ require "./tightloop" # [....]
 
 {com,print,pkgname,tightloop,already_created} = reg
 
-{z,l,R,hop,j,uic} = com
-
-init-state =
-  all     :[]
-  type    :null
-  cont    :null
-  err     :null
-  phase   :\init
-  str     :[]
+{z,l,R,hop,j,uic,deep-freeze} = com
 
 # ------------------------------------------------------------------
 
+init = {}
+
+init.state =
+  all      :[]
+  type     :null
+  str      :[]
+
+# ------------------------------------------------------------------
+
+init.props =
+  [\obj \Object]
+  [\arr \Array]
+  [\undef \Undefined]
+  [\null \Null]
+  [\num \Number]
+  [\str \String]
+  [\fun \Function]
+  [\bool \Boolean]
+
+# ------------------------------------------------------------------
 
 loopError = ->
 
@@ -64,35 +76,23 @@ cato = (arg) ->
 
     fun
 
-define.base = (name) -> (UFO) ->
+# ------------------------------------------------------------------
+
+define.base = (type) -> (UFO) ->
 
   ut = R.type UFO
 
-  if (ut is name)
+  if (ut is type)
 
     {continue:true,error:false,value:UFO}
 
   else
 
-    str = R.toLower "not #{name}"
+    str = R.toLower "not #{type}"
 
     {error:true,continue:false,message:str,value:UFO}
 
-
-define.notbase = (name) -> (UFO) ->
-
-  ut = R.type UFO
-
-  if (ut is name)
-
-    str =  R.toLower "is #{name}"
-
-    {error:true,continue:false,message:str,value:UFO}
-
-  else
-
-    {continue:true,error:false,value:UFO}
-
+# ------------------------------------------------------------------
 
 custom = hop
 .arn 1, -> print.route [\input.fault [\custom [\arg_count]]] ; loopError!
@@ -105,21 +105,23 @@ custom = hop
 
 .def (F) ->
 
-  neo = Object.assign do
-    {}
-    init-state
-    {
-      type     :\custom
-      all      :[[(cato F)]]
-      phase    :\chain
-      str      :[pkgname]
+  data = {
+    ...init.state
+    ...{
+      type  : \custom
+      all   : [[cato F]]
+      str   : ["{..}"]
     }
+  }
 
-  define.forward \custom,neo
+  define.forward data,F
+
+
+custom[uic] = print.inner
 
 main_wrap = (type,state) -> -> main type,state,arguments
 
-define.forward = (type,neo,fun)->
+define.forward = (data,fun)->
 
   if fun
 
@@ -127,27 +129,27 @@ define.forward = (type,neo,fun)->
 
   else
 
-    forward       = tightloop neo
+    forward       = tightloop data
 
   forward[uic]    = print.log
 
-  forward.and     = main_wrap \and,neo
+  forward.and     = main_wrap \and,data
 
-  forward.or      = main_wrap \or,neo
+  forward.or      = main_wrap \or,data
 
-  forward.cont    = main_wrap \cont,neo
+  forward.cont    = main_wrap \cont,data
 
-  forward.jam     = main_wrap \jam,neo
+  forward.jam     = main_wrap \jam,data
 
-  forward.fix     = main_wrap \fix,neo
+  forward.fix     = main_wrap \fix,data
 
-  forward.err     = main_wrap \err,neo
+  forward.err     = main_wrap \err,data
 
-  if type in [\obj,\arr]
+  if data.type in [\obj,\arr]
 
-    forward.map   = main_wrap \map,neo
+    forward.map   = main_wrap \map,data
 
-    forward.on    = main_wrap \on,neo
+    forward.on    = main_wrap \on,data
 
   already_created.add forward
 
@@ -201,7 +203,9 @@ define.or = (state,funs) ->
 # ------------------------------------------------------------------
 
 
-verify_on = hop.unary
+verify = {}
+
+verify.on = hop.unary
 
 .arn [1,2],(args,state) -> [\input.fault [\on [\arg_count,[state.str,\on]]]]
 
@@ -259,6 +263,53 @@ verify_on = hop.unary
 
 .def (args,state)-> [\input.fault [\on [\typeError,[state.str,\on]]]]
 
+
+verify.rest = (type,state,funs) ->
+
+  switch type
+  | \and \or  =>
+
+    if (funs.length is 0)
+
+      print.route [\input.fault,[type,[\arg_count,[state.str,type]]]]
+
+      return false
+
+    for F in funs
+
+      if not ((R.type F) is \Function)
+
+        print.route [\input.fault,[type,[\not_function,[state.str,type]]]]
+
+        false
+
+    true
+
+  | \map      =>
+
+    if not (funs.length is 1)
+
+      print.route [\input.fault,[type,[\arg_count,[state.str,type]]]]
+
+      return false
+
+    [f] = funs
+
+    if not ((R.type f) is \Function)
+
+      print.route [\input.fault,[type,[\not_function,[state.str,type]]]]
+
+      return false
+
+    return true
+
+  | \err,\fix,\cont,\jam  =>
+
+    return true
+
+  | otherwise => return false
+
+
 define.on = (type,state,args) ->
 
   switch type
@@ -284,110 +335,29 @@ define.on = (type,state,args) ->
 
     put = [\on,[\object,fun]]
 
-
   block = define.and state,[put]
 
-
-  neo = Object.assign do
-    {}
-    state
-    {
+  data = {
+    ...state
+    ...{
       phase :\chain
       all   :block
       str   :state.str.concat \on
     }
+  }
 
+  define.forward data
 
-  define.forward state.type,neo
-
+# -----------------------------------------------------------------------
 
 main = hop
-.wh do
-
-  (type,state,args) -> (type in [\cont,\jam]) and (state.phase is \chain)
-
-  (type,state,[f]) ->
-
-    neo = Object.assign do
-      {}
-      state
-      {
-        phase:\end
-        cont:[type,f]
-        str:state.str.concat type
-      }
-
-    forward      = tightloop neo
-
-    forward.fix  = main_wrap \fix,neo
-
-    forward.err  = main_wrap \err,neo
-
-    forward[uic] = print.log
-
-    already_created.add forward
-
-    forward
-
-.wh do
-
-  (type,state,args) -> (type in [\err,\fix]) and (state.phase is \chain)
-
-  (type,state,[f]) ->
-
-    neo = Object.assign do
-      {}
-      state
-      {
-        phase:\end
-        str:state.str.concat type
-      }
-
-    neo.err       = [type,f]
-
-    forward       = tightloop neo
-
-    forward.cont  = main_wrap \cont,neo
-
-    forward.jam  = main_wrap \jam,neo
-
-    forward[uic]    = print.log
-
-    already_created.add forward
-
-    forward
-
-
-.wh do
-
-  (type,state,args) -> state.phase is \end
-
-  (type,state,[f]) ->
-
-    neo = Object.assign state,{}
-
-    switch type
-
-    | \err,\fix =>
-
-      neo.err = [type,f]
-
-    | \cont,\jam =>
-
-      neo.cont = [type,f]
-
-    F = tightloop neo
-
-    already_created.add F
-
-    F
 
 .wh do
   (type) -> type is \on
 
   (type,state,args) ->
 
-    patt = verify_on args,state
+    patt = verify.on args,state
 
     [type] = patt
 
@@ -401,49 +371,7 @@ main = hop
     define.on type,state,args
 
 .wh do
-
-  (type,state,funs) ->
-
-    switch type
-    | \and \or  =>
-
-      if (funs.length is 0)
-
-        print.route [\input.fault,[type,[\arg_count,[state.str,type]]]]
-
-        return false
-
-      for F in funs
-
-        if not ((R.type F) is \Function)
-
-          print.route [\input.fault,[type,[\not_function,[state.str,type]]]]
-
-          false
-
-      true
-
-    | \map      =>
-
-      if not (funs.length is 1)
-
-        print.route [\input.fault,[type,[\arg_count,[state.str,type]]]]
-
-        return false
-
-      [f] = funs
-
-      if not ((R.type f) is \Function)
-
-        print.route [\input.fault,[type,[\not_function,[state.str,type]]]]
-
-        return false
-
-      return true
-
-    | otherwise => return false
-
-
+  verify.rest
   (type,state,args) ->
 
     # ----------------------------------
@@ -451,63 +379,64 @@ main = hop
     funs = cato args
 
     block = switch type
-    | \and => define.and state,funs
-    | \or  => define.or state,funs
-    | \map => define.and state,[[\map,funs[0]]]
+    | \and                  => define.and state,funs
+    | \or                   => define.or  state,funs
+    | \map                  => define.and state,[[\map,funs[0]]]
+    | \err,\fix,\cont,\jam  => define.and state,[[type,args[0]]]
 
-
-    neo = Object.assign do
-      {}
-      state
-      {
-        phase :\chain
+    data = {
+      ...state
+      ...{
         all   :block
         str   :state.str.concat type
       }
+    }
 
-    define.forward state.type,neo
+    define.forward data
 
 
 .def loopError
 
 # ------------------------------------------------------------------
 
-props =
-  [\obj \Object]
-  [\arr \Array]
-  [\undef \Undefined]
-  [\null \Null]
-  [\num \Number]
-  [\str \String]
-  [\fun \Function]
-  [\bool \Boolean]
+dressing = (name,F) ->
+
+  already_created.add F
+
+  data = {
+    ...init.state
+    ...{
+      type :name
+      str  :[name]
+      all  :[[[\s,F]]]
+    }
+  }
+
+  define.forward data,F
+
+  void
+
 
 boot = ->
 
-  for [name,type] in props
+  # ----------------------------
+
+  for [name,type] in init.props
 
     F = define.base type
 
-    already_created.add F
-
-    neo = Object.assign do
-        {}
-        init-state
-        {
-          type:name
-          all:[[[\s,F]]]
-          phase:\chain
-          str:[name]
-        }
-
-    define.forward name,neo,F
+    dressing name,F
 
     custom[name] = F
+
+    #----------------------------
 
   custom
 
 reg.pkg = boot!
 
 require "./helper" # [....]
+
+deep-freeze reg.pkg
 
 module.exports = reg.pkg
