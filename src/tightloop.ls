@@ -52,14 +52,15 @@ sanatize = (F,x) ->
     }
 
 
-red = (fun,put) ->
+red = (fun,put,extra) ->
 
   [patt,F] = fun
 
   switch patt
   | \err =>
+
     message = switch typeof F
-    | \function => F put.message,put.path
+    | \function => F put.message,put.path,extra
     | otherwise => F
 
     put.message = message
@@ -69,7 +70,7 @@ red = (fun,put) ->
   | \fix =>
 
     put.value = switch typeof F
-    | \function => F value,path
+    | \function => F value,path,extra
     | otherwise => F
 
     put.continue = true
@@ -82,7 +83,7 @@ red = (fun,put) ->
 
 
 
-settle = (fun,put,type) ->
+settle = (fun,put,type,extra) ->
 
   [patt,F] = fun
 
@@ -275,7 +276,7 @@ settle = (fun,put,type) ->
   | \cont =>
 
     put.value   = switch typeof F
-    | \function => F value
+    | \function => F value,extra
     | otherwise => F
 
     put
@@ -283,7 +284,7 @@ settle = (fun,put,type) ->
   | \jam  =>
 
     put.message   = switch typeof F
-    | \function   => F put.value,put.path
+    | \function   => F put.value,put.path,extra
     | otherwise   => F
 
     put.continue  = false
@@ -293,7 +294,7 @@ settle = (fun,put,type) ->
   | otherwise => put
 
 
-reg.tightloop = (state) -> (x) !->
+reg.tightloop = (state) -> (x,extra) !->
 
   {all,type} = state
 
@@ -319,9 +320,9 @@ reg.tightloop = (state) -> (x) !->
         fun = each[J]
 
         if put.error
-          put = red fun,put
+          put = red fun,put,extra
         else
-          put = settle fun,put,type
+          put = settle fun,put,type,extra
 
         J += 1
 
@@ -340,7 +341,7 @@ reg.tightloop = (state) -> (x) !->
 
       do
 
-        nput = settle each[J],put,type
+        nput = settle each[J],put,type,extra
 
         if nput.continue
           put = nput

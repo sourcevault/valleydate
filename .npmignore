@@ -5,3 +5,4 @@ test
 .gitignore
 .travis.yml
 yarn.lock
+package-lock.json
