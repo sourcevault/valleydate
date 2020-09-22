@@ -188,7 +188,9 @@
             path: [key].concat(arrayFrom$(path))
           };
         }
-        value[key] = put.value;
+        if (!(put.value === undefined)) {
+          value[key] = put.value;
+        }
         return {
           'continue': true,
           error: false,
@@ -245,7 +247,9 @@
               path: [key].concat(arrayFrom$(path))
             };
           }
-          value[key] = put.value;
+          if (!(put.value === undefined)) {
+            value[key] = put.value;
+          }
           I += 1;
         }
         return {

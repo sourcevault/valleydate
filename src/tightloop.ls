@@ -192,7 +192,9 @@ settle = (fun,put,type) ->
             path:[key,...path]
         }
 
-      value[key] = put.value
+      if not (put.value is undefined)
+
+        value[key] = put.value
 
       {continue:true,error:false,value:value}
 
@@ -261,7 +263,10 @@ settle = (fun,put,type) ->
             path:[key,...path]
           }
 
-        value[key] = put.value
+        if not (put.value is undefined)
+
+          value[key] = put.value
+
 
         I += 1
 
@@ -286,9 +291,6 @@ settle = (fun,put,type) ->
     put.error     = true
 
   | otherwise => put
-
-
-
 
 
 reg.tightloop = (state) -> (x) !->
