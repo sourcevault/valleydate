@@ -59,7 +59,7 @@
       };
     }
   };
-  red = function(fun, put){
+  red = function(fun, put, extra){
     var patt, F, message;
     patt = fun[0], F = fun[1];
     switch (patt) {
@@ -67,7 +67,7 @@
       message = (function(){
         switch (typeof F) {
         case 'function':
-          return F(put.message, put.path);
+          return F(put.message, put.path, extra);
         default:
           return F;
         }
@@ -78,7 +78,7 @@
       put.value = (function(){
         switch (typeof F) {
         case 'function':
-          return F(value, path);
+          return F(value, path, extra);
         default:
           return F;
         }
@@ -90,7 +90,7 @@
       return put;
     }
   };
-  settle = function(fun, put, type){
+  settle = function(fun, put, type, extra){
     var patt, F, value, G, I, In, arr, path, ob, key, val, patt1, data, shape, ref$;
     patt = fun[0], F = fun[1];
     value = put.value;
@@ -188,7 +188,9 @@
             path: [key].concat(arrayFrom$(path))
           };
         }
-        value[key] = put.value;
+        if (!(put.value === undefined)) {
+          value[key] = put.value;
+        }
         return {
           'continue': true,
           error: false,
@@ -245,7 +247,9 @@
               path: [key].concat(arrayFrom$(path))
             };
           }
-          value[key] = put.value;
+          if (!(put.value === undefined)) {
+            value[key] = put.value;
+          }
           I += 1;
         }
         return {
@@ -259,7 +263,7 @@
       put.value = (function(){
         switch (typeof F) {
         case 'function':
-          return F(value);
+          return F(value, extra);
         default:
           return F;
         }
@@ -269,7 +273,7 @@
       put.message = (function(){
         switch (typeof F) {
         case 'function':
-          return F(put.value, put.path);
+          return F(put.value, put.path, extra);
         default:
           return F;
         }
@@ -313,7 +317,7 @@
     }
   };
   reg.tightloop = function(state){
-    return function(x){
+    return function(x, extra){
       var all, type, I, put, nI, each, J, nJ, fun, nput;
       all = state.all, type = state.type;
       I = 0;
@@ -332,9 +336,9 @@
           do {
             fun = each[J];
             if (put.error) {
-              put = red(fun, put);
+              put = red(fun, put, extra);
             } else {
-              put = settle(fun, put, type);
+              put = settle(fun, put, type, extra);
             }
             J += 1;
           } while (J < nJ);
@@ -348,7 +352,7 @@
           J = 0;
           nJ = each.length;
           do {
-            nput = settle(each[J], put, type);
+            nput = settle(each[J], put, type, extra);
             if (nput['continue']) {
               put = nput;
               break;
