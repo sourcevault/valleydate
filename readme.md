@@ -426,6 +426,7 @@ maybe.arr
 maybe.num
 maybe.str
 maybe.fun
+undefnull
 not.null
 not.bool
 required

@@ -199,6 +199,24 @@ maybe.boolnum = be maybe_boolnum
 
 #--------------------------------------------------------
 
+undefnull = (UFO) ->
+
+
+  if ((R.type UFO) in [\Undefined \Null])
+
+    return {continue:true,error:false,value:UFO}
+  else
+
+    return {continue:false,error:true,message:"not undefined or null",value:UFO}
+
+already_created.add undefnull
+
+#--------------------------------------------------------
+
+be.undefnull = be undefnull
+
+#--------------------------------------------------------
+
 list = be.list
 
 list.ofstr = list be.str
@@ -206,14 +224,14 @@ list.ofstr = list be.str
 
   switch R.type key
   | \Undefined => "not a list of string."
-  | otherwise  => "in list of string, value at .#{key[0]} is not of string type."
+  | otherwise  => "not string type at .#{key[0]}"
 
 list.ofnum = list be.num
 .err (msg,key) ->
 
   switch R.type key
   | \Undefined => "not a list of number."
-  | otherwise  => "in list of number, value at .#{key[0]} is not of number type."
+  | otherwise  => "not number type at .#{key[0]}"
 
 maybe.list = {}
 
