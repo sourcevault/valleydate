@@ -80,9 +80,7 @@ cato = (arg) ->
 
 define.base = (type) -> (UFO) ->
 
-  ut = R.type UFO
-
-  if (ut is type)
+  if ((R.type UFO) is type)
 
     {continue:true,error:false,value:UFO}
 
@@ -91,6 +89,35 @@ define.base = (type) -> (UFO) ->
     str = R.toLower "not #{type}"
 
     {error:true,continue:false,message:str,value:UFO}
+
+# ------------------------------------------------------------------
+
+define.not_base = (type) -> (UFO) ->
+
+  if ((R.type UFO) is type)
+
+    str = R.toLower "is #{type}"
+
+    {error:true,continue:false,message:str,value:UFO}
+
+  else
+
+    {continue:true,error:false,value:UFO}
+
+# ------------------------------------------------------------------
+
+define.maybe_base = (type) -> (UFO) ->
+
+  if (R.type UFO) in [\Undefined,type]
+
+    return {continue:true,error:false,value:UFO}
+
+  else
+
+    str = R.toLower "not #{type}"
+
+    {error:true,continue:false,message:str,value:UFO}
+
 
 # ------------------------------------------------------------------
 
@@ -105,16 +132,18 @@ custom = hop
 
 .def (F) ->
 
+  G = cato F
+
   data = {
     ...init.state
     ...{
       type  : \custom
-      all   : [[cato F]]
+      all   : [[G]]
       str   : ["{..}"]
     }
   }
 
-  define.forward data,F
+  define.forward data
 
 
 custom[uic] = print.inner
@@ -416,27 +445,10 @@ dressing = (name,F) ->
 
   void
 
+reg.internal = {custom,dressing,define}
 
-boot = ->
+pkg = require "./init" # [....]
 
-  # ----------------------------
+deep-freeze pkg
 
-  for [name,type] in init.props
-
-    F = define.base type
-
-    dressing name,F
-
-    custom[name] = F
-
-    #----------------------------
-
-  custom
-
-reg.pkg = boot!
-
-require "./helper" # [....]
-
-deep-freeze reg.pkg
-
-module.exports = reg.pkg
+module.exports = pkg

@@ -80,9 +80,9 @@ lit = R.pipe do
 
 print.required_input = ->
 
-  lit ["[#{pkgname}]","[typeError]"],[c.er1,c.e3]
+  lit ["[#{pkgname}]","[typeError]"],[c.er2,c.er3]
 
-  lit ['\n',"  .required only accepts string and number.",'\n'],[0,c.e2,0]
+  lit ['\n',"  .required only accepts string and number.",'\n'],[0,c.warn,0]
 
   show_stack!
 

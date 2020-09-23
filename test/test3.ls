@@ -17,7 +17,6 @@ main = be.obj.on do
 
 ret = main({chokidar:{}})
 
-
 try
 
   if not ((ret.path.join ".") is "chokidar.path")

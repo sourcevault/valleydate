@@ -78,7 +78,7 @@
       put.value = (function(){
         switch (typeof F) {
         case 'function':
-          return F(value, path, extra);
+          return F(put.value, put.path, extra);
         default:
           return F;
         }
@@ -279,7 +279,8 @@
         }
       }());
       put['continue'] = false;
-      return put.error = true;
+      put.error = true;
+      return put;
     default:
       return put;
     }

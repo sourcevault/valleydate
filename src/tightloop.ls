@@ -70,7 +70,7 @@ red = (fun,put,extra) ->
   | \fix =>
 
     put.value = switch typeof F
-    | \function => F value,path,extra
+    | \function => F put.value,put.path,extra
     | otherwise => F
 
     put.continue = true
@@ -291,6 +291,8 @@ settle = (fun,put,type,extra) ->
 
     put.error     = true
 
+    return put
+
   | otherwise => put
 
 
@@ -338,7 +340,6 @@ reg.tightloop = (state) -> (x,extra) !->
       J    = 0
 
       nJ   = each.length
-
       do
 
         nput = settle each[J],put,type,extra
