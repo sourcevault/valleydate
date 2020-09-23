@@ -62,8 +62,8 @@
     }
   }), R.join(""), l);
   print.required_input = function(){
-    lit(["[" + pkgname + "]", "[typeError]"], [c.er1, c.e3]);
-    lit(['\n', "  .required only accepts string and number.", '\n'], [0, c.e2, 0]);
+    lit(["[" + pkgname + "]", "[typeError]"], [c.er2, c.er3]);
+    lit(['\n', "  .required only accepts string and number.", '\n'], [0, c.warn, 0]);
     return show_stack();
   };
   print.input_fault = function(arg$){

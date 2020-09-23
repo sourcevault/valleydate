@@ -409,21 +409,31 @@ IS.int(2.1)
 // how to see both helper and primitive validators
 > console.log((require("valleydate")))
 {.*}
+maybe.list.ofstr
+maybe.list.ofnum
 maybe.required
-maybe.list.str
-maybe.list.num
 maybe.int.pos
 maybe.int.neg
 maybe.boolnum
+maybe.undef
+maybe.null
 maybe.bool
+list.ofstr
+list.ofnum
+not.undef
 maybe.obj
 maybe.arr
 maybe.num
 maybe.str
 maybe.fun
-list.str
-list.num
+not.null
+not.bool
 required
+not.obj
+not.arr
+not.num
+not.str
+not.fun
 boolnum
 undef
 null
