@@ -142,15 +142,21 @@
   });
   maybe.boolnum = be(maybe_boolnum);
   list = be.list;
-  list.ofstr = list(be.str).err(function(msg, arg$){
-    var key;
-    key = arg$[0];
-    return "value at index " + key + " is not of string type";
+  list.ofstr = list(be.str).err(function(msg, key){
+    switch (R.type(key)) {
+    case 'Undefined':
+      return "not a list of string.";
+    default:
+      return "in list of string, value at ." + key[0] + " is not of string type.";
+    }
   });
-  list.ofnum = list(be.num).err(function(msg, arg$){
-    var key;
-    key = arg$[0];
-    return "value at index " + key + " is not of number type";
+  list.ofnum = list(be.num).err(function(msg, key){
+    switch (R.type(key)) {
+    case 'Undefined':
+      return "not a list of number.";
+    default:
+      return "in list of number, value at ." + key[0] + " is not of number type.";
+    }
   });
   maybe.list = {};
   maybe.list.ofstr = maybe(list.ofstr);

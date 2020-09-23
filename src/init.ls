@@ -30,6 +30,7 @@ be.maybe = (F) -> (be F).or be.undef
 
 be.list  = (F) -> be.arr.map F
 
+
 be.list[uic]  = print.inner
 
 be.maybe[uic] = print.inner
@@ -201,12 +202,18 @@ maybe.boolnum = be maybe_boolnum
 list = be.list
 
 list.ofstr = list be.str
-.err (msg,[key]) ->
-  "value at index #{key} is not of string type"
+.err (msg,key)->
+
+  switch R.type key
+  | \Undefined => "not a list of string."
+  | otherwise  => "in list of string, value at .#{key[0]} is not of string type."
 
 list.ofnum = list be.num
-.err (msg,[key]) ->
-  "value at index #{key} is not of number type"
+.err (msg,key) ->
+
+  switch R.type key
+  | \Undefined => "not a list of number."
+  | otherwise  => "in list of number, value at .#{key[0]} is not of number type."
 
 maybe.list = {}
 
