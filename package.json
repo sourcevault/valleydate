@@ -6,20 +6,20 @@
   "license": "BSD-3-Clause",
   "description": "immutable object validator",
   "repository": "https://github.com/sourcevault/valleydate.git",
-  "version": "0.0.50",
+  "version": "0.0.57",
   "main": "dist/main.js",
   "scripts": {
     "test": "make travis"
   },
   "dependencies": {
     "@aitodotai/json-stringify-pretty-compact": "*",
-    "pretty-error": "2.1.1",
     "cli-color": "2.0.0",
-    "hoplon": "*",
-    "ramda": "0.26.1",
-    "flat": "*",
     "deep-freeze": "*",
-    "dot-prop": "*"
+    "dot-prop": "*",
+    "flat": "*",
+    "hoplon": "*",
+    "pretty-error": "2.1.1",
+    "ramda": "0.26.1"
   },
   "keywords": [
     "json-schema-validator",
