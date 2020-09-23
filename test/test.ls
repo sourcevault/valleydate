@@ -14,3 +14,6 @@ T = (x) -> true
 
 F = (x)  -> [false,\foobar]
 
+V = be.obj
+.on \foo do
+  be.obj.and -> [false,[\foo,\bar]]

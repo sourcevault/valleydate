@@ -29,17 +29,11 @@ sanatize = (F,x) ->
 
     else
 
-      switch R.type unknown
-      | \String   =>
-        msg = unknown
-      | otherwise =>
-        msg = "[#{pkgname}][typeError][user-supplied-validator] message has to be string."
-
       return {
         continue :false
         error    :true
         value    :x
-        message  :msg
+        message  :unknown
       }
 
   | otherwise =>

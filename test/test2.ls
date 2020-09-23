@@ -20,9 +20,11 @@ ret1 = isG7 "UK"
 
 ret2 = isG7 "Spain"
 
+
 if not (ret1.value is \UK)
 
 	p!
+
 
 if not (ret2.message is "not in G7")
 

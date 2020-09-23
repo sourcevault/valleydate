@@ -6,7 +6,7 @@
   z = com.z, l = com.l, R = com.R, j = com.j;
   main = {};
   sanatize = function(F, x){
-    var UFO, cont, unknown, msg;
+    var UFO, cont, unknown;
     UFO = F(x);
     switch (R.type(UFO)) {
     case 'Boolean':
@@ -36,18 +36,11 @@
           value: x
         };
       } else {
-        switch (R.type(unknown)) {
-        case 'String':
-          msg = unknown;
-          break;
-        default:
-          msg = "[" + pkgname + "][typeError][user-supplied-validator] message has to be string.";
-        }
         return {
           'continue': false,
           error: true,
           value: x,
-          message: msg
+          message: unknown
         };
       }
     default:

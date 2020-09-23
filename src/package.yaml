@@ -5,7 +5,7 @@ homepage: https://github.com/sourcevault/valleydate#readme.md
 license: BSD-3-Clause
 description: immutable object validator
 repository: https://github.com/sourcevault/valleydate.git
-version: 0.0.50
+version: 0.0.51
 main: dist/main.js
 scripts:
   "test": "make travis"

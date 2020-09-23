@@ -35,7 +35,7 @@
     be.maybe[name] = H;
   }
   showAttr = function(props){
-    return "has to be an object with required attributes:\n." + props.join(" .");
+    return ["has to be an object with required attributes:", props];
   };
   reqError = hop.immutable.wh(function(){
     var args, i$, len$, key, ref$;

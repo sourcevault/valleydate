@@ -67,10 +67,8 @@ for [name,type] in props
 #----------------------------
 
 show-attr = (props) ->
-  """
-    has to be an object with required attributes:
-    .#{props.join(" .")}
-  """
+  ["has to be an object with required attributes:",props]
+
 #----------------------------
 
 reqError = hop.immutable

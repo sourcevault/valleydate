@@ -156,7 +156,7 @@ The return object will always return `.continue`, `.error` and `.value`. First t
 
 ⚠️ `.value` may be **modified** if consumption units are used in the chain , so be careful. ⚠️
 
-If `{cotinue:false,error:true,...}` the return object would also have attributes `.message` and `.path`, both are `Array` , with `string` values :
+If `{cotinue:false,error:true,...}` the return object would also have attributes `.message` and `.path`, both are `Array` , with message values ( could be any type but better to be a string )  :
 
 - `message`- that passes along error messages from the validator.
 - `path` - in case the input is of type array or object, the path within the object where the validator function failed.
@@ -348,7 +348,7 @@ In case defaults are not sufficient, clean validators can be easily created.
 
 1. create a validator function with return types :
   - `boolean`
-  - `[boolean,string]`
+  - `[boolean,any]`
 
 2. provide it as first argument into `valleydate` as shown below :
 
