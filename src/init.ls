@@ -67,11 +67,6 @@ for [name,type] in props
 
 #----------------------------
 
-show-attr = (props) ->
-  ["has to be an object with required attributes:",props]
-
-#----------------------------
-
 reqError = hop.immutable
 .wh do
   ->
@@ -100,14 +95,13 @@ be.required = reqError.def ->
   be.obj.on do
     props
     be.not.undef
-    .err show-attr props
+    .err props
 
 be.maybe.required = ->
 
   req = be.required ...arguments
 
   be.maybe req
-
 
 #------------------------------------------------------
 
