@@ -91,7 +91,7 @@
     case 'd':
       return F(value);
     case 'i':
-      return F.auth(value);
+      return F.auth(value, extra);
     case 'f':
       return sanatize(F, value);
     case 'map':
@@ -164,11 +164,11 @@
         put = (function(){
           switch (shape) {
           case 'd':
-            return G(value[key]);
+            return G(value);
           case 'i':
-            return G.auth(value[key]);
+            return G.auth(value, extra);
           case 'f':
-            return sanatize(G, value[key]);
+            return sanatize(G, value);
           }
         }());
         if (put.path) {
@@ -295,7 +295,7 @@
       case 'd':
         return G(value[I]);
       case 'i':
-        return G.auth(value[I]);
+        return G.auth(value[I], extra);
       case 'f':
         return sanatize(G, value[I]);
       }
@@ -305,7 +305,7 @@
       case 'd':
         return G(value[key]);
       case 'i':
-        return G.auth(value[key]);
+        return G.auth(value[key], extra);
       case 'f':
         return sanatize(G, value[key]);
       }
@@ -315,7 +315,7 @@
       case 'd':
         return G(value[key]);
       case 'i':
-        return G.auth(value[key]);
+        return G.auth(value[key], extra);
       case 'f':
         return sanatize(G, value[key]);
       }
@@ -325,7 +325,7 @@
       case 'd':
         return G(value[key]);
       case 'i':
-        return G.auth(value[key]);
+        return G.auth(value[key], extra);
       case 'f':
         return sanatize(G, value[key]);
       }
@@ -333,11 +333,11 @@
     function fn4$(){
       switch (patt) {
       case 'd':
-        return G(value[key]);
+        return G(value);
       case 'i':
-        return G.auth(value[key]);
+        return G.auth(value, extra);
       case 'f':
-        return sanatize(G, value[key]);
+        return sanatize(G, value);
       }
     }
   };

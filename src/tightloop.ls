@@ -85,7 +85,7 @@ settle = (fun,put,type,extra) ->
 
   switch patt
   | \d   => F value
-  | \i   => F.auth value
+  | \i   => F.auth value,extra
   | \f   => sanatize F,value
   | \map =>
 
@@ -106,7 +106,7 @@ settle = (fun,put,type,extra) ->
 
         put = switch patt
         | \d => G value[I]
-        | \i => G.auth value[I]
+        | \i => G.auth value[I],extra
         | \f => sanatize G,value[I]
 
         if put.path
@@ -142,7 +142,7 @@ settle = (fun,put,type,extra) ->
 
         put = switch patt
         | \d => G value[key]
-        | \i => G.auth value[key]
+        | \i => G.auth value[key],extra
         | \f => sanatize G,value[key]
 
         if put.path
@@ -173,9 +173,9 @@ settle = (fun,put,type,extra) ->
       [key,shape,G] = data
 
       put = switch shape
-      | \d => G value[key]
-      | \i => G.auth value[key]
-      | \f => sanatize G,value[key]
+      | \d => G value
+      | \i => G.auth value,extra
+      | \f => sanatize G,value
 
       if put.path
         path = put.path
@@ -211,7 +211,7 @@ settle = (fun,put,type,extra) ->
 
         put = switch shape
         | \d => G value[key]
-        | \i => G.auth value[key]
+        | \i => G.auth value[key],extra
         | \f => sanatize G,value[key]
 
         if put.path
@@ -247,7 +247,7 @@ settle = (fun,put,type,extra) ->
 
         put = switch shape
         | \d => G value[key]
-        | \i => G.auth value[key]
+        | \i => G.auth value[key],extra
         | \f => sanatize G,value[key]
 
         if put.path
@@ -298,9 +298,9 @@ settle = (fun,put,type,extra) ->
     for [patt,G] in F
 
       nput = switch patt
-      | \d => G value[key]
-      | \i => G.auth value[key]
-      | \f => sanatize G,value[key]
+      | \d => G value
+      | \i => G.auth value,extra
+      | \f => sanatize G,value
 
       if nput.continue
         return nput
