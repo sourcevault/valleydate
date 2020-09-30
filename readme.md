@@ -26,7 +26,7 @@ valleydate is a functional approach to schema validation that puts composability
 1. [Helper Validators](#helper-validators)
       - [required](#helper-validators)
       - [integer](#helper-validators)
-
+      - [\*maybe](#maybe)
 
 .. **quick examples** ..
 
@@ -38,12 +38,14 @@ var IS = require("valleydate")
 var V = IS.required("foo","bar")
 
 console.log(V.auth({foo:1}))
+
 /*
 {
   continue: false,
   error: true,
-  value: {foo:1},
-  message: 'required value .bar is not present.'
+  value: {},
+  message: [ 'foo', 'bar' ],
+  path: [ 'foo' ]
 }
 */
 ```
@@ -71,8 +73,7 @@ var sample =
     age:30,
     address:
       {
-        city:"foocity",
-        country:null
+        city:"foocity"
       }
   }
 
@@ -81,10 +82,11 @@ console.log(V.auth(sample))
 /*{
   continue: false,
   error: true,
-  value: {name:"Fred", age:30, address: {city:"foocity", country:null}},
-  path: [ 'address', "country" ],
-  message: 'required value .country not present.'
+  value: { name: 'Fred', age: 30, address: { city: 'foocity' } },
+  message: [ 'city', 'country' ],
+  path: [ 'address', 'country' ]
 }*/
+
 ```
 
 🟢 Table 1 - method names and their mapping to which underlying type check.
@@ -101,6 +103,7 @@ null           Null
 num            Number
 str            String
 fun            Function
+arg            Argument
 -------------------------------
 cont           continue
 err            error
@@ -117,7 +120,7 @@ err            error
 
 We start by defining our basetypes:
 
-- `num`,`arr`,`str`,`null`,`bool`,`undef`,`obj` and `fun`.
+- `num`,`arr`,`str`,`null`,`bool`,`undef`,`arg`,`obj` and `fun`.
 
 .. then chainable units :
 
@@ -226,7 +229,7 @@ var canbeIP = IS.str.or(IS.arr.map(IS.str))
 
 ### - `map`
 
-###### `⛔️ .map only works for basetype Array and Object. ⛔️`
+###### `⛔️ .map only works for basetype Array, Object and Argument. ⛔️`
 
 - map allows to run validators on each value in an array or object.
 
@@ -249,7 +252,7 @@ var ratifydata = IS.obj.map(IS.num);
 
 ### - `on`
 
-###### `⛔️ .on only works for basetype Array and Object. ⛔️`
+###### `⛔️ .on only works for basetype Array, Object and Argument. ⛔️`
 
 - apply validator to specific value in an object or array.
 
@@ -393,7 +396,7 @@ Some validators are common enough to be added in core.
 🟡 using `int` :
 
 ```js
-IS = require("valleydate")
+var IS = require("valleydate")
 
 IS.int(2)
 //{continue:true,error:false,value:1}
@@ -411,16 +414,30 @@ IS.int(2.1)
 
 - The function exposed through `maybe.*` using `IS.int` :
 
+```js
+var IS = require("valleydate")
+
+var disp = () => console.log("success !")
+
+var V = IS.maybe.int
+.cont(disp)
+
+V.auth(undefined) //
+
+V.auth(2) // success !
+```
+
 🟢 Table 2 - all possible primitive and helper function provided in core.
 
 ```js
 // how to see both helper and primitive validators
 > console.log((require("valleydate")))
 {.*}
-list.ofnum           list.ofstr
-maybe.arr            maybe.bool
-maybe.boolnum        maybe.fun
-maybe.int.neg        maybe.int.pos
+list.ofint           list.ofnum
+list.ofstr           maybe.arr
+maybe.bool           maybe.boolnum
+maybe.fun            maybe.int.neg
+maybe.int.pos        maybe.list.ofint
 maybe.list.ofnum     maybe.list.ofstr
 maybe.null           maybe.num
 maybe.obj            maybe.required
@@ -429,12 +446,13 @@ not.arr              not.bool
 not.fun              not.null
 not.num              not.obj
 not.str              not.undef
-arr                  bool
-boolnum              fun
-int                  null
-num                  obj
-required             str
-undef                undefnull
+arg                  arr
+bool                 boolnum
+fun                  int
+null                 num
+obj                  required
+str                  undef
+undefnull
 ```
 
 ## LICENCE
