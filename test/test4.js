@@ -18,5 +18,5 @@
     },
     'joe': 33
   };
-  ret = main(example);
+  ret = main.auth(example);
 }).call(this);

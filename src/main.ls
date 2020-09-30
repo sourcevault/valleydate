@@ -6,58 +6,32 @@ require "./tightloop" # [....]
 
 # ------------------------------------------------------------------
 
-{com,print,pkgname,tightloop,already_created} = reg
+{com,print,tightloop,sig,cache} = reg
 
-{z,l,R,hop,j,uic,deep-freeze} = com
-
-# ------------------------------------------------------------------
-
-init = {}
-
-init.state =
-  all      :[]
-  type     :null
-  str      :[]
+{z,l,R,hop,j,uic,deep-freeze,loopError} = com
 
 # ------------------------------------------------------------------
 
-init.props =
-  [\obj \Object]
-  [\arr \Array]
-  [\undef \Undefined]
-  [\null \Null]
-  [\num \Number]
-  [\str \String]
-  [\fun \Function]
-  [\bool \Boolean]
+assort = (F) ->
 
-# ------------------------------------------------------------------
+  if (cache.def.has F)
 
-loopError = ->
+    [\d,F]
 
-  noop  = ->
-  apply = -> new Proxy(noop,{apply:apply,get:get})
-  get   = -> new Proxy(noop,{apply:apply,get:get})
+  else if (cache.ins.has F)
 
-  new Proxy(noop,{apply:apply,get:get})
+    [\i,F]
 
-reg.loopError = loopError
+  else
 
-# ------------------------------------------------------------------
+    [\f,F]
 
-define = {}
-
-# ------------------------------------------------------------------
 
 cato = (arg) ->
 
   switch R.type arg
 
-  | \Function =>
-
-    switch already_created.has arg
-    | false => [\f,arg]
-    | true  => [\s,arg]
+  | \Function,\Object => assort arg
 
   | \Arguments =>
 
@@ -67,66 +41,77 @@ cato = (arg) ->
 
       F = arg[I]
 
-      block = switch already_created.has F
-
-      | false => [\f,F]
-      | true  => [\s,F]
+      block = assort F
 
       fun.push block
 
     fun
 
-# ------------------------------------------------------------------
+# -------------------------------------------------------
 
-define.base = (type) -> (UFO) ->
+wrap      = {}
+  ..on    = null
+  ..rest  = null
 
-  if ((R.type UFO) is type)
+gaurd     = {}
+  ..on    = null
+  ..rest  = null
 
-    {continue:true,error:false,value:UFO}
+define = {}
+  ..and    = null
+  ..or     = null
+  ..proto  = null
+  ..on     = null
+  ..basis  = null
 
-  else
+validate   = {}
+  ..on     = null
+  ..rest   = null
 
-    str = R.toLower "not #{type}"
+#---------------------------------------------------------
 
-    {error:true,continue:false,message:str,value:UFO}
+props = [\and \or \alt \cont \err \jam \fix]
 
-# ------------------------------------------------------------------
+init-state =
+  all  :[]
+  type :null
+  str  :[]
 
-define.not_base = (type) -> (UFO) ->
+wrap.rest  = (type) -> -> gaurd.rest arguments,@[sig],type
 
-  if ((R.type UFO) is type)
+wrap.on    = -> gaurd.on arguments,@[sig]
 
-    str = R.toLower "is #{type}"
+proto       = {}
+  ..normal  = {}
+  ..functor = null
 
-    {error:true,continue:false,message:str,value:UFO}
+for key,val of props
 
-  else
+  proto.normal[val]  = wrap.rest val
 
-    {continue:true,error:false,value:UFO}
+proto.normal.auth    = tightloop
 
-# ------------------------------------------------------------------
+proto.functor        = {...proto.normal}
 
-define.maybe_base = (type) -> (UFO) ->
+proto.functor.map    = wrap.rest \map
 
-  if (R.type UFO) in [\Undefined,type]
+proto.functor.on     = wrap.on
 
-    return {continue:true,error:false,value:UFO}
+proto.normal[uic]  = print.proto
 
-  else
+proto.functor[uic] = print.proto
 
-    str = R.toLower "not #{type}"
-
-    {error:true,continue:false,message:str,value:UFO}
-
-
-# ------------------------------------------------------------------
+#---------------------------------------------------------
 
 custom = hop
+
 .arn 1, -> print.route [\input.fault [\custom [\arg_count]]] ; loopError!
 
 .whn do
 
-  (f) -> ((R.type f) is \Function)
+  (f) ->
+
+    ((R.type f) is \Function) or (f[sig])
 
   -> print.route [\input.fault [\custom [\not_function]]] ; loopError!
 
@@ -135,54 +120,240 @@ custom = hop
   G = cato F
 
   data = {
-    ...init.state
-    ...{
       type  : \custom
       all   : [[G]]
       str   : ["{..}"]
-    }
   }
 
-  define.forward data
-
+  define.proto data
 
 custom[uic] = print.inner
 
-main_wrap = (type,state) -> -> main type,state,arguments
+#--------------------------------------------------------------------------
 
-define.forward = (data,fun)->
+validate.on = hop.unary
 
-  if fun
+.arn [1,2],(args,state) -> [\input.fault [\on [\arg_count,[state.str,\on]]]]
 
-    forward       = fun
+.arma do
+  1
+  ([maybe-object],state) ->
 
-  else
+    if ((R.type maybe-object) is \Object)
 
-    forward       = tightloop data
+      for I,val of maybe-object
 
-  forward[uic]    = print.log
+        if not (((R.type val) is \Function) or (cache.ins.has val))
 
-  forward.and     = main_wrap \and,data
+          return [\input.fault [\on [\object,[state.str,\on]]]]
 
-  forward.or      = main_wrap \or,data
+      return [\object]
 
-  forward.cont    = main_wrap \cont,data
+    else
 
-  forward.jam     = main_wrap \jam,data
+      false
 
-  forward.fix     = main_wrap \fix,data
+.arma do
+  2
+  ([maybe-array,maybe-function],state)->
 
-  forward.err     = main_wrap \err,data
+    if ((R.type maybe-array) is \Array)
 
-  if data.type in [\obj,\arr]
+      for I in maybe-array
 
-    forward.map   = main_wrap \map,data
+        if not ((R.type I) is \String)
 
-    forward.on    = main_wrap \on,data
+          return [\input.fault [\on [\array ,[state.str,\on]]]]
 
-  already_created.add forward
+      if not (((R.type maybe-function) is \Function) or (cache.ins.has maybe-function))
 
-  forward
+          return [\input.fault [\on [\array,[state.str,\on]]]]
+
+      return [\array]
+
+    else
+
+      return false
+
+  ([maybe-string,maybe-function],state) ->
+
+    if not ((R.type maybe-string) is \String)
+
+      return false
+
+    if not (((R.type maybe-function) is \Function) or (cache.ins.has maybe-function))
+
+      return [\input.fault [\on [\string,[state.str,\on]]]]
+
+    return [\string]
+
+.def (args,state) -> [\input.fault [\on [\typeError,[state.str,\on]]]]
+
+#-----------------------------------------------------------------------
+
+validate.rest = (funs,state,type) ->
+
+  switch type
+
+  | \and,\or,\alt  =>
+
+    if (funs.length is 0)
+
+      print.route [\input.fault,[type,[\arg_count,[state.str,type]]]]
+
+      return false
+
+    for F in funs
+
+      if not (((R.type F) is \Function) or (cache.ins.has F))
+
+        print.route [\input.fault,[type,[\not_function,[state.str,type]]]]
+
+        return false
+
+    return true
+
+  | \map      =>
+
+    if not (funs.length is 1)
+
+      print.route [\input.fault,[type,[\arg_count,[state.str,type]]]]
+
+      return false
+
+    return true
+
+    [f] = funs
+
+    if not (((R.type f) is \Function) or (cache.ins.has F))
+
+      print.route [\input.fault,[type,[\not_function,[state.str,type]]]]
+
+      return false
+
+    return true
+
+  | \err,\fix,\cont,\jam  =>
+
+    return true
+
+  | otherwise => return false
+
+#-----------------------------------------------------------------------
+
+gaurd.rest = hop
+.wh do
+  validate.rest
+  (args,state,type) ->
+
+    #----------------------------------
+
+    funs = cato args
+
+    block = switch type
+    | \and                  => define.and state,funs
+    | \or                   => define.or  state,funs
+    | \alt                  => define.or state,[[\alt,funs]]
+    | \map                  => define.and state,[[\map,funs[0]]]
+    | \err,\fix,\cont,\jam  => define.and state,[[type,args[0]]]
+
+    data = {
+      ...state
+      ...{
+        all   :block
+        str   :state.str.concat type
+      }
+    }
+
+    define.proto data
+
+.def loopError
+
+#-----------------------------------------------------------------------
+
+define.on = (type,state,args) ->
+
+  switch type
+  | \array =>
+
+    [props,F] = args
+
+    put = [\on,[\array,[(R.uniq props),...(cato F)]]]
+
+  | \string =>
+
+    [key,F] = args
+
+    put = [\on,[\string,[key,...(cato F)]]]
+
+    put
+
+  | \object =>
+
+    [ob] = args
+
+    fun   = [[key,...(cato val)] for key,val of ob]
+
+    put = [\on,[\object,fun]]
+
+  block = define.and state,[put]
+
+  data = {
+    ...state
+    ...{
+      phase :\chain
+      all   :block
+      str   :state.str.concat \on
+    }
+  }
+
+  define.proto data
+
+#-----------------------------------------------------------------------
+
+gaurd.on = (args,state)->
+
+  info = validate.on args,state
+
+  [type] = info
+
+  switch type
+  | \input.fault => print.route info ; return loopError!
+
+  define.on type,state,args
+
+define.proto = (data,type = data.type) ->
+
+  switch type
+  | \obj,\arr =>
+    put = Object.create proto.functor
+  | otherwise =>
+    put = Object.create proto.normal
+
+  put[sig] = data
+
+  cache.ins.add put
+
+  put
+
+define.basis = (name,F) ->
+
+  cache.def.add F
+
+  data = {
+    ...init-state
+    ...{
+      type  :name
+      str   :[name]
+      all   :[[[\d,F]]]
+    }
+  }
+
+  proto = define.proto data
+
+  Object.setPrototypeOf F,proto
+
+  void
 
 # ------------------------------------------------------------------
 
@@ -229,223 +400,9 @@ define.or = (state,funs) ->
 
     all.concat [funs]
 
-# ------------------------------------------------------------------
+#-----------------------------------------------------------------------
 
-
-verify = {}
-
-verify.on = hop.unary
-
-.arn [1,2],(args,state) -> [\input.fault [\on [\arg_count,[state.str,\on]]]]
-
-.arma do
-  1
-  ([maybe-object],state) ->
-
-    if ((R.type maybe-object) is \Object)
-
-      for I,val of maybe-object
-
-        if not ((R.type val) is \Function)
-
-          return [\input.fault [\on [\object,[state.str,\on]]]]
-
-      return [\object]
-
-    else
-
-      false
-
-.arma do
-  2
-  ([maybe-array,maybe-function],state)->
-
-    if ((R.type maybe-array) is \Array)
-
-      for I in maybe-array
-
-        if not ((R.type I) is \String)
-
-          return [\input.fault [\on [\array ,[state.str,\on]]]]
-
-      if not ((R.type maybe-function) is \Function)
-
-          return [\input.fault [\on [\array,[state.str,\on]]]]
-
-      return [\array]
-
-    else
-
-      return false
-
-  ([maybe-string,maybe-function],state) ->
-
-    if not ((R.type maybe-string) is \String)
-
-      return false
-
-    if not ((R.type maybe-function) is \Function)
-
-      return [\input.fault [\on [\string,[state.str,\on]]]]
-
-    return [\string]
-
-.def (args,state)-> [\input.fault [\on [\typeError,[state.str,\on]]]]
-
-
-verify.rest = (type,state,funs) ->
-
-  switch type
-  | \and \or  =>
-
-    if (funs.length is 0)
-
-      print.route [\input.fault,[type,[\arg_count,[state.str,type]]]]
-
-      return false
-
-    for F in funs
-
-      if not ((R.type F) is \Function)
-
-        print.route [\input.fault,[type,[\not_function,[state.str,type]]]]
-
-        false
-
-    true
-
-  | \map      =>
-
-    if not (funs.length is 1)
-
-      print.route [\input.fault,[type,[\arg_count,[state.str,type]]]]
-
-      return false
-
-    [f] = funs
-
-    if not ((R.type f) is \Function)
-
-      print.route [\input.fault,[type,[\not_function,[state.str,type]]]]
-
-      return false
-
-    return true
-
-  | \err,\fix,\cont,\jam  =>
-
-    return true
-
-  | otherwise => return false
-
-
-define.on = (type,state,args) ->
-
-  switch type
-  | \array =>
-
-    [props,F] = args
-
-    put = [\on,[\array,[(R.uniq props),...(cato F)]]]
-
-  | \string =>
-
-    [key,F] = args
-
-    put = [\on,[\string,[key,...(cato F)]]]
-
-    put
-
-  | \object =>
-
-    [ob] = args
-
-    fun   = [[key,...(cato val)] for key,val of ob]
-
-    put = [\on,[\object,fun]]
-
-  block = define.and state,[put]
-
-  data = {
-    ...state
-    ...{
-      phase :\chain
-      all   :block
-      str   :state.str.concat \on
-    }
-  }
-
-  define.forward data
-
-# -----------------------------------------------------------------------
-
-main = hop
-
-.wh do
-  (type) -> type is \on
-
-  (type,state,args) ->
-
-    patt = verify.on args,state
-
-    [type] = patt
-
-    switch type
-    | \input.fault =>
-
-      print.route patt
-
-      return loopError!
-
-    define.on type,state,args
-
-.wh do
-  verify.rest
-  (type,state,args) ->
-
-    # ----------------------------------
-
-    funs = cato args
-
-    block = switch type
-    | \and                  => define.and state,funs
-    | \or                   => define.or  state,funs
-    | \map                  => define.and state,[[\map,funs[0]]]
-    | \err,\fix,\cont,\jam  => define.and state,[[type,args[0]]]
-
-    data = {
-      ...state
-      ...{
-        all   :block
-        str   :state.str.concat type
-      }
-    }
-
-    define.forward data
-
-
-.def loopError
-
-# ------------------------------------------------------------------
-
-dressing = (name,F) ->
-
-  already_created.add F
-
-  data = {
-    ...init.state
-    ...{
-      type :name
-      str  :[name]
-      all  :[[[\s,F]]]
-    }
-  }
-
-  define.forward data,F
-
-  void
-
-reg.internal = {custom,dressing,define}
+reg.internal = {custom,define}
 
 pkg = require "./init" # [....]
 

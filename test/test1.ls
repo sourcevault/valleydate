@@ -24,7 +24,7 @@ sample =
 				country:null
 
 
-ret = V sample
+ret = V.auth sample
 
 if not (ret.value.address.country is \France)
 	p!

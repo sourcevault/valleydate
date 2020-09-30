@@ -2,15 +2,15 @@ reg = require "./registry"
 
 {com,pkg,loopError,print}     = reg
 
-{already_created,internal}    = reg
+{internal,cache}              = reg
 
 {z,l,R,j,hop,deep-freeze,uic} = com
 
-{custom,dressing,define}      = internal
+{custom,define}  = internal
 
 be = custom
 
-# ----------------------------
+# ------------------------------------------------------------------
 
 props =
   [\obj \Object]
@@ -22,14 +22,53 @@ props =
   [\fun \Function]
   [\bool \Boolean]
 
-# ----------------------------
+base = (type) -> (UFO) ->
 
-be.not = (F) -> be (x) -> not (F x).continue
+  if ((R.type UFO) is type)
 
-be.maybe = (F) -> (be F).or be.undef
+    {continue:true,error:false,value:UFO}
 
-be.list  = (F) -> be.arr.map F
+  else
 
+    str = R.toLower "not #{type}"
+
+    {error:true,continue:false,message:str,value:UFO}
+
+# ------------------------------------------------------------------
+
+not_base = (type) -> (UFO) ->
+
+  if ((R.type UFO) is type)
+
+    str = R.toLower "is #{type}"
+
+    {error:true,continue:false,message:str,value:UFO}
+
+  else
+
+    {continue:true,error:false,value:UFO}
+
+# ------------------------------------------------------------------
+
+maybe_base = (type) -> (UFO) ->
+
+  if (R.type UFO) in [\Undefined,type]
+
+    return {continue:true,error:false,value:UFO}
+
+  else
+
+    str = R.toLower "not #{type}"
+
+    {error:true,continue:false,message:str,value:UFO}
+
+# ------------------------------------------------------------------
+
+be.not        = (F) -> be (x) -> not (F x).continue
+
+be.maybe      = (F) -> (be F).or be.undef
+
+be.list       = (F) -> be.arr.map F
 
 be.list[uic]  = print.inner
 
@@ -37,35 +76,34 @@ be.maybe[uic] = print.inner
 
 be.not[uic]   = print.inner
 
-
-# ----------------------------
+# ------------------------------------------------------------------
 
 for [name,type] in props
 
-  F = define.base type
+  A = base type
 
-  dressing name,F
+  base name,A
 
-  be[name] = F
+  define.basis name,A
 
-  #----------------------------
-
-  G = define.not_base type
-
-  dressing name,G
-
-  be.not[name] = G
+  be[name] = A
 
   #----------------------------
 
-  H = define.maybe_base type
+  B = not_base type
 
-  dressing name,H
+  define.basis name,B
 
-  be.maybe[name] = H
+  be.not[name] = B
 
+  #----------------------------
 
-#----------------------------
+  C = maybe_base type
+
+  define.basis name,C
+
+  be.maybe[name] = C
+
 
 reqError = hop.immutable
 .wh do
@@ -82,9 +120,7 @@ reqError = hop.immutable
         return true
 
     return false
-
   loopError
-
 
 #------------------------------------------------------
 
@@ -122,7 +158,7 @@ integer = (UFO) ->
     return {continue:true,error:false,value:UFO}
 
 
-already_created.add integer
+cache.def.add integer
 
 #------------------------------------------------------
 
@@ -136,7 +172,7 @@ boolnum = (UFO) ->
 
     return {continue:false,error:true,message:"not a number or boolean",value:UFO}
 
-already_created.add boolnum
+cache.def.add boolnum
 
 #-------------------------------------------------------
 
@@ -151,7 +187,7 @@ maybe_boolnum = (UFO) ->
     return {continue:false,error:true,message:"not a number or boolean",value:UFO}
 
 
-already_created.add maybe_boolnum
+cache.def.add maybe_boolnum
 
 #-------------------------------------------------------
 
@@ -195,7 +231,6 @@ maybe.boolnum = be maybe_boolnum
 
 undefnull = (UFO) ->
 
-
   if ((R.type UFO) in [\Undefined \Null])
 
     return {continue:true,error:false,value:UFO}
@@ -203,7 +238,7 @@ undefnull = (UFO) ->
 
     return {continue:false,error:true,message:"not undefined or null",value:UFO}
 
-already_created.add undefnull
+cache.def.add undefnull
 
 #--------------------------------------------------------
 

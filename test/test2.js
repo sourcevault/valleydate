@@ -14,8 +14,8 @@
     }
   };
   isG7 = be.str.and(valG7);
-  ret1 = isG7("UK");
-  ret2 = isG7("Spain");
+  ret1 = isG7.auth("UK");
+  ret2 = isG7.auth("Spain");
   if (!(ret1.value === 'UK')) {
     p();
   }

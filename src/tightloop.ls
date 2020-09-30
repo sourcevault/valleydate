@@ -1,6 +1,6 @@
 reg = require "./registry"
 
-{com,already_created,pkgname} = reg
+{com,already_created,pkgname,sig} = reg
 
 {z,l,R,j} = com
 
@@ -46,7 +46,7 @@ sanatize = (F,x) ->
     }
 
 
-red = (fun,put,extra) ->
+blunder = (fun,put,extra) ->
 
   [patt,F] = fun
 
@@ -84,7 +84,8 @@ settle = (fun,put,type,extra) ->
   {value}  = put
 
   switch patt
-  | \s   => F value
+  | \d   => F value
+  | \i   => F.auth value
   | \f   => sanatize F,value
   | \map =>
 
@@ -104,7 +105,8 @@ settle = (fun,put,type,extra) ->
       while I < In
 
         put = switch patt
-        | \s => G value[I]
+        | \d => G value[I]
+        | \i => G.auth value[I]
         | \f => sanatize G,value[I]
 
         if put.path
@@ -139,7 +141,8 @@ settle = (fun,put,type,extra) ->
       for key,val of value
 
         put = switch patt
-        | \s => G value[key]
+        | \d => G value[key]
+        | \i => G.auth value[key]
         | \f => sanatize G,value[key]
 
         if put.path
@@ -170,7 +173,8 @@ settle = (fun,put,type,extra) ->
       [key,shape,G] = data
 
       put = switch shape
-      | \s => G value[key]
+      | \d => G value[key]
+      | \i => G.auth value[key]
       | \f => sanatize G,value[key]
 
       if put.path
@@ -206,7 +210,8 @@ settle = (fun,put,type,extra) ->
         key = arr[I]
 
         put = switch shape
-        | \s => G value[key]
+        | \d => G value[key]
+        | \i => G.auth value[key]
         | \f => sanatize G,value[key]
 
         if put.path
@@ -241,7 +246,8 @@ settle = (fun,put,type,extra) ->
         [key,shape,G] = data[I]
 
         put = switch shape
-        | \s => G value[key]
+        | \d => G value[key]
+        | \i => G.auth value[key]
         | \f => sanatize G,value[key]
 
         if put.path
@@ -287,10 +293,26 @@ settle = (fun,put,type,extra) ->
 
     return put
 
+  | \alt =>
+
+    for [patt,G] in F
+
+      nput = switch patt
+      | \d => G value[key]
+      | \i => G.auth value[key]
+      | \f => sanatize G,value[key]
+
+      if nput.continue
+        return nput
+
+    return nput
+
   | otherwise => put
 
 
-reg.tightloop = (state) -> (x,extra) !->
+reg.tightloop = (x,extra) !->
+
+  state = @[sig]
 
   {all,type} = state
 
@@ -316,7 +338,7 @@ reg.tightloop = (state) -> (x,extra) !->
         fun = each[J]
 
         if put.error
-          put = red fun,put,extra
+          put = blunder fun,put,extra
         else
           put = settle fun,put,type,extra
 
@@ -334,21 +356,31 @@ reg.tightloop = (state) -> (x,extra) !->
       J    = 0
 
       nJ   = each.length
+
       do
+
+        [patt] = each[J]
 
         nput = settle each[J],put,type,extra
 
-        if nput.continue
+        if nput.continue and (patt is \alt)
           put = nput
-          break
+          J = nJ
 
-        J += 1
+        else if nput.continue
+          put = nput
+          J = nJ
+          I = nI
+
+        else if nput.error
+
+          J += 1
+
       while J < nJ
 
-      if put.continue
-        I = nI
-      else
-        I += 1
+
+      I += 1
+
 
   while I < nI
 

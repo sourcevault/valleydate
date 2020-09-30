@@ -16,9 +16,9 @@ valG7 = (s)->
 
 isG7 = be.str.and valG7
 
-ret1 = isG7 "UK"
+ret1 = isG7.auth "UK"
 
-ret2 = isG7 "Spain"
+ret2 = isG7.auth "Spain"
 
 
 if not (ret1.value is \UK)

@@ -14,7 +14,7 @@
     return [false, 'foobar'];
   };
   V = be.arr.map(be.str).or(be.str).and(F);
-  ret = V(null);
+  ret = V.auth(null);
   if (!(ret.message === "not array")) {
     p();
   }

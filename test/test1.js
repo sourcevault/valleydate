@@ -15,7 +15,7 @@
       country: null
     }
   };
-  ret = V(sample);
+  ret = V.auth(sample);
   if (!(ret.value.address.country === 'France')) {
     p();
   }

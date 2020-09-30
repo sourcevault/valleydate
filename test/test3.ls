@@ -15,7 +15,7 @@ main = be.obj.on do
   be.obj
   .on "path",SA
 
-ret = main({chokidar:{}})
+ret = main.auth ({chokidar:{}})
 
 try
 

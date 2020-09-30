@@ -18,7 +18,7 @@ V = be.arr.map be.str
 .or be.str
 .and F
 
-ret = V null
+ret = V.auth null
 
 if not (ret.message is "not array")
   p!

@@ -4,14 +4,15 @@ reg = require "./registry"
 
 {l,z,cc,R,j,pretty-error,hop,flat} = com
 
-{print} = reg
+{pad,alpha-sort} = com
+
+{print,sig} = reg
 
 
 pkgname = reg.pkgname
 
 c = {}
   ..ok1   = cc.greenBright
-  ..ok2   = cc.xterm 8
   ..warn  = cc.xterm 209
   ..er1   = cc.xterm 196
   ..er2   = cc.magentaBright
@@ -126,7 +127,7 @@ print.input_fault.andor = ([type,info])->
   switch type
   | \arg_count =>
 
-    l c.ok2 do
+    l c.grey do
       "  no value passed."
       "\n\n"
       " minimum of 1 argument of function type is needed."
@@ -138,7 +139,7 @@ print.input_fault.andor = ([type,info])->
 
   l ""
 
-  l c.ok2 " - | type signature / information | - "
+  l c.grey " - | type signature / information | - "
 
   l ""
 
@@ -147,7 +148,7 @@ print.input_fault.andor = ([type,info])->
   l ""
 
 
-print.input_fault.custom = ([patt,loc])->
+print.input_fault.custom = ([patt,loc]) ->
 
   show_name "custom validator"
 
@@ -156,7 +157,7 @@ print.input_fault.custom = ([patt,loc])->
   switch patt
   | \arg_count =>
 
-    l c.ok2 do
+    l c.grey do
       "  no value passed."
       "\n\n"
       " minimum of 1 argument of function type is needed."
@@ -164,7 +165,7 @@ print.input_fault.custom = ([patt,loc])->
 
   | \not_function =>
 
-    l c.er1 "  first argument has to be a function."
+    l c.er1 "  first argument has to be a function / valleydate object ."
 
   l ""
 
@@ -183,11 +184,11 @@ print.input_fault.map = ([patt,loc]) ->
   switch patt
   | \arg_count    =>
 
-    l c.ok2 "  only accepts 1 argument required of function type."
+    l c.grey "  only accepts 1 argument required of function type."
 
   | \not_function =>
 
-    l c.ok2 "  first argument has to be a function."
+    l c.grey "  first argument has to be a function."
 
 
   l ""
@@ -227,7 +228,7 @@ print.input_fault.on = ([patt,loc])->
 
     l ""
 
-    lit [" - | types that may match ",".on"," | -"],[c.ok2,c.ok1,c.white]
+    lit [" - | types that may match ",".on"," | -"],[c.grey,c.ok1,c.white]
 
     l ""
 
@@ -270,16 +271,18 @@ print.log = ->
 
   for I in prop
 
-    str += c.ok2 (I + " ")
+    str += c.grey (I + " ")
 
   str
 
 
-sort = R.sort (a,b) -> b.length - a.length
+sort = (x) -> x.sort(alpha-sort.ascending)
+
+  # R.sort (a,b) -> b.length - a.length
 
 includes = R.flip R.includes
 
-same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on']
+same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on','alt']
 
 myflat = hop
 .ma do
@@ -303,18 +306,51 @@ myflat = hop
   fin
 
 
-print.inner = ->
+print.proto = ->
 
-  props =  [ I for I of flat myflat @]
+  if @[sig] is undefined then return null
 
-  str = c.ok1 "{.*}\n"
+  props = [name for name of @]
+
+  str = c.ok1 "{.*} "
 
   str += props
   |> sort
-  |> R.join "\n"
+  |> R.join " "
   |> c.grey
 
   str
 
+
+split = R.groupBy (name) -> (/\./).test name
+
+find_len = R.reduce (accum,x) ->
+
+  if x.length > accum
+
+    x.length
+
+  else accum
+
+print.inner = ->
+
+  props =  sort [ I for I of flat myflat @]
+
+  ob = split props
+
+  len = (find_len 0,props) + 4
+
+  init-table = [...ob.true,...ob.false]
+
+  table = [pad.padRight I, len for I in init-table]
+
+  table = [I.join " " for I in (R.splitEvery 2,table)].join "\n"
+
+  str = c.ok1 "{.*}\n"
+
+  str += table
+  |> c.grey
+
+  str
 
 module.exports = print

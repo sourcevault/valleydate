@@ -19,7 +19,8 @@
     "ramda": "0.26.1",
     "flat": "*",
     "deep-freeze": "*",
-    "dot-prop": "*"
+    "advanced-pad": "*",
+    "alpha-sort": "*"
   },
   "keywords": [
     "json-schema-validator",

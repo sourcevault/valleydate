@@ -8,13 +8,15 @@ flat             = require "flat"
 
 hoplon           = require "hoplon"
 
-dot-prop         = require "dot-prop"
-
 cc               = require "cli-color"
+
+alpha-sort       = require "alpha-sort"
 
 deep-freeze      = require "deep-freeze"
 
 pretty-error     = require "pretty-error"
+
+advanced-pad     = require "advanced-pad"
 
 jspc             = require "@aitodotai/json-stringify-pretty-compact"
 
@@ -35,6 +37,14 @@ j = (x) -> l jspc do
     margins:true
   }
 
+loopfault = ->
+
+  loopError  = ->
+  apply = -> new Proxy(loopError,{apply:apply,get:get})
+  get   = -> new Proxy(loopError,{apply:apply,get:get})
+
+  new Proxy(loopError,{apply:apply,get:get})
+
 module.exports =
   *z:z
    j:j
@@ -43,7 +53,9 @@ module.exports =
    cc:cc
    flat:flat
    hop:hoplon
-   dot-prop:dot-prop
+   pad:advanced-pad
+   loopError:loopfault
+   alpha-sort:alpha-sort
    deep-freeze:deep-freeze
    uic:util_inspect_custom
    pretty-error:pretty-error

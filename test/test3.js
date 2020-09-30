@@ -8,7 +8,7 @@
   p = print.fail("test/test3.js");
   SA = be.str.or(be.arr.or(be.num));
   main = be.obj.on("chokidar", be.obj.on("path", SA));
-  ret = main({
+  ret = main.auth({
     chokidar: {}
   });
   try {

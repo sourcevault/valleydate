@@ -1,7 +1,6 @@
 
 ![](https://raw.githubusercontent.com/sourcevault/valleydate/dev/logo.jpg)
 
-
 ```js
 npm install valleydate
 ////| github.com | much install
@@ -16,6 +15,7 @@ valleydate is a functional approach to schema validation that puts composability
 1. [Chainable Functions](#chainable-functions)
       - [and](#--and)
       - [or](#--or)
+      - [alt](#--alt)
       - [map](#--map)
       - [on](#--on)
       - [cont](#--cont)
@@ -37,7 +37,7 @@ var IS = require("valleydate")
 
 var V = IS.required("foo","bar")
 
-console.log(V({foo:1}))
+console.log(V.auth({foo:1}))
 /*
 {
   continue: false,
@@ -76,7 +76,7 @@ var sample =
       }
   }
 
-console.log(V(sample))
+console.log(V.auth(sample))
 
 /*{
   continue: false,
@@ -87,7 +87,7 @@ console.log(V(sample))
 }*/
 ```
 
-🟢 Table 1 - words have been shortened, table provided to avoid confusion, the first listing shows which methods correspondence to which type check.
+🟢 Table 1 - method names and their mapping to which underlying type check.
 
 
 ```
@@ -121,7 +121,7 @@ We start by defining our basetypes:
 
 .. then chainable units :
 
-- `and`,`or`,`map`,`on`.
+- `and`,`or`,`alt`,`map`,`on`.
 
 .. and finally consumption units :
 
@@ -190,11 +190,11 @@ var valG7 = function(s){
 }
 var isG7 = IS.str.and(valG7)
 
-isG7("UK")
+isG7.auth("UK")
 
 //{ continue: true, error: false, value: 'UK' }
 
-isG7("Spain")
+isG7.auth("Spain")
 
 /*{ continue: false,
   error: true,
@@ -211,6 +211,14 @@ isG7("Spain")
 - when validators need to be combined, here data can satisfy **either** validator.
 
 - a useful example would be accepting a single string or multiple strings in an array to define ipaddress to use in an application.
+
+```js
+var canbeIP = IS.str.or(IS.arr.map(IS.str))
+```
+
+### - `alt`
+
+- functionally similar to `or` using **either** condition **but** the result is merged with upstream validator chain.
 
 ```js
 var canbeIP = IS.str.or(IS.arr.map(IS.str))
@@ -254,19 +262,19 @@ var V = IS.obj
 .on("foo",IS.num)
 .on("bar",IS.num)
 
-V((foo:1,bar:2))
+V.auth((foo:1,bar:2))
 
 // Also ...
 
 var V1 = IS.obj.on({foo:IS.num,bar:IS.num})
 
-V1((foo:1,bar:2))
+V1.auth((foo:1,bar:2))
 
 // Also ...
 
 var V2 = IS.obj.on(["foo","bar"],IS.num)
 
-V2((foo:1,bar:2))
+V2.auth((foo:1,bar:2))
 
 ```
 
@@ -303,7 +311,7 @@ var canbeIP = IS.arr.map(IS.str)
 .or(IS.str.cont (x) => [x]) // <-- we want string to go inside an array
 // so we do not have to do extra prcessing downstream.
 
-var ret = canbeIP("209.85.231.104")
+var ret = canbeIP.auth("209.85.231.104")
 
 console.log(ret)
 //{error: false, continue: true, value: ['209.85.231.104']}
@@ -324,7 +332,7 @@ var canbeIP = IS.arr.map(IS.str)
 .or(IS.string.cont((x) => [x]))
 .fix(["127.0.0.1"])
 
-var ret = canbeIP(null)
+var ret = canbeIP.auth(null)
 
 console.log(ret) // ["127.0.0.1"]
 ```
@@ -409,42 +417,24 @@ IS.int(2.1)
 // how to see both helper and primitive validators
 > console.log((require("valleydate")))
 {.*}
-maybe.list.ofstr
-maybe.list.ofnum
-maybe.required
-maybe.int.pos
-maybe.int.neg
-maybe.boolnum
-maybe.undef
-maybe.null
-maybe.bool
-list.ofstr
-list.ofnum
-not.undef
-maybe.obj
-maybe.arr
-maybe.num
-maybe.str
-maybe.fun
-undefnull
-not.null
-not.bool
-required
-not.obj
-not.arr
-not.num
-not.str
-not.fun
-boolnum
-undef
-null
-bool
-obj
-arr
-num
-str
-fun
-int
+list.ofnum           list.ofstr
+maybe.arr            maybe.bool
+maybe.boolnum        maybe.fun
+maybe.int.neg        maybe.int.pos
+maybe.list.ofnum     maybe.list.ofstr
+maybe.null           maybe.num
+maybe.obj            maybe.required
+maybe.str            maybe.undef
+not.arr              not.bool
+not.fun              not.null
+not.num              not.obj
+not.str              not.undef
+arr                  bool
+boolnum              fun
+int                  null
+num                  obj
+required             str
+undef                undefnull
 ```
 
 ## LICENCE
