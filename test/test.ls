@@ -13,7 +13,3 @@ be = valleydate
 T = (x) -> true
 
 F = (x)  -> [false,\foobar]
-
-V = be.obj.or be.num.or -> true
-
-

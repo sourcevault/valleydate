@@ -75,8 +75,6 @@ blunder = (fun,put,extra) ->
   | otherwise => put
 
 
-
-
 settle = (fun,put,type,extra) ->
 
   [patt,F] = fun
@@ -173,9 +171,9 @@ settle = (fun,put,type,extra) ->
       [key,shape,G] = data
 
       put = switch shape
-      | \d => G value
-      | \i => G.auth value,extra
-      | \f => sanatize G,value
+      | \d => G value[key]
+      | \i => G.auth value[key],extra
+      | \f => sanatize G,value[key]
 
       if put.path
         path = put.path
@@ -361,6 +359,7 @@ reg.tightloop = (x,extra) !->
 
         [patt] = each[J]
 
+
         nput = settle each[J],put,type,extra
 
         if nput.continue and (patt is \alt)
@@ -369,8 +368,8 @@ reg.tightloop = (x,extra) !->
 
         else if nput.continue
           put = nput
-          J = nJ
           I = nI
+          J = nJ
 
         else if nput.error
 

@@ -164,11 +164,11 @@
         put = (function(){
           switch (shape) {
           case 'd':
-            return G(value);
+            return G(value[key]);
           case 'i':
-            return G.auth(value, extra);
+            return G.auth(value[key], extra);
           case 'f':
-            return sanatize(G, value);
+            return sanatize(G, value[key]);
           }
         }());
         if (put.path) {
@@ -384,8 +384,8 @@
             J = nJ;
           } else if (nput['continue']) {
             put = nput;
-            J = nJ;
             I = nI;
+            J = nJ;
           } else if (nput.error) {
             J += 1;
           }
