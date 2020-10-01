@@ -38,12 +38,14 @@ var IS = require("valleydate")
 var V = IS.required("foo","bar")
 
 console.log(V.auth({foo:1}))
+
 /*
 {
   continue: false,
   error: true,
-  value: {foo:1},
-  message: 'required value .bar is not present.'
+  value: {},
+  message: [ 'foo', 'bar' ],
+  path: [ 'foo' ]
 }
 */
 ```
@@ -71,8 +73,7 @@ var sample =
     age:30,
     address:
       {
-        city:"foocity",
-        country:null
+        city:"foocity"
       }
   }
 
@@ -81,10 +82,11 @@ console.log(V.auth(sample))
 /*{
   continue: false,
   error: true,
-  value: {name:"Fred", age:30, address: {city:"foocity", country:null}},
-  path: [ 'address', "country" ],
-  message: 'required value .country not present.'
+  value: { name: 'Fred', age: 30, address: { city: 'foocity' } },
+  message: [ 'city', 'country' ],
+  path: [ 'address', 'country' ]
 }*/
+
 ```
 
 🟢 Table 1 - method names and their mapping to which underlying type check.
