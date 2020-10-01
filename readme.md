@@ -393,7 +393,7 @@ Some validators are common enough to be added in core.
 🟡 using `int` :
 
 ```js
-IS = require("valleydate")
+var IS = require("valleydate")
 
 IS.int(2)
 //{continue:true,error:false,value:1}
@@ -410,6 +410,19 @@ IS.int(2.1)
 - It's common enough to have optional values in objects, however **if they do exist** we want it to conform to a type.
 
 - The function exposed through `maybe.*` using `IS.int` :
+
+```js
+var IS = require("valleydate")
+
+var disp = () => console.log("success !")
+
+var V = IS.maybe.int
+.cont(disp)
+
+V.auth(undefined) //
+
+V.auth(2) // success !
+```
 
 🟢 Table 2 - all possible primitive and helper function provided in core.
 
