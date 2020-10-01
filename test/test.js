@@ -13,9 +13,6 @@
   F = function(x){
     return [false, 'foobar'];
   };
-  V = be.maybe.int.cont(function(){
-    return console.log("success !");
-  });
-  V.auth(undefined);
-  V.auth(2);
+  V = be.required('foo', 'bar');
+  z(V.auth({}));
 }).call(this);

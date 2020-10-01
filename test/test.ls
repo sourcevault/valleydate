@@ -14,10 +14,3 @@ T = (x) -> true
 
 F = (x)  -> [false,\foobar]
 
-
-# V = be.maybe.int
-# .cont -> console.log("success !")
-
-# V.auth undefined
-
-# V.auth 2
