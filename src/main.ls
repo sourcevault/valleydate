@@ -206,7 +206,7 @@ validate.rest = (funs,state,type) ->
     for F in funs
 
       if not (((R.type F) is \Function) or (cache.ins.has F))
-
+        z F
         print.route [\input.fault,[type,[\not_function,[state.str,type]]]]
 
         return false
@@ -406,6 +406,6 @@ reg.internal = {custom,define}
 
 pkg = require "./init" # [....]
 
-deep-freeze pkg
+# deep-freeze pkg
 
 module.exports = pkg

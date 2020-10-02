@@ -22,6 +22,10 @@ props =
   [\fun \Function]
   [\bool \Boolean]
 
+nonmap = R.map do
+  ([name]) -> name
+  R.drop 2,props
+
 base = (type) -> (UFO) ->
 
   if ((R.type UFO) is type)
@@ -47,20 +51,6 @@ not_base = (type) -> (UFO) ->
   else
 
     {continue:true,error:false,value:UFO}
-
-# ------------------------------------------------------------------
-
-maybe_base = (type) -> (UFO) ->
-
-  if (R.type UFO) in [\Undefined,type]
-
-    return {continue:true,error:false,value:UFO}
-
-  else
-
-    str = R.toLower "not #{type}"
-
-    {error:true,continue:false,message:str,value:UFO}
 
 # ------------------------------------------------------------------
 
@@ -98,12 +88,13 @@ for [name,type] in props
 
   #----------------------------
 
-  C = maybe_base type
+for name in nonmap
 
-  define.basis name,C
+  be.maybe[name] = be.maybe be[name]
 
-  be.maybe[name] = C
+be.maybe.obj = be.obj.or be.undef
 
+be.maybe.arr = be.arr.or be.undef
 
 reqError = hop.immutable
 .wh do
@@ -267,5 +258,6 @@ maybe.list = {}
 maybe.list.ofstr = maybe list.ofstr
 
 maybe.list.ofnum = maybe list.ofnum
+
 
 module.exports = be

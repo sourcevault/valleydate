@@ -14,3 +14,9 @@ T = (x) -> true
 
 F = (x)  -> [false,\foobar]
 
+# V = be.maybe.obj
+# .on \foo do
+#   be.obj.or be.undef
+#   # .on \bar, be.str
+
+# z V.auth {foo:undefined}

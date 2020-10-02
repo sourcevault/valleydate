@@ -282,7 +282,13 @@
     }.call(this)));
     ob = split(props);
     len = find_len(0, props) + 4;
-    initTable = arrayFrom$(ob['true']).concat(arrayFrom$(ob['false']));
+    if (ob['true'] === undefined && ob['false'] === undefined) {
+      initTable = [];
+    } else if (ob['true']) {
+      initTable = arrayFrom$(ob['true']).concat(arrayFrom$(ob['false']));
+    } else {
+      initTable = ob['false'];
+    }
     res$ = [];
     for (i$ = 0, len$ = initTable.length; i$ < len$; ++i$) {
       I = initTable[i$];

@@ -340,7 +340,12 @@ print.inner = ->
 
   len = (find_len 0,props) + 4
 
-  init-table = [...ob.true,...ob.false]
+  if (ob.true is undefined) and (ob.false is undefined)
+    init-table = []
+  else if ob.true
+    init-table = [...ob.true,...ob.false]
+  else
+    init-table = ob.false
 
   table = [pad.padRight I, len for I in init-table]
 
