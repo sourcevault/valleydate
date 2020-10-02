@@ -54,17 +54,38 @@ not_base = (type) -> (UFO) ->
 
 # ------------------------------------------------------------------
 
+undefnull = (UFO) ->
+
+  if ((R.type UFO) in [\Undefined \Null])
+
+    return {continue:true,error:false,value:UFO}
+  else
+
+    return {continue:false,error:true,message:"not undefined or null",value:UFO}
+
+cache.def.add undefnull
+
+#--------------------------------------------------------
+
+be.undefnull = be undefnull
+
+#--------------------------------------------------------
+
 be.not        = (F) -> be (x) -> not (F x).continue
 
 be.maybe      = (F) -> (be F).or be.undef
 
+be.mozda      = (F) -> (be F).or be.undefnull
+
 be.list       = (F) -> be.arr.map F
+
+be.not[uic]   = print.inner
 
 be.list[uic]  = print.inner
 
 be.maybe[uic] = print.inner
 
-be.not[uic]   = print.inner
+be.mozda[uic] = print.inner
 
 # ------------------------------------------------------------------
 
@@ -92,9 +113,21 @@ for name in nonmap
 
   be.maybe[name] = be.maybe be[name]
 
+  be.mozda[name] = be.mozda be[name]
+
+# ------------------------------------------------------------------
+
 be.maybe.obj = be.obj.or be.undef
 
 be.maybe.arr = be.arr.or be.undef
+
+# ------------------------------------------------------------------
+
+be.mozda.obj = be.obj.or undefnull
+
+be.mozda.arr = be.arr.or undefnull
+
+# ------------------------------------------------------------------
 
 reqError = hop.immutable
 .wh do
@@ -220,23 +253,6 @@ maybe.boolnum = be maybe_boolnum
 
 #--------------------------------------------------------
 
-undefnull = (UFO) ->
-
-  if ((R.type UFO) in [\Undefined \Null])
-
-    return {continue:true,error:false,value:UFO}
-  else
-
-    return {continue:false,error:true,message:"not undefined or null",value:UFO}
-
-cache.def.add undefnull
-
-#--------------------------------------------------------
-
-be.undefnull = be undefnull
-
-#--------------------------------------------------------
-
 list = be.list
 
 list.ofstr = list be.str
@@ -253,11 +269,19 @@ list.ofnum = list be.num
   | \Undefined => "not a list of number."
   | otherwise  => "not number type at .#{key[0]}"
 
+list.ofint = list be.int
+.err (msg,key) ->
+
+  switch R.type key
+  | \Undefined => "not a list of integer."
+  | otherwise  => "not integer type at .#{key[0]}"
+
 maybe.list = {}
 
 maybe.list.ofstr = maybe list.ofstr
 
 maybe.list.ofnum = maybe list.ofnum
 
+maybe.list.ofint = maybe list.ofint
 
 module.exports = be
