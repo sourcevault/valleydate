@@ -245,6 +245,7 @@
     switch (type) {
     case 'obj':
     case 'arr':
+    case 'arg':
       put = Object.create(proto.functor);
       break;
     default:
@@ -294,6 +295,7 @@
     define: define
   };
   pkg = require("./init");
+  deepFreeze(pkg);
   module.exports = pkg;
   function import$(obj, src){
     var own = {}.hasOwnProperty;

@@ -325,7 +325,7 @@ gaurd.on = (args,state)->
 define.proto = (data,type = data.type) ->
 
   switch type
-  | \obj,\arr =>
+  | \obj,\arr,\arg =>
     put = Object.create proto.functor
   | otherwise =>
     put = Object.create proto.normal
@@ -406,6 +406,6 @@ reg.internal = {custom,define}
 
 pkg = require "./init" # [....]
 
-# deep-freeze pkg
+deep-freeze pkg
 
 module.exports = pkg

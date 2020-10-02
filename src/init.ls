@@ -71,6 +71,14 @@ be.undefnull = be undefnull
 
 #--------------------------------------------------------
 
+F = base "Arguments"
+
+define.basis "arg",F
+
+be.arg = F
+
+#--------------------------------------------------------
+
 be.not        = (F) -> be (x) -> not (F x).continue
 
 be.maybe      = (F) -> (be F).or be.undef

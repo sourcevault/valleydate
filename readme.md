@@ -105,6 +105,7 @@ null           Null
 num            Number
 str            String
 fun            Function
+arg            Argument
 -------------------------------
 cont           continue
 err            error
@@ -121,7 +122,7 @@ err            error
 
 We start by defining our basetypes:
 
-- `num`,`arr`,`str`,`null`,`bool`,`undef`,`obj` and `fun`.
+- `num`,`arr`,`str`,`null`,`bool`,`undef`,`arg`,`obj` and `fun`.
 
 .. then chainable units :
 
@@ -230,7 +231,7 @@ var canbeIP = IS.str.or(IS.arr.map(IS.str))
 
 ### - `map`
 
-###### `⛔️ .map only works for basetype Array and Object. ⛔️`
+###### `⛔️ .map only works for basetype Array, Object and Argument. ⛔️`
 
 - map allows to run validators on each value in an array or object.
 
@@ -253,7 +254,7 @@ var ratifydata = IS.obj.map(IS.num);
 
 ### - `on`
 
-###### `⛔️ .on only works for basetype Array and Object. ⛔️`
+###### `⛔️ .on only works for basetype Array, Object and Argument. ⛔️`
 
 - apply validator to specific value in an object or array.
 
@@ -455,12 +456,13 @@ not.arr              not.bool
 not.fun              not.null
 not.num              not.obj
 not.str              not.undef
-arr                  bool
-boolnum              fun
-int                  null
-num                  obj
-required             str
-undef                undefnull
+arg                  arr
+bool                 boolnum
+fun                  int
+null                 num
+obj                  required
+str                  undef
+undefnull
 ```
 
 ## LICENCE
