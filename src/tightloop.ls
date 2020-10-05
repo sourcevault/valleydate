@@ -54,7 +54,7 @@ blunder = (fun,put,extra) ->
   | \err =>
 
     message = switch typeof F
-    | \function => F put.message,extra
+    | \function => F put.message,put.path,extra
     | otherwise => F
 
     put.message = message
@@ -64,7 +64,7 @@ blunder = (fun,put,extra) ->
   | \fix =>
 
     put.value = switch typeof F
-    | \function => F put.value,extra
+    | \function => F put.value,put.path,extra
     | otherwise => F
 
     put.continue = true

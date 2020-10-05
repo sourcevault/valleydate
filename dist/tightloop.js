@@ -60,7 +60,7 @@
       message = (function(){
         switch (typeof F) {
         case 'function':
-          return F(put.message, extra);
+          return F(put.message, put.path, extra);
         default:
           return F;
         }
@@ -71,7 +71,7 @@
       put.value = (function(){
         switch (typeof F) {
         case 'function':
-          return F(put.value, extra);
+          return F(put.value, put.path, extra);
         default:
           return F;
         }
