@@ -4,7 +4,7 @@ valleydate = require "../dist/main"
 
 {com,print} = reg
 
-{z,hop,slist,R} = com
+{z,l,hop,slist,R} = com
 
 p = print.fail "test/test.js"
 
@@ -14,9 +14,16 @@ T = (x) -> true
 
 F = (x)  -> [false,\foobar]
 
-# V = be.maybe.obj
-# .on \foo do
-#   be.obj.or be.undef
-#   # .on \bar, be.str
 
-# z V.auth {foo:undefined}
+# V = be.maybe.obj
+# .on [\foo] do
+#   be.obj.cont (x,k) -> l k;x
+#   .on \bar, be.str.cont (x,k) ->
+#     z k
+#     x
+# .cont (x,name) ->
+
+#   z name
+
+# V.auth data,"filename.txt"
+

@@ -60,7 +60,7 @@
       message = (function(){
         switch (typeof F) {
         case 'function':
-          return F(put.message, put.path, extra);
+          return F(put.message, extra);
         default:
           return F;
         }
@@ -71,7 +71,7 @@
       put.value = (function(){
         switch (typeof F) {
         case 'function':
-          return F(put.value, put.path, extra);
+          return F(put.value, extra);
         default:
           return F;
         }
@@ -166,7 +166,7 @@
           case 'd':
             return G(value[key]);
           case 'i':
-            return G.auth(value[key], extra);
+            return G.auth(value[key], key);
           case 'f':
             return sanatize(G, value[key]);
           }
@@ -185,9 +185,7 @@
             path: [key].concat(arrayFrom$(path))
           };
         }
-        if (!(put.value === undefined)) {
-          value[key] = put.value;
-        }
+        value[key] = put.value;
         return {
           'continue': true,
           error: false,
@@ -214,9 +212,7 @@
               path: [key].concat(arrayFrom$(path))
             };
           }
-          if (!(put.value === undefined)) {
-            value[key] = put.value;
-          }
+          value[key] = put.value;
           I += 1;
         }
         return {
@@ -244,9 +240,7 @@
               path: [key].concat(arrayFrom$(path))
             };
           }
-          if (!(put.value === undefined)) {
-            value[key] = put.value;
-          }
+          value[key] = put.value;
           I += 1;
         }
         return {
@@ -270,7 +264,7 @@
       put.message = (function(){
         switch (typeof F) {
         case 'function':
-          return F(put.value, put.path, extra);
+          return F(value, extra);
         default:
           return F;
         }
@@ -295,7 +289,7 @@
       case 'd':
         return G(value[I]);
       case 'i':
-        return G.auth(value[I], extra);
+        return G.auth(value[I], I);
       case 'f':
         return sanatize(G, value[I]);
       }
@@ -305,7 +299,7 @@
       case 'd':
         return G(value[key]);
       case 'i':
-        return G.auth(value[key], extra);
+        return G.auth(value[key], key);
       case 'f':
         return sanatize(G, value[key]);
       }
@@ -315,7 +309,7 @@
       case 'd':
         return G(value[key]);
       case 'i':
-        return G.auth(value[key], extra);
+        return G.auth(value[key], key);
       case 'f':
         return sanatize(G, value[key]);
       }
@@ -325,7 +319,7 @@
       case 'd':
         return G(value[key]);
       case 'i':
-        return G.auth(value[key], extra);
+        return G.auth(value[key], key);
       case 'f':
         return sanatize(G, value[key]);
       }

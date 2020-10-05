@@ -83,8 +83,6 @@ be.not        = (F) -> be (x) -> not (F x).continue
 
 be.maybe      = (F) -> (be F).or be.undef
 
-be.mozda      = (F) -> (be F).or be.undefnull
-
 be.list       = (F) -> be.arr.map F
 
 be.not[uic]   = print.inner
@@ -92,8 +90,6 @@ be.not[uic]   = print.inner
 be.list[uic]  = print.inner
 
 be.maybe[uic] = print.inner
-
-be.mozda[uic] = print.inner
 
 # ------------------------------------------------------------------
 
@@ -121,19 +117,11 @@ for name in nonmap
 
   be.maybe[name] = be.maybe be[name]
 
-  be.mozda[name] = be.mozda be[name]
-
 # ------------------------------------------------------------------
 
 be.maybe.obj = be.obj.or be.undef
 
 be.maybe.arr = be.arr.or be.undef
-
-# ------------------------------------------------------------------
-
-be.mozda.obj = be.obj.or undefnull
-
-be.mozda.arr = be.arr.or undefnull
 
 # ------------------------------------------------------------------
 
@@ -152,6 +140,7 @@ reqError = hop.immutable
         return true
 
     return false
+
   loopError
 
 #------------------------------------------------------
@@ -293,3 +282,4 @@ maybe.list.ofnum = maybe list.ofnum
 maybe.list.ofint = maybe list.ofint
 
 module.exports = be
+

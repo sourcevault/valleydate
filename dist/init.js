@@ -83,16 +83,12 @@
   be.maybe = function(F){
     return be(F).or(be.undef);
   };
-  be.mozda = function(F){
-    return be(F).or(be.undefnull);
-  };
   be.list = function(F){
     return be.arr.map(F);
   };
   be.not[uic] = print.inner;
   be.list[uic] = print.inner;
   be.maybe[uic] = print.inner;
-  be.mozda[uic] = print.inner;
   for (i$ = 0, len$ = props.length; i$ < len$; ++i$) {
     ref$ = props[i$], name = ref$[0], type = ref$[1];
     A = base(type);
@@ -106,12 +102,9 @@
   for (i$ = 0, len$ = nonmap.length; i$ < len$; ++i$) {
     name = nonmap[i$];
     be.maybe[name] = be.maybe(be[name]);
-    be.mozda[name] = be.mozda(be[name]);
   }
   be.maybe.obj = be.obj.or(be.undef);
   be.maybe.arr = be.arr.or(be.undef);
-  be.mozda.obj = be.obj.or(undefnull);
-  be.mozda.arr = be.arr.or(undefnull);
   reqError = hop.immutable.wh(function(){
     var args, i$, len$, key, ref$;
     args = R.flatten(arrayFrom$(arguments));

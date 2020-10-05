@@ -27,8 +27,6 @@ valleydate is a functional approach to schema validation that puts composability
       - [required](#helper-validators)
       - [integer](#helper-validators)
       - [\*maybe](#maybe)
-      - [\*mozda](#mozda)
-
 
 .. **quick examples** ..
 
@@ -429,10 +427,6 @@ V.auth(undefined) //
 V.auth(2) // success !
 ```
 
-#### `mozda.*`
-
-- just like `maybe.*`, but accepts both `undefined` and `null`.
-
 🟢 Table 2 - all possible primitive and helper function provided in core.
 
 ```js
@@ -448,10 +442,6 @@ maybe.list.ofnum     maybe.list.ofstr
 maybe.null           maybe.num
 maybe.obj            maybe.required
 maybe.str            maybe.undef
-mozda.arr            mozda.bool
-mozda.fun            mozda.null
-mozda.num            mozda.obj
-mozda.str            mozda.undef
 not.arr              not.bool
 not.fun              not.null
 not.num              not.obj

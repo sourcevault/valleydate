@@ -54,7 +54,7 @@ blunder = (fun,put,extra) ->
   | \err =>
 
     message = switch typeof F
-    | \function => F put.message,put.path,extra
+    | \function => F put.message,extra
     | otherwise => F
 
     put.message = message
@@ -64,7 +64,7 @@ blunder = (fun,put,extra) ->
   | \fix =>
 
     put.value = switch typeof F
-    | \function => F put.value,put.path,extra
+    | \function => F put.value,extra
     | otherwise => F
 
     put.continue = true
@@ -73,7 +73,6 @@ blunder = (fun,put,extra) ->
     put
 
   | otherwise => put
-
 
 settle = (fun,put,type,extra) ->
 
@@ -104,7 +103,7 @@ settle = (fun,put,type,extra) ->
 
         put = switch patt
         | \d => G value[I]
-        | \i => G.auth value[I],extra
+        | \i => G.auth value[I],I
         | \f => sanatize G,value[I]
 
         if put.path
@@ -140,7 +139,7 @@ settle = (fun,put,type,extra) ->
 
         put = switch patt
         | \d => G value[key]
-        | \i => G.auth value[key],extra
+        | \i => G.auth value[key],key
         | \f => sanatize G,value[key]
 
         if put.path
@@ -172,7 +171,7 @@ settle = (fun,put,type,extra) ->
 
       put = switch shape
       | \d => G value[key]
-      | \i => G.auth value[key],extra
+      | \i => G.auth value[key],key
       | \f => sanatize G,value[key]
 
       if put.path
@@ -189,9 +188,7 @@ settle = (fun,put,type,extra) ->
             path:[key,...path]
         }
 
-      if not (put.value is undefined)
-
-        value[key] = put.value
+      value[key] = put.value
 
       {continue:true,error:false,value:value}
 
@@ -209,7 +206,7 @@ settle = (fun,put,type,extra) ->
 
         put = switch shape
         | \d => G value[key]
-        | \i => G.auth value[key],extra
+        | \i => G.auth value[key],key
         | \f => sanatize G,value[key]
 
         if put.path
@@ -226,8 +223,7 @@ settle = (fun,put,type,extra) ->
             path:[key,...path]
           }
 
-        if not (put.value is undefined)
-          value[key] = put.value
+        value[key] = put.value
 
         I += 1
 
@@ -245,7 +241,7 @@ settle = (fun,put,type,extra) ->
 
         put = switch shape
         | \d => G value[key]
-        | \i => G.auth value[key],extra
+        | \i => G.auth value[key],key
         | \f => sanatize G,value[key]
 
         if put.path
@@ -262,10 +258,7 @@ settle = (fun,put,type,extra) ->
             path:[key,...path]
           }
 
-        if not (put.value is undefined)
-
-          value[key] = put.value
-
+        value[key] = put.value
 
         I += 1
 
@@ -281,13 +274,13 @@ settle = (fun,put,type,extra) ->
 
   | \jam  =>
 
-    put.message   = switch typeof F
-    | \function   => F put.value,put.path,extra
-    | otherwise   => F
+    put.message  = switch typeof F
+    | \function  => F value,extra
+    | otherwise  => F
 
-    put.continue  = false
+    put.continue = false
 
-    put.error     = true
+    put.error    = true
 
     return put
 
@@ -358,7 +351,6 @@ reg.tightloop = (x,extra) !->
       do
 
         [patt] = each[J]
-
 
         nput = settle each[J],put,type,extra
 
