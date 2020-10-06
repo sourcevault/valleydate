@@ -23,6 +23,7 @@ valleydate is a functional approach to schema validation that puts composability
       - [err](#--err)
       - [jam](#--jam)
 1. [Creating Custom Validators](#creating-custom-validators)
+1. [Context Variable](#Context)
 1. [Helper Validators](#helper-validators)
       - [required](#helper-validators)
       - [integer](#helper-validators)
@@ -107,6 +108,7 @@ arg            Argument
 -------------------------------
 cont           continue
 err            error
+alt            alternative
 ```
 
 #### Introduction
@@ -384,6 +386,16 @@ isEmail.and
 isEmail.or
 isEmail.cont
 ```
+
+#### Context Variable
+
+`.auth` actually accepts two arguments, the second argument is a context variable.
+
+context is useful in two useful ways :
+
+- data needs to be provided to `.err` to create better error message, it could be things like filename.
+
+- the index / key for `.map`, `on` function.
 
 #### Helper Validators
 
