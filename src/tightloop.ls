@@ -6,9 +6,12 @@ reg = require "./registry"
 
 main = {}
 
-sanatize = (F,x) ->
+sanatize = (F,x,extra) ->
 
-  UFO = F x
+  if (extra is undefined)
+    UFO = F x
+  else
+    UFO = F x,extra
 
   switch R.type UFO
 
@@ -104,7 +107,7 @@ settle = (fun,put,type,extra) ->
         put = switch patt
         | \d => G value[I]
         | \i => G.auth value[I],I
-        | \f => sanatize G,value[I]
+        | \f => sanatize G,value[I],I
 
         if put.path
           path = put.path
@@ -140,7 +143,7 @@ settle = (fun,put,type,extra) ->
         put = switch patt
         | \d => G value[key]
         | \i => G.auth value[key],key
-        | \f => sanatize G,value[key]
+        | \f => sanatize G,value[key],key
 
         if put.path
           path = put.path
