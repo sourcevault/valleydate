@@ -5,9 +5,13 @@
   com = reg.com, already_created = reg.already_created, pkgname = reg.pkgname, sig = reg.sig;
   z = com.z, l = com.l, R = com.R, j = com.j;
   main = {};
-  sanatize = function(F, x){
+  sanatize = function(F, x, extra){
     var UFO, cont, unknown;
-    UFO = F(x);
+    if (extra === undefined) {
+      UFO = F(x);
+    } else {
+      UFO = F(x, extra);
+    }
     switch (R.type(UFO)) {
     case 'Boolean':
     case 'Null':
@@ -291,7 +295,7 @@
       case 'i':
         return G.auth(value[I], I);
       case 'f':
-        return sanatize(G, value[I]);
+        return sanatize(G, value[I], I);
       }
     }
     function fn1$(){
@@ -301,7 +305,7 @@
       case 'i':
         return G.auth(value[key], key);
       case 'f':
-        return sanatize(G, value[key]);
+        return sanatize(G, value[key], key);
       }
     }
     function fn2$(){
