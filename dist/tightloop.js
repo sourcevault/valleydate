@@ -5,13 +5,8 @@
   com = reg.com, already_created = reg.already_created, pkgname = reg.pkgname, sig = reg.sig;
   z = com.z, l = com.l, R = com.R, j = com.j;
   main = {};
-  sanatize = function(F, x, extra){
-    var UFO, cont, unknown;
-    if (extra === undefined) {
-      UFO = F(x);
-    } else {
-      UFO = F(x, extra);
-    }
+  sanatize = function(x, UFO){
+    var cont, unknown;
     switch (R.type(UFO)) {
     case 'Boolean':
     case 'Null':
@@ -56,7 +51,7 @@
       };
     }
   };
-  blunder = function(fun, put, extra){
+  blunder = function(fun, put, extra1){
     var patt, F, message;
     patt = fun[0], F = fun[1];
     switch (patt) {
@@ -64,7 +59,7 @@
       message = (function(){
         switch (typeof F) {
         case 'function':
-          return F(put.message, put.path, extra);
+          return F(put.message, put.path, extra1);
         default:
           return F;
         }
@@ -75,7 +70,7 @@
       put.value = (function(){
         switch (typeof F) {
         case 'function':
-          return F(put.value, put.path, extra);
+          return F(put.value, put.path, extra1);
         default:
           return F;
         }
@@ -87,17 +82,17 @@
       return put;
     }
   };
-  settle = function(fun, put, type, extra){
-    var patt, F, value, G, I, In, arr, path, ob, key, val, patt1, data, shape, ref$, i$, len$, nput;
+  settle = function(fun, put, type, extra1, extra2){
+    var patt, F, value, G, I, In, arr, val, path, ob, key, patt1, data, shape, ref$, i$, len$, nput;
     patt = fun[0], F = fun[1];
     value = put.value;
     switch (patt) {
     case 'd':
       return F(value);
     case 'i':
-      return F.auth(value, extra);
+      return F.auth(value, extra1, extra2);
     case 'f':
-      return sanatize(F, value);
+      return sanatize(value, F(value, extra1));
     case 'map':
       switch (type) {
       case 'arr':
@@ -170,9 +165,10 @@
           case 'd':
             return G(value[key]);
           case 'i':
-            return G.auth(value[key], key);
+            return G.auth(value[key], key, extra1);
           case 'f':
-            return sanatize(G, value[key]);
+            val = value[key];
+            return sanatize(val, G(val, key, extra1));
           }
         }());
         if (put.path) {
@@ -258,7 +254,7 @@
       put.value = (function(){
         switch (typeof F) {
         case 'function':
-          return F(value, extra);
+          return F(value, extra1);
         default:
           return F;
         }
@@ -268,7 +264,7 @@
       put.message = (function(){
         switch (typeof F) {
         case 'function':
-          return F(value, extra);
+          return F(value, extra1);
         default:
           return F;
         }
@@ -293,9 +289,10 @@
       case 'd':
         return G(value[I]);
       case 'i':
-        return G.auth(value[I], I);
+        return G.auth(value[I], I, extra1);
       case 'f':
-        return sanatize(G, value[I], I);
+        val = value[I];
+        return sanatize(val, G(val, I, extra1));
       }
     }
     function fn1$(){
@@ -303,9 +300,10 @@
       case 'd':
         return G(value[key]);
       case 'i':
-        return G.auth(value[key], key);
+        return G.auth(value[I], key, extra1);
       case 'f':
-        return sanatize(G, value[key], key);
+        val = value[key];
+        return sanatize(val, G(val, key, extra1));
       }
     }
     function fn2$(){
@@ -313,9 +311,10 @@
       case 'd':
         return G(value[key]);
       case 'i':
-        return G.auth(value[key], key);
+        return G.auth(value[key], key, extra1);
       case 'f':
-        return sanatize(G, value[key]);
+        val = value[key];
+        return sanatize(val, G(val, key, extra1));
       }
     }
     function fn3$(){
@@ -323,9 +322,10 @@
       case 'd':
         return G(value[key]);
       case 'i':
-        return G.auth(value[key], key);
+        return G.auth(value[key], key, extra1);
       case 'f':
-        return sanatize(G, value[key]);
+        val = value[key];
+        return sanatize(val, G(val, key, extra1));
       }
     }
     function fn4$(){
@@ -333,13 +333,13 @@
       case 'd':
         return G(value);
       case 'i':
-        return G.auth(value, extra);
+        return G.auth(value, extra1);
       case 'f':
-        return sanatize(G, value);
+        return sanatize(val, G(value, extra1));
       }
     }
   };
-  reg.tightloop = function(x, extra){
+  reg.tightloop = function(x, extra1, extra2){
     var state, all, type, I, put, nI, each, J, nJ, fun, patt, nput;
     state = this[sig];
     all = state.all, type = state.type;
@@ -359,9 +359,9 @@
         do {
           fun = each[J];
           if (put.error) {
-            put = blunder(fun, put, extra);
+            put = blunder(fun, put, extra1, extra2);
           } else {
-            put = settle(fun, put, type, extra);
+            put = settle(fun, put, type, extra1, extra2);
           }
           J += 1;
         } while (J < nJ);
@@ -376,7 +376,7 @@
         nJ = each.length;
         do {
           patt = each[J][0];
-          nput = settle(each[J], put, type, extra);
+          nput = settle(each[J], put, type, extra1, extra2);
           if (nput['continue'] && patt === 'alt') {
             put = nput;
             J = nJ;
