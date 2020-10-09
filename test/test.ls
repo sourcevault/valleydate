@@ -15,15 +15,24 @@ T = (x) -> true
 F = (x)  -> [false,\foobar]
 
 
+data =
+  *foo:
+      bar:"hello world"
+
+
 # V = be.maybe.obj
 # .on [\foo] do
-#   be.obj.cont (x,k) -> l k;x
-#   .on \bar, be.str.cont (x,k) ->
-#     z k
-#     x
-# .cont (x,name) ->
+#   be.obj.cont (x,j,k) ->
+#       l "first: ",j,k
+#       x
+#   .on \bar, be.str.and (x,j,k) ->
+#     z "second: ",j,k
+#     true
+# .on [\foo,\bar] do
+#   (val,j,k) ->
 
-#   z name
+#     z j,k
 
+#     true
 # V.auth data,"filename.txt"
 

@@ -6,12 +6,7 @@ reg = require "./registry"
 
 main = {}
 
-sanatize = (F,x,extra) ->
-
-  if (extra is undefined)
-    UFO = F x
-  else
-    UFO = F x,extra
+sanatize = (x,UFO) ->
 
   switch R.type UFO
 
@@ -49,7 +44,7 @@ sanatize = (F,x,extra) ->
     }
 
 
-blunder = (fun,put,extra) ->
+blunder = (fun,put,extra1) ->
 
   [patt,F] = fun
 
@@ -57,7 +52,7 @@ blunder = (fun,put,extra) ->
   | \err =>
 
     message = switch typeof F
-    | \function => F put.message,put.path,extra
+    | \function => F put.message,put.path,extra1
     | otherwise => F
 
     put.message = message
@@ -67,7 +62,7 @@ blunder = (fun,put,extra) ->
   | \fix =>
 
     put.value = switch typeof F
-    | \function => F put.value,put.path,extra
+    | \function => F put.value,put.path,extra1
     | otherwise => F
 
     put.continue = true
@@ -77,7 +72,7 @@ blunder = (fun,put,extra) ->
 
   | otherwise => put
 
-settle = (fun,put,type,extra) ->
+settle = (fun,put,type,extra1,extra2) ->
 
   [patt,F] = fun
 
@@ -85,8 +80,8 @@ settle = (fun,put,type,extra) ->
 
   switch patt
   | \d   => F value
-  | \i   => F.auth value,extra
-  | \f   => sanatize F,value
+  | \i   => F.auth value,extra1,extra2
+  | \f   => sanatize value,(F value,extra1)
   | \map =>
 
     switch type
@@ -106,8 +101,14 @@ settle = (fun,put,type,extra) ->
 
         put = switch patt
         | \d => G value[I]
-        | \i => G.auth value[I],I
-        | \f => sanatize G,value[I],I
+        | \i => G.auth value[I],I,extra1
+        | \f =>
+
+          val = value[I]
+
+          sanatize do
+            val
+            G val,I,extra1
 
         if put.path
           path = put.path
@@ -142,8 +143,14 @@ settle = (fun,put,type,extra) ->
 
         put = switch patt
         | \d => G value[key]
-        | \i => G.auth value[key],key
-        | \f => sanatize G,value[key],key
+        | \i => G.auth value[I],key,extra1
+        | \f =>
+
+          val = value[key]
+
+          sanatize do
+            val
+            G val,key,extra1
 
         if put.path
           path = put.path
@@ -174,8 +181,14 @@ settle = (fun,put,type,extra) ->
 
       put = switch shape
       | \d => G value[key]
-      | \i => G.auth value[key],key
-      | \f => sanatize G,value[key]
+      | \i => G.auth value[key],key,extra1
+      | \f =>
+
+        val = value[key]
+
+        sanatize do
+          val
+          G val,key,extra1
 
       if put.path
         path = put.path
@@ -209,8 +222,14 @@ settle = (fun,put,type,extra) ->
 
         put = switch shape
         | \d => G value[key]
-        | \i => G.auth value[key],key
-        | \f => sanatize G,value[key]
+        | \i => G.auth value[key],key,extra1
+        | \f =>
+
+          val = value[key]
+
+          sanatize do
+            val
+            G val,key,extra1
 
         if put.path
           path = put.path
@@ -244,8 +263,13 @@ settle = (fun,put,type,extra) ->
 
         put = switch shape
         | \d => G value[key]
-        | \i => G.auth value[key],key
-        | \f => sanatize G,value[key]
+        | \i => G.auth value[key],key,extra1
+        | \f =>
+
+          val = value[key]
+          sanatize do
+            val
+            G val,key,extra1
 
         if put.path
           path = put.path
@@ -270,7 +294,7 @@ settle = (fun,put,type,extra) ->
   | \cont =>
 
     put.value   = switch typeof F
-    | \function => F value,extra
+    | \function => F value,extra1
     | otherwise => F
 
     put
@@ -278,7 +302,7 @@ settle = (fun,put,type,extra) ->
   | \jam  =>
 
     put.message  = switch typeof F
-    | \function  => F value,extra
+    | \function  => F value,extra1
     | otherwise  => F
 
     put.continue = false
@@ -293,8 +317,10 @@ settle = (fun,put,type,extra) ->
 
       nput = switch patt
       | \d => G value
-      | \i => G.auth value,extra
-      | \f => sanatize G,value
+      | \i => G.auth value,extra1
+      | \f =>
+
+        sanatize val,(G value,extra1)
 
       if nput.continue
         return nput
@@ -304,7 +330,7 @@ settle = (fun,put,type,extra) ->
   | otherwise => put
 
 
-reg.tightloop = (x,extra) !->
+reg.tightloop = (x,extra1,extra2) !->
 
   state = @[sig]
 
@@ -332,9 +358,9 @@ reg.tightloop = (x,extra) !->
         fun = each[J]
 
         if put.error
-          put = blunder fun,put,extra
+          put = blunder fun,put,extra1,extra2
         else
-          put = settle fun,put,type,extra
+          put = settle fun,put,type,extra1,extra2
 
         J += 1
 
@@ -355,7 +381,7 @@ reg.tightloop = (x,extra) !->
 
         [patt] = each[J]
 
-        nput = settle each[J],put,type,extra
+        nput = settle each[J],put,type,extra1,extra2
 
         if nput.continue and (patt is \alt)
           put = nput
