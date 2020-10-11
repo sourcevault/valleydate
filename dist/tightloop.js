@@ -6,7 +6,7 @@
   z = com.z, l = com.l, R = com.R, j = com.j;
   main = {};
   sanatize = function(x, UFO){
-    var cont, unknown;
+    var cont, unknown, path;
     switch (R.type(UFO)) {
     case 'Boolean':
     case 'Null':
@@ -27,7 +27,7 @@
         };
       }
     case 'Array':
-      cont = UFO[0], unknown = UFO[1];
+      cont = UFO[0], unknown = UFO[1], path = UFO[2];
       if (cont) {
         return {
           'continue': true,
@@ -35,11 +35,17 @@
           value: x
         };
       } else {
+        if (Array.isArray(path)) {
+          path = path;
+        } else {
+          path = [];
+        }
         return {
           'continue': false,
           error: true,
           value: x,
-          message: unknown
+          message: unknown,
+          path: path
         };
       }
     default:
