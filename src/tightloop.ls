@@ -19,7 +19,7 @@ sanatize = (x,UFO) ->
 
   | \Array =>
 
-    [cont,unknown] = UFO
+    [cont,unknown,path] = UFO
 
     if cont
 
@@ -27,11 +27,17 @@ sanatize = (x,UFO) ->
 
     else
 
+      if (Array.isArray path)
+        path = path
+      else
+        path = []
+
       return {
         continue :false
         error    :true
         value    :x
         message  :unknown
+        path     :path
       }
 
   | otherwise =>
