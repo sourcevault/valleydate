@@ -152,7 +152,6 @@
       for (i$ = 0, len$ = funs.length; i$ < len$; ++i$) {
         F = funs[i$];
         if (!(R.type(F) === 'Function' || cache.ins.has(F))) {
-          z(F);
           print.route(['input.fault', [type, ['not_function', [state.str, type]]]]);
           return false;
         }

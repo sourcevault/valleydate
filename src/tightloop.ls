@@ -44,7 +44,7 @@ sanatize = (x,UFO) ->
     }
 
 
-blunder = (fun,put,extra1) ->
+blunder = (fun,put,extra1,extra2) ->
 
   [patt,F] = fun
 
@@ -52,7 +52,7 @@ blunder = (fun,put,extra1) ->
   | \err =>
 
     message = switch typeof F
-    | \function => F put.message,put.path,extra1
+    | \function => F put.message,put.path,extra1,extra2
     | otherwise => F
 
     put.message = message
@@ -62,7 +62,7 @@ blunder = (fun,put,extra1) ->
   | \fix =>
 
     put.value = switch typeof F
-    | \function => F put.value,put.path,extra1
+    | \function => F put.value,put.path,extra1,extra2
     | otherwise => F
 
     put.continue = true
@@ -72,123 +72,31 @@ blunder = (fun,put,extra1) ->
 
   | otherwise => put
 
-settle = (fun,put,type,extra1,extra2) ->
+apply = (type,F,val,extra1,extra2) ->
 
-  [patt,F] = fun
+  switch type
+  | \d => F val
+  | \i => F.auth val,extra1,extra2
+  | \f => sanatize val,(F val,extra1,extra2)
 
-  {value}  = put
+map = (dtype,fun,value,extra1,extra2) ->
 
-  switch patt
-  | \d   => F value
-  | \i   => F.auth value,extra1,extra2
-  | \f   => sanatize value,(F value,extra1)
-  | \map =>
+  [type,F] = fun
 
-    switch type
-    | \arr =>
+  switch dtype
+  | \arr =>
 
-      [patt,G] = F
+    I = 0
 
-      I = 0
+    In = value.length
 
-      In = value.length
+    put = null
 
-      put = null
+    arr = []
 
-      arr = []
+    while I < In
 
-      while I < In
-
-        put = switch patt
-        | \d => G value[I]
-        | \i => G.auth value[I],I,extra1
-        | \f =>
-
-          val = value[I]
-
-          sanatize do
-            val
-            G val,I,extra1
-
-        if put.path
-          path = put.path
-        else
-          path = []
-
-        if put.error
-          return {
-            continue:false
-            error:true
-            value:value
-            message:put.message
-            path:[I,...path]
-
-          }
-
-        arr.push put.value
-
-        I += 1
-
-      {continue:true,error:false,value:arr}
-
-    | \obj =>
-
-      ob = {}
-
-      put = null
-
-      [patt,G] = F
-
-      for key,val of value
-
-        put = switch patt
-        | \d => G value[key]
-        | \i => G.auth value[I],key,extra1
-        | \f =>
-
-          val = value[key]
-
-          sanatize do
-            val
-            G val,key,extra1
-
-        if put.path
-          path = put.path
-        else
-          path = []
-
-        if put.error
-          return {
-            continue:false
-            error:true
-            value:value
-            message:put.message
-            path:[key,...path]
-          }
-
-        ob[key] = put.value
-
-      {continue:true,error:false,value:ob}
-
-  | \on  =>
-
-    [patt1,data] = F
-
-    switch patt1
-    | \string =>
-
-      [key,shape,G] = data
-
-      put = switch shape
-      | \d => G value[key]
-      | \i => G.auth value[key],key,extra1
-      | \f =>
-
-        val = value[key]
-
-        sanatize do
-          val
-          G val,key,extra1
+      put = apply type,F,value[I],I,extra1
 
       if put.path
         path = put.path
@@ -197,112 +105,169 @@ settle = (fun,put,type,extra1,extra2) ->
 
       if put.error
         return {
-            continue:false
-            error:true
-            value:value
-            message:put.message
-            path:[key,...path]
+          continue:false
+          error:true
+          value:value
+          message:put.message
+          path:[I,...path]
+        }
+
+      arr.push put.value
+
+      I += 1
+
+    {continue:true,error:false,value:arr}
+
+  | \obj =>
+
+    ob = {}
+
+    put = null
+
+    for key,val of value
+
+      put = apply type,F,val,key,extra1
+
+      if put.path
+        path = put.path
+      else
+        path = []
+
+      if put.error
+        return {
+          continue:false
+          error:true
+          value:value
+          message:put.message
+          path:[key,...path]
+        }
+
+      ob[key] = put.value
+
+    {continue:true,error:false,value:ob}
+
+upon = ([type,fun],value,extra1,extra2) ->
+
+  switch type
+  | \string =>
+
+    [key,shape,G] = fun
+
+    put = apply shape,G,value[key],key,extra1
+
+    if put.path
+      path = put.path
+    else
+      path = []
+
+    if put.error
+      return {
+        continue:false
+        error:true
+        value:value
+        message:put.message
+        path:[key,...path]
+      }
+
+    value[key] = put.value
+
+    {continue:true,error:false,value:value}
+
+  | \array =>
+
+    [arr,shape,G] = fun
+
+    I = 0
+
+    In = arr.length
+
+    while I < In
+
+      key = arr[I]
+
+      put = apply shape,G,value[key],key,extra1
+
+      if put.path
+        path = put.path
+      else
+        path = []
+
+      if put.error
+        return {
+          continue:false
+          error:true
+          value:value
+          message:put.message
+          path:[key,...path]
         }
 
       value[key] = put.value
 
-      {continue:true,error:false,value:value}
+      I += 1
 
-    | \array =>
+    {continue:true,error:false,value:value}
 
-      [arr,shape,G] = data
+  | \object =>
 
-      I = 0
+    I  = 0
 
-      In = arr.length
+    In = fun.length
 
-      while I < In
+    while I < In
 
-        key = arr[I]
+      [key,shape,G] = fun[I]
 
-        put = switch shape
-        | \d => G value[key]
-        | \i => G.auth value[key],key,extra1
-        | \f =>
+      apply shape,G,value[key],key,extra1
 
-          val = value[key]
+      if put.path
+        path = put.path
+      else
+        path = []
 
-          sanatize do
-            val
-            G val,key,extra1
+      if put.error
+        return {
+          continue:false
+          error:true
+          value:value
+          message:put.message
+          path:[key,...path]
+        }
 
-        if put.path
-          path = put.path
-        else
-          path = []
+      value[key] = put.value
 
-        if put.error
-          return {
-            continue:false
-            error:true
-            value:value
-            message:put.message
-            path:[key,...path]
-          }
+      I += 1
 
-        value[key] = put.value
+    {continue:true,error:false,value:value}
 
-        I += 1
 
-      {continue:true,error:false,value:value}
+settle = (fun,put,dtype,extra1,extra2) ->
 
-    | \object =>
+  [type,F] = fun
 
-      I  = 0
+  {value}  = put
 
-      In = data.length
+  switch type
 
-      while I < In
+  | \d         => F value
+  | \i         => F.auth value,extra1,extra2
+  | \f         => sanatize value,(F value,extra1,extra2)
 
-        [key,shape,G] = data[I]
+  # ------------------------------------------------------
 
-        put = switch shape
-        | \d => G value[key]
-        | \i => G.auth value[key],key,extra1
-        | \f =>
-
-          val = value[key]
-          sanatize do
-            val
-            G val,key,extra1
-
-        if put.path
-          path = put.path
-        else
-          path = []
-
-        if put.error
-          return {
-            continue:false
-            error:true
-            value:value
-            message:put.message
-            path:[key,...path]
-          }
-
-        value[key] = put.value
-
-        I += 1
-
-      {continue:true,error:false,value:value}
-
-  | \cont =>
+  | \map       => map dtype,F,value,extra1,extra2
+  | \on        => upon F,value,extra1,extra2
+  | \cont      =>
 
     put.value   = switch typeof F
-    | \function => F value,extra1
+    | \function => F value,extra1,extra2
     | otherwise => F
 
     put
 
-  | \jam  =>
+  | \jam       =>
 
     put.message  = switch typeof F
-    | \function  => F value,extra1
+    | \function  => F value,extra1,extra2
     | otherwise  => F
 
     put.continue = false
@@ -311,36 +276,31 @@ settle = (fun,put,type,extra1,extra2) ->
 
     return put
 
-  | \alt =>
+  | \alt          =>
 
-    for [patt,G] in F
+    for [type,G] in fun
 
-      nput = switch patt
-      | \d => G value
-      | \i => G.auth value,extra1
-      | \f =>
+      put = apply type,G,value,extra1,extra2
 
-        sanatize val,(G value,extra1)
+      if put.continue
+        return put
 
-      if nput.continue
-        return nput
-
-    return nput
+    return put
 
   | otherwise => put
 
 
 reg.tightloop = (x,extra1,extra2) !->
 
-  state = @[sig]
+  state      = @[sig]
 
   {all,type} = state
 
-  I    = 0
+  I          = 0
 
-  put  = {continue:true,error:false,value:x}
+  put        = {continue:true,error:false,value:x}
 
-  nI   = all.length
+  nI         = all.length
 
   do
 
@@ -379,9 +339,11 @@ reg.tightloop = (x,extra1,extra2) !->
 
       do
 
-        [patt] = each[J]
+        fun = each[J]
 
-        nput = settle each[J],put,type,extra1,extra2
+        [patt] = fun
+
+        nput = settle fun,put,type,extra1,extra2
 
         if nput.continue and (patt is \alt)
           put = nput
