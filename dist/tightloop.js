@@ -6,7 +6,7 @@
   z = com.z, l = com.l, R = com.R, j = com.j;
   main = {};
   sanatize = function(x, UFO){
-    var cont, unknown, path;
+    var cont, unknown, path, npath;
     switch (R.type(UFO)) {
     case 'Boolean':
     case 'Null':
@@ -36,16 +36,16 @@
         };
       } else {
         if (Array.isArray(path)) {
-          path = path;
+          npath = path;
         } else {
-          path = [];
+          npath = [];
         }
         return {
           'continue': false,
           error: true,
           value: x,
           message: unknown,
-          path: path
+          path: npath
         };
       }
     default:
@@ -247,7 +247,7 @@
     }
   };
   settle = function(fun, put, dtype, extra1, extra2){
-    var type, F, value, i$, len$, ref$, G;
+    var type, F, value, I, nI, ref$, G;
     type = fun[0], F = fun[1];
     value = put.value;
     switch (type) {
@@ -284,13 +284,17 @@
       put.error = true;
       return put;
     case 'alt':
-      for (i$ = 0, len$ = fun.length; i$ < len$; ++i$) {
-        ref$ = fun[i$], type = ref$[0], G = ref$[1];
+      fun = fun[1];
+      I = 0;
+      nI = fun.length;
+      do {
+        ref$ = fun[I], type = ref$[0], G = ref$[1];
         put = apply(type, G, value, extra1, extra2);
         if (put['continue']) {
           return put;
         }
-      }
+        I += 1;
+      } while (I < nI);
       return put;
     default:
       return put;

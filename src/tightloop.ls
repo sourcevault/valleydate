@@ -28,16 +28,16 @@ sanatize = (x,UFO) ->
     else
 
       if (Array.isArray path)
-        path = path
+        npath = path
       else
-        path = []
+        npath = []
 
       return {
         continue :false
         error    :true
         value    :x
         message  :unknown
-        path     :path
+        path     :npath
       }
 
   | otherwise =>
@@ -284,12 +284,23 @@ settle = (fun,put,dtype,extra1,extra2) ->
 
   | \alt          =>
 
-    for [type,G] in fun
+    fun        = fun[1]
+
+    I          = 0
+
+    nI         = fun.length
+
+    do
+
+      [type,G] = fun[I]
 
       put = apply type,G,value,extra1,extra2
 
       if put.continue
         return put
+
+      I += 1
+    while I < nI
 
     return put
 
