@@ -6,7 +6,7 @@
   "license": "BSD-3-Clause",
   "description": "immutable object validator",
   "repository": "https://github.com/sourcevault/valleydate.git",
-  "version": "0.0.78",
+  "version": "0.0.79",
   "main": "dist/main.js",
   "scripts": {
     "test": "make travis"
