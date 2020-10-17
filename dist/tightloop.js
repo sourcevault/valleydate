@@ -202,11 +202,11 @@
   difTop = function(type, F, val, args){
     switch (type) {
     case 'd':
-      return apply.normal.top(F, value, args);
+      return apply.normal.top(F, val, args);
     case 'i':
-      return apply.auth.top(F, value, args);
+      return apply.auth.top(F, val, args);
     case 'f':
-      return sanatize(value, apply.normal.top(F, value, args));
+      return sanatize(val, apply.normal.top(F, val, args));
     }
   };
   map = function(dtype, fun, value, args){

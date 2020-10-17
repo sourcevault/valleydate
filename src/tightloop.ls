@@ -178,11 +178,11 @@ dif-key = (type,F,val,args,key) ->
 dif-top = (type,F,val,args) ->
 
   switch type
-  | \d => apply.normal.top F,value,args
-  | \i => apply.auth.top F,value,args
+  | \d => apply.normal.top F,val,args
+  | \i => apply.auth.top F,val,args
   | \f => sanatize do
-    value
-    apply.normal.top F,value,args
+    val
+    apply.normal.top F,val,args
 
 map = (dtype,fun,value,args) ->
 
