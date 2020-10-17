@@ -78,14 +78,113 @@ blunder = (fun,put,extra1,extra2) ->
 
   | otherwise => put
 
-apply = (type,F,val,extra1,extra2) ->
+
+apply = {}
+  ..normal = {}
+    ..key = null
+    ..top = null
+  ..auth = {}
+    ..key = null
+    ..top = null
+
+
+apply.normal.key = (F,val,args,key) ->
+
+  switch args.length
+  | 1 => F val,key
+  | 2 => F val,key,args[1]
+  | 3 => F val,key,args[1],args[2]
+  | 4 => F val,key,args[1],args[2],args[3]
+  | 5 => F val,key,args[1],args[2],args[3],args[4]
+  | 6 => F val,key,args[1],args[2],args[3],args[4],args[5]
+  | 7 => F val,key,args[1],args[2],args[3],args[4],args[5],args[6]
+  | otherwise =>
+
+    list = Array.prototype.slice.call args
+
+    A = list.splice 1,0,key
+
+    F ...A
+
+apply.normal.top = (F,val,args) ->
+
+  switch args.length
+  | 1 => F val
+  | 2 => F val,args[1]
+  | 3 => F val,args[1],args[2]
+  | 4 => F val,args[1],args[2],args[3]
+  | 5 => F val,args[1],args[2],args[3],args[4]
+  | 6 => F val,args[1],args[2],args[3],args[4],args[5]
+  | 7 => F val,args[1],args[2],args[3],args[4],args[5],args[6]
+  | otherwise =>
+
+    A = Array.prototype.slice.call args
+
+    A.shift!
+
+    A.unshift val
+
+    F ...A
+
+apply.auth.top = (F,val,args) ->
+
+  switch args.length
+  | 1 => F.auth val
+  | 2 => F.auth val,args[1]
+  | 3 => F.auth val,args[1],args[2]
+  | 4 => F.auth val,args[1],args[2],args[3]
+  | 5 => F.auth val,args[1],args[2],args[3],args[4]
+  | 6 => F.auth val,args[1],args[2],args[3],args[4],args[5]
+  | 7 => F.auth val,args[1],args[2],args[3],args[4],args[5],args[6]
+  | otherwise =>
+
+    A = Array.prototype.slice.call args
+
+    A.shift!
+
+    A.unshift val
+
+    F.auth ...A
+
+
+apply.auth.key = (F,val,args,key) ->
+
+  switch args.length
+  | 1 => F.auth val,key
+  | 2 => F.auth val,key,args[1]
+  | 3 => F.auth val,key,args[1],args[2]
+  | 4 => F.auth val,key,args[1],args[2],args[3]
+  | 5 => F.auth val,key,args[1],args[2],args[3],args[4]
+  | 6 => F.auth val,key,args[1],args[2],args[3],args[4],args[5]
+  | 7 => F.auth val,key,args[1],args[2],args[3],args[4],args[5],args[6]
+  | otherwise =>
+
+    list = Array.prototype.slice.call args
+
+    A = list.splice 1,0,key
+
+    F.auth ...A
+
+
+dif-key = (type,F,val,args,key) ->
 
   switch type
-  | \d => F val
-  | \i => F.auth val,extra1,extra2
-  | \f => sanatize val,(F val,extra1,extra2)
+  | \d => apply.normal.key F,val,args,key
+  | \i => apply.auth.key F,val,args,key
+  | \f => sanatize do
+    val
+    apply.normal.key F,val,args,key
 
-map = (dtype,fun,value,extra1,extra2) ->
+dif-top = (type,F,val,args) ->
+
+  switch type
+  | \d => apply.normal.top F,value,args
+  | \i => apply.auth.top F,value,args
+  | \f => sanatize do
+    value
+    apply.normal.top F,value,args
+
+map = (dtype,fun,value,args) ->
 
   [type,F] = fun
 
@@ -102,7 +201,7 @@ map = (dtype,fun,value,extra1,extra2) ->
 
     while I < In
 
-      put = apply type,F,value[I],I,extra1
+      put = dif-key type,F,value[I],args,I
 
       if put.path
         path = put.path
@@ -132,7 +231,7 @@ map = (dtype,fun,value,extra1,extra2) ->
 
     for key,val of value
 
-      put = apply type,F,val,key,extra1
+      put = dif-key type,F,val,args,key
 
       if put.path
         path = put.path
@@ -152,14 +251,14 @@ map = (dtype,fun,value,extra1,extra2) ->
 
     {continue:true,error:false,value:ob}
 
-upon = ([type,fun],value,extra1,extra2) ->
+upon = ([type,fun],value,args) ->
 
   switch type
   | \string =>
 
     [key,shape,G] = fun
 
-    put = apply shape,G,value[key],key,extra1
+    put = dif-key shape,G,value[key],args,key
 
     if put.path
       path = put.path
@@ -191,7 +290,7 @@ upon = ([type,fun],value,extra1,extra2) ->
 
       key = arr[I]
 
-      put = apply shape,G,value[key],key,extra1
+      put = dif-key shape,G,value[key],args,key
 
       if put.path
         path = put.path
@@ -223,7 +322,7 @@ upon = ([type,fun],value,extra1,extra2) ->
 
       [key,shape,G] = fun[I]
 
-      apply shape,G,value[key],key,extra1
+      dif-key shape,G,value[key],args,key
 
       if put.path
         path = put.path
@@ -246,26 +345,28 @@ upon = ([type,fun],value,extra1,extra2) ->
     {continue:true,error:false,value:value}
 
 
-settle = (fun,put,dtype,extra1,extra2) ->
+
+
+settle = (fun,put,dtype,args) ->
 
   [type,F] = fun
 
   {value}  = put
 
   switch type
-
-  | \d         => F value
-  | \i         => F.auth value,extra1,extra2
-  | \f         => sanatize value,(F value,extra1,extra2)
+  | \d => apply.normal.top F,value,args
+  | \i => apply.auth.top F,value,args
+  | \f => sanatize do
+    value
+    apply.normal.top F,value,args
 
   # ------------------------------------------------------
-
-  | \map       => map dtype,F,value,extra1,extra2
-  | \on        => upon F,value,extra1,extra2
+  | \map       => map dtype,F,value,args
+  | \on        => upon F,value,args
   | \cont      =>
 
     put.value   = switch typeof F
-    | \function => F value,extra1,extra2
+    | \function => apply.normal.top F,value,args
     | otherwise => F
 
     put
@@ -273,7 +374,7 @@ settle = (fun,put,dtype,extra1,extra2) ->
   | \jam       =>
 
     put.message  = switch typeof F
-    | \function  => F value,extra1,extra2
+    | \function  => apply.normal.top F,value,args
     | otherwise  => F
 
     put.continue = false
@@ -284,17 +385,15 @@ settle = (fun,put,dtype,extra1,extra2) ->
 
   | \alt          =>
 
-    fun        = fun[1]
-
     I          = 0
 
-    nI         = fun.length
+    nI         = F.length
 
     do
 
-      [type,G] = fun[I]
+      [type,G] = F[I]
 
-      put = apply type,G,value,extra1,extra2
+      put = dif-top type,G,value,args
 
       if put.continue
         return put
@@ -307,7 +406,7 @@ settle = (fun,put,dtype,extra1,extra2) ->
   | otherwise => put
 
 
-reg.tightloop = (x,extra1,extra2) !->
+reg.tightloop = (x) !->
 
   state      = @[sig]
 
@@ -335,9 +434,9 @@ reg.tightloop = (x,extra1,extra2) !->
         fun = each[J]
 
         if put.error
-          put = blunder fun,put,extra1,extra2
+          put = blunder fun,put,arguments
         else
-          put = settle fun,put,type,extra1,extra2
+          put = settle fun,put,type,arguments
 
         J += 1
 
@@ -360,7 +459,7 @@ reg.tightloop = (x,extra1,extra2) !->
 
         [patt] = fun
 
-        nput = settle fun,put,type,extra1,extra2
+        nput = settle fun,put,type,arguments
 
         if nput.continue and (patt is \alt)
           put = nput

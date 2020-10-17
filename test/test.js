@@ -18,8 +18,14 @@
       bar: "hello world"
     }
   };
-  V = be.obj.alt(be.arr, be.num).cont(function(x){
-    return z(x);
+  V = be.obj.on('foo', be.obj.on('bar', be.num.cont(function(x, a, b, c, d){
+    z("first: ", a, b, c, d);
+    return x;
+  })).on('bar', be.str.and(function(x, j, k){
+    z("second: ", j, k);
+    return true;
+  }))).on(['foo', 'bar'], function(val, j, k){
+    z(j, k);
+    return true;
   });
-  z(V.auth(1));
 }).call(this);
