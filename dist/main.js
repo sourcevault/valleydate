@@ -238,6 +238,20 @@
     }
     return define.on(type, state, args);
   };
+  define.copy = function(F, data, type){
+    type == null && (type = data.type);
+    switch (type) {
+    case 'obj':
+    case 'arr':
+    case 'arg':
+      Object.assign(F, proto.functor);
+      break;
+    default:
+      Object.assign(F, proto.normal);
+    }
+    F[sig] = data;
+    return cache.ins.add(F);
+  };
   define.proto = function(data, type){
     var put;
     type == null && (type = data.type);
@@ -255,11 +269,10 @@
     return put;
   };
   define.basis = function(name, F){
-    var data, ref$, proto;
+    var data, ref$;
     cache.def.add(F);
     data = (ref$ = {}, import$(ref$, initState), (ref$.type = name, ref$.str = [name], ref$.all = [[['d', F]]], ref$));
-    proto = define.proto(data);
-    Object.setPrototypeOf(F, proto);
+    define.copy(F, data);
   };
   define.and = function(state, funs){
     var all, last, init, nlast, block;

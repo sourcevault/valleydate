@@ -20,6 +20,6 @@ V = be.arr.map be.str
 
 ret = V.auth null
 
-if not (ret.message is "not array")
+if not (ret.message[0] is "not array")
   p!
 

@@ -252,7 +252,7 @@ gaurd.rest = hop
 
     block = switch type
     | \and                  => define.and state,funs
-    | \or                   => define.or  state,funs
+    | \or                   => define.or state,funs
     | \alt                  => define.or state,[[\alt,funs]]
     | \map                  => define.and state,[[\map,funs[0]]]
     | \err,\fix,\cont,\jam  => define.and state,[[type,args[0]]]
@@ -322,6 +322,24 @@ gaurd.on = (args,state)->
 
   define.on type,state,args
 
+
+define.copy = (F,data,type = data.type) ->
+
+  switch type
+  | \obj,\arr,\arg =>
+
+    Object.assign F,proto.functor
+
+  | otherwise =>
+
+    Object.assign F,proto.normal
+
+  F[sig] = data
+
+  cache.ins.add F
+
+
+
 define.proto = (data,type = data.type) ->
 
   switch type
@@ -336,6 +354,7 @@ define.proto = (data,type = data.type) ->
 
   put
 
+
 define.basis = (name,F) ->
 
   cache.def.add F
@@ -349,9 +368,7 @@ define.basis = (name,F) ->
     }
   }
 
-  proto = define.proto data
-
-  Object.setPrototypeOf F,proto
+  define.copy F,data
 
   void
 

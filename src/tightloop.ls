@@ -49,8 +49,15 @@ sanatize = (x,UFO) ->
       message  : "[#{pkgname}][typeError][user-supplied-validator] undefined return value."
     }
 
+apply = {}
+  ..normal = {}
+    ..key = null
+    ..top = null
+  ..auth = {}
+    ..key = null
+    ..top = null
 
-blunder = (fun,put,extra1,extra2) ->
+blunder = (fun,put,args) ->
 
   [patt,F] = fun
 
@@ -58,7 +65,7 @@ blunder = (fun,put,extra1,extra2) ->
   | \err =>
 
     message = switch typeof F
-    | \function => F put.message,put.path,extra1,extra2
+    | \function => apply.normal.key F,put.message,args,put.path
     | otherwise => F
 
     put.message = message
@@ -68,7 +75,7 @@ blunder = (fun,put,extra1,extra2) ->
   | \fix =>
 
     put.value = switch typeof F
-    | \function => F put.value,put.path,extra1,extra2
+    | \function => apply.normal.key F,put.value,args,put.path
     | otherwise => F
 
     put.continue = true
@@ -77,15 +84,6 @@ blunder = (fun,put,extra1,extra2) ->
     put
 
   | otherwise => put
-
-
-apply = {}
-  ..normal = {}
-    ..key = null
-    ..top = null
-  ..auth = {}
-    ..key = null
-    ..top = null
 
 
 apply.normal.key = (F,val,args,key) ->
@@ -103,6 +101,7 @@ apply.normal.key = (F,val,args,key) ->
     list = Array.prototype.slice.call args
 
     A = list.splice 1,0,key
+
 
     F ...A
 
@@ -125,6 +124,8 @@ apply.normal.top = (F,val,args) ->
     A.unshift val
 
     F ...A
+
+
 
 apply.auth.top = (F,val,args) ->
 
@@ -164,7 +165,6 @@ apply.auth.key = (F,val,args,key) ->
     A = list.splice 1,0,key
 
     F.auth ...A
-
 
 dif-key = (type,F,val,args,key) ->
 
@@ -345,8 +345,6 @@ upon = ([type,fun],value,args) ->
     {continue:true,error:false,value:value}
 
 
-
-
 settle = (fun,put,dtype,args) ->
 
   [type,F] = fun
@@ -453,6 +451,10 @@ reg.tightloop = (x) !->
 
       nJ   = each.length
 
+      switch typeof put.message
+      | \string   =>
+        put.message = [put.message]
+
       do
 
         fun = each[J]
@@ -472,13 +474,17 @@ reg.tightloop = (x) !->
 
         else if nput.error
 
+          switch typeof nput.message
+          | \string   =>
+            put.message.push nput.message
+          | otherwise =>
+            put.message.push ...nput.message
+
           J += 1
 
       while J < nJ
 
-
       I += 1
-
 
   while I < nI
 
