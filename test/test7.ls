@@ -21,13 +21,11 @@ data =
   *foo:
     bar:null
 
+# V = be.num
+# .or be.undef
+# .and be.int
 
-# V = be.str
-# .cont ->
-
-  # z arguments
-
-# V.auth "data",2,3,4,5,6,7,8,9,10
+# z V.auth null
 
 
 

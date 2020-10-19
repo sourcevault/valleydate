@@ -149,10 +149,13 @@ be.required = reqError.def ->
 
   props = R.flatten [...arguments]
 
-  be.obj.on do
+  be.obj
+  .err (msg) -> [\parse,msg]
+  .on do
     props
     be.not.undef
-    .err props
+    .err [\req,props]
+
 
 be.maybe.required = ->
 
@@ -256,22 +259,22 @@ list.ofstr = list be.str
 .err (msg,key)->
 
   switch R.type key
-  | \Undefined => "not a list of string."
-  | otherwise  => "not string type at .#{key[0]}"
+  | \Undefined => [\prime , "not a list of string."]
+  | otherwise  => [\list , "not string type at .#{key[0]}"]
 
 list.ofnum = list be.num
 .err (msg,key) ->
 
   switch R.type key
-  | \Undefined => "not a list of number."
-  | otherwise  => "not number type at .#{key[0]}"
+  | \Undefined => [\prime,"not a list of number."]
+  | otherwise  => [\list,"not number type at .#{key[0]}"]
 
 list.ofint = list be.int
 .err (msg,key) ->
 
   switch R.type key
-  | \Undefined => "not a list of integer."
-  | otherwise  => "not integer type at .#{key[0]}"
+  | \Undefined => [\prime,"not a list of integer."]
+  | otherwise  => [\list,"not integer type at .#{key[0]}"]
 
 maybe.list = {}
 

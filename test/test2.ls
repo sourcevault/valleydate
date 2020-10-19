@@ -26,7 +26,7 @@ if not (ret1.value is \UK)
 	p!
 
 
-if not (ret2.message is "not in G7")
+if not (ret2.message[0] is "not in G7")
 
 	p!
 

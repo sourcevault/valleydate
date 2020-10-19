@@ -441,8 +441,15 @@ reg.tightloop = (x) !->
       while J < nJ
 
       if put.error
+
+        switch typeof put.message
+        | \string   =>
+          put.message = [put.message]
+
         I += 1
+
       else
+
         I += 2
 
     | 1 => # or
@@ -450,10 +457,6 @@ reg.tightloop = (x) !->
       J    = 0
 
       nJ   = each.length
-
-      switch typeof put.message
-      | \string   =>
-        put.message = [put.message]
 
       do
 
@@ -474,11 +477,7 @@ reg.tightloop = (x) !->
 
         else if nput.error
 
-          switch typeof nput.message
-          | \string   =>
-            put.message.push nput.message
-          | otherwise =>
-            put.message.push ...nput.message
+          put.message.push nput.message
 
           J += 1
 

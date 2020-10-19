@@ -19,7 +19,7 @@
   if (!(ret1.value === 'UK')) {
     p();
   }
-  if (!(ret2.message === "not in G7")) {
+  if (!(ret2.message[0] === "not in G7")) {
     p();
   }
   if (ret2.value === undefined) {
