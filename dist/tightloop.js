@@ -411,7 +411,7 @@
     }
   };
   reg.tightloop = function(x){
-    var state, all, type, I, put, nI, each, J, nJ, fun, patt, nput, ref$;
+    var state, all, type, I, put, nI, each, J, nJ, fun, patt, nput;
     state = this[sig];
     all = state.all, type = state.type;
     I = 0;
@@ -437,6 +437,10 @@
           J += 1;
         } while (J < nJ);
         if (put.error) {
+          switch (typeof put.message) {
+          case 'string':
+            put.message = [put.message];
+          }
           I += 1;
         } else {
           I += 2;
@@ -445,10 +449,6 @@
       case 1:
         J = 0;
         nJ = each.length;
-        switch (typeof put.message) {
-        case 'string':
-          put.message = [put.message];
-        }
         do {
           fun = each[J];
           patt = fun[0];
@@ -461,13 +461,7 @@
             I = nI;
             J = nJ;
           } else if (nput.error) {
-            switch (typeof nput.message) {
-            case 'string':
-              put.message.push(nput.message);
-              break;
-            default:
-              (ref$ = put.message).push.apply(ref$, nput.message);
-            }
+            put.message.push(nput.message);
             J += 1;
           }
         } while (J < nJ);

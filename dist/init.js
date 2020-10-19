@@ -120,7 +120,9 @@
   be.required = reqError.def(function(){
     var props;
     props = R.flatten(arrayFrom$(arguments));
-    return be.obj.on(props, be.not.undef.err(props));
+    return be.obj.err(function(msg){
+      return ['parse', msg];
+    }).on(props, be.not.undef.err(['req', props]));
   });
   be.maybe.required = function(){
     var req;
@@ -213,25 +215,25 @@
   list.ofstr = list(be.str).err(function(msg, key){
     switch (R.type(key)) {
     case 'Undefined':
-      return "not a list of string.";
+      return ['prime', "not a list of string."];
     default:
-      return "not string type at ." + key[0];
+      return ['list', "not string type at ." + key[0]];
     }
   });
   list.ofnum = list(be.num).err(function(msg, key){
     switch (R.type(key)) {
     case 'Undefined':
-      return "not a list of number.";
+      return ['prime', "not a list of number."];
     default:
-      return "not number type at ." + key[0];
+      return ['list', "not number type at ." + key[0]];
     }
   });
   list.ofint = list(be.int).err(function(msg, key){
     switch (R.type(key)) {
     case 'Undefined':
-      return "not a list of integer.";
+      return ['prime', "not a list of integer."];
     default:
-      return "not integer type at ." + key[0];
+      return ['list', "not integer type at ." + key[0]];
     }
   });
   maybe.list = {};
