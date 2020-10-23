@@ -27,9 +27,12 @@ sanatize = (x,UFO) ->
 
     else
 
-      if (Array.isArray path)
+      switch R.type path
+      | \Array =>
         npath = path
-      else
+      | \String =>
+        npath = [path]
+      | otherwise =>
         npath = []
 
       return {

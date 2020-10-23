@@ -79,11 +79,16 @@ be.arg = F
 
 #--------------------------------------------------------
 
-be.not        = (F) -> be (x) -> not (F x).continue
+pop = (msg) -> msg.pop! ; msg
 
-be.maybe      = (F) -> (be F).or be.undef
+#--------------------------------------------------------
 
-be.list       = (F) -> be.arr.map F
+be.not = (F) -> be (x) -> not (F x).continue
+
+be.maybe = (F) -> ((be F).or be.undef).err pop
+
+
+be.list  = (F) -> be.arr.map F
 
 be.not[uic]   = print.inner
 
@@ -125,43 +130,103 @@ be.maybe.arr = be.arr.or be.undef
 
 # ------------------------------------------------------------------
 
-reqError = hop.immutable
-.wh do
-  ->
+not-arrayof-str-or-num = (type) -> ->
 
-    args = R.flatten [...arguments]
+  args = R.flatten [...arguments]
 
-    for key in args
+  for key in args
 
-      if not ((R.type key) in [\String \Number])
+    if not ((R.type key) in [\String \Number])
 
-        print.route [\required_input]
+      print.route [\resreq,[type]]
+
+      return true
+
+  return false
+
+reqError = hop.wh do
+  not-arrayof-str-or-num \req
+  loopError
+
+resError = hop.wh do
+  not-arrayof-str-or-num \res
+  loopError
+
+reqresError = hop.wh do
+  (req,res) ->
+
+    if not (((R.type req) is "Array") and (((R.type res) is "Array")))
+
+      print.route [\resreq,[\resreq,\prime]]
+
+      return true
+
+    for I in req
+
+      if not ((R.type I) in [\String \Number])
+
+        print.route [\resreq,[\resreq,\res]]
 
         return true
 
-    return false
+
+    for I in res
+
+      if not ((R.type I) in [\String \Number])
+
+        print.route [\resreq,[\resreq,\req]]
+
+        return true
+
 
   loopError
 
 #------------------------------------------------------
 
+objarr = (be.obj.alt be.arr).err [\prime,"not object or array"]
+
 be.required = reqError.def ->
 
   props = R.flatten [...arguments]
 
-  be.obj
-  .err (msg) -> [\parse,msg]
-  .on do
-    props
-    be.not.undef
-    .err [\req,props]
+  objarr.on props, be.not.undef.err [\req,props]
 
+#------------------------------------------------------
 
-be.maybe.required = ->
+restricted = (props,po) -> (obj) ->
 
-  req = be.required ...arguments
+  keys = Object.keys obj
 
-  be.maybe req
+  for I in keys
+
+    if not po[I]
+
+      return [false,[\res,props],I]
+
+  true
+
+be.restricted = resError.def ->
+
+  props = R.flatten [...arguments]
+
+  po = {}
+
+  for I in props
+
+    po[I] = true
+
+  objarr.and restricted props,po
+
+be.reqres = reqresError.def (req,res) ->
+
+  po = {}
+
+  for I in res
+
+    po[I] = true
+
+  objarr.on req, be.not.undef.err [\req,req]
+  .and restricted res,po
 
 #------------------------------------------------------
 

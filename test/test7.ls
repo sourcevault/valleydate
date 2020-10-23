@@ -6,7 +6,7 @@ valleydate = require "../dist/main"
 
 {z,l,hop,slist,R} = com
 
-p = print.fail "test/test.js"
+p = print.fail "test/test7.js"
 
 be = valleydate
 
@@ -16,17 +16,11 @@ T = (x) -> true
 
 F = (x)  -> [false,\foobar]
 
+V = be.restricted [0,1]
 
-data =
-  *foo:
-    bar:null
+ret = V.auth [\a,\b,\c]
 
-# V = be.num
-# .or be.undef
-# .and be.int
+if not (ret.message[0] is \res)
 
-# z V.auth null
-
-
-
+  p ".restricted message is not accurate."
 

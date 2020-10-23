@@ -79,13 +79,28 @@ lit = R.pipe do
   R.join ""
   l
 
-print.required_input = ->
+print.resreq = ([cat,type]) ->
 
-  lit ["[#{pkgname}]","[typeError]"],[c.er2,c.er3]
+  methodname = switch cat
+  | \resreq  => ".resreq"
+  | \res     => ".restricted"
+  | \req     => ".required"
 
-  lit ['\n',"  .required only accepts string and number.",'\n'],[0,c.warn,0]
+  lit ["[#{pkgname}]","[argumentError] ",methodname],[c.er2,c.er3,c.er1]
 
-  show_stack!
+  txt = switch cat
+  | \resreq =>
+
+    switch type
+    | \prime => "  .resreq only accepts 2 argument of type Array of String / Number."
+    | \res   => "  first argmuent is not a Array of String / Number."
+    | \req   => "  second argmuent is not a Array of String / Number."
+
+  | \res,\req    => "  one of the (inner) argument is not of type of String / Number."
+
+
+  lit ['\n',txt,'\n'],[0,c.warn,0]
+
 
 print.input_fault = ([method_name,data]) ->
 
@@ -254,8 +269,8 @@ print.route = (data) ->
   [ECLASS,info] = data
 
   switch ECLASS
-  | \required_input => print.required_input!
-  | \input.fault    => print.input_fault info
+  | \resreq       => print.resreq info
+  | \input.fault  => print.input_fault info
 
   show_stack!
 
@@ -282,7 +297,7 @@ sort = (x) -> x.sort(alpha-sort.ascending)
 
 includes = R.flip R.includes
 
-same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on','alt']
+same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on','alt','auth']
 
 myflat = hop
 .ma do
@@ -335,6 +350,7 @@ find_len = R.reduce (accum,x) ->
 print.inner = ->
 
   props =  sort [ I for I of flat myflat @]
+
 
   ob = split props
 
