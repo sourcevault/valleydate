@@ -35,9 +35,14 @@
           value: x
         };
       } else {
-        if (Array.isArray(path)) {
+        switch (R.type(path)) {
+        case 'Array':
           npath = path;
-        } else {
+          break;
+        case 'String':
+          npath = [path];
+          break;
+        default:
           npath = [];
         }
         return {

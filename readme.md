@@ -403,6 +403,8 @@ Some validators are common enough to be added in core.
 
 - `required` - accepts a list of strings and checks *if they are not undefined*  in an object.
 
+- `restricted` - checks if object has properties that are restricted to provided keys. examples
+
 - `int` - checks if input is a integer
 
 🟡 using `int` :
@@ -439,6 +441,8 @@ V.auth(undefined) //
 V.auth(2) // success !
 ```
 
+#### `maybe.*`
+
 🟢 Table 2 - all possible primitive and helper function provided in core.
 
 ```js
@@ -452,19 +456,19 @@ maybe.fun            maybe.int.neg
 maybe.int.pos        maybe.list.ofint
 maybe.list.ofnum     maybe.list.ofstr
 maybe.null           maybe.num
-maybe.obj            maybe.required
-maybe.str            maybe.undef
-not.arr              not.bool
-not.fun              not.null
-not.num              not.obj
-not.str              not.undef
-arg                  arr
-bool                 boolnum
-fun                  int
-null                 num
-obj                  required
-str                  undef
-undefnull
+maybe.obj            maybe.str
+maybe.undef          not.arr
+not.bool             not.fun
+not.null             not.num
+not.obj              not.str
+not.undef            arg
+arr                  bool
+boolnum              fun
+int                  null
+num                  obj
+reqres               required
+restricted           str
+undef                undefnull
 ```
 
 ## LICENCE

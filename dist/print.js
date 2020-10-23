@@ -61,10 +61,38 @@
       return x;
     }
   }), R.join(""), l);
-  print.required_input = function(){
-    lit(["[" + pkgname + "]", "[typeError]"], [c.er2, c.er3]);
-    lit(['\n', "  .required only accepts string and number.", '\n'], [0, c.warn, 0]);
-    return show_stack();
+  print.resreq = function(arg$){
+    var cat, type, methodname, txt;
+    cat = arg$[0], type = arg$[1];
+    methodname = (function(){
+      switch (cat) {
+      case 'resreq':
+        return ".resreq";
+      case 'res':
+        return ".restricted";
+      case 'req':
+        return ".required";
+      }
+    }());
+    lit(["[" + pkgname + "]", "[argumentError] ", methodname], [c.er2, c.er3, c.er1]);
+    txt = (function(){
+      switch (cat) {
+      case 'resreq':
+        switch (type) {
+        case 'prime':
+          return "  .resreq only accepts 2 argument of type Array of String / Number.";
+        case 'res':
+          return "  first argmuent is not a Array of String / Number.";
+        case 'req':
+          return "  second argmuent is not a Array of String / Number.";
+        }
+        break;
+      case 'res':
+      case 'req':
+        return "  one of the (inner) argument is not of type of String / Number.";
+      }
+    }());
+    return lit(['\n', txt, '\n'], [0, c.warn, 0]);
   };
   print.input_fault = function(arg$){
     var method_name, data, fi;
@@ -193,8 +221,8 @@
     var ECLASS, info;
     ECLASS = data[0], info = data[1];
     switch (ECLASS) {
-    case 'required_input':
-      print.required_input();
+    case 'resreq':
+      print.resreq(info);
       break;
     case 'input.fault':
       print.input_fault(info);
@@ -222,7 +250,7 @@
     return x.sort(alphaSort.ascending);
   };
   includes = R.flip(R.includes);
-  same = includes(['and', 'or', 'cont', 'jam', 'fix', 'err', 'map', 'on', 'alt']);
+  same = includes(['and', 'or', 'cont', 'jam', 'fix', 'err', 'map', 'on', 'alt', 'auth']);
   myflat = hop.ma(function(ob){
     switch (R.type(ob)) {
     case 'Function':
