@@ -148,9 +148,10 @@
   }, loopError);
   objarr = be.obj.alt(be.arr).err(['prime', "not object or array"]);
   be.required = reqError.def(function(){
-    var props;
+    var props, ret;
     props = R.flatten(arrayFrom$(arguments));
-    return objarr.on(props, be.not.undef.err(['req', props]));
+    ret = objarr.on(props, be.not.undef.err(['req', props]));
+    return ret;
   });
   restricted = function(props, po){
     return function(obj){
