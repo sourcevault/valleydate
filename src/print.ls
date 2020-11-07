@@ -30,7 +30,7 @@ pe.skipNodeFiles!
 
 pe.filterParsedError (Error) ->
 
-  Error._trace = R.takeLast 5,Error._trace
+  Error._trace = R.takeLast 0,Error._trace
 
   Error
 
@@ -293,33 +293,34 @@ print.log = ->
 
 sort = (x) -> x.sort(alpha-sort.ascending)
 
-  # R.sort (a,b) -> b.length - a.length
+# R.sort (a,b) -> b.length - a.length
 
 includes = R.flip R.includes
 
 same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on','alt','auth']
 
 myflat = hop
-.ma do
+.wh do
   (ob) ->
     switch (R.type ob)
-    | \Function,\Object => false
-    | otherwise => {}
+    | \Function,\Object => true
+    | otherwise         => false
 
-.def (ob,fin = {}) ->
+  (ob,fin = {}) ->
 
-  keys = Object.keys ob
+    keys = Object.keys ob
 
-  for I in keys
+    for I in keys
 
-    if not (same I)
+      if not (same I)
 
-      prop = myflat ob[I]
+        prop = myflat ob[I]
 
-      fin[I] = prop
+        fin[I] = prop
 
-  fin
+    fin
 
+.def -> {}
 
 print.proto = ->
 

@@ -90,11 +90,11 @@ be.maybe = (F) -> ((be F).or be.undef).err pop
 
 be.list  = (F) -> be.arr.map F
 
-be.not[uic]   = print.inner
+be.not[uic]    = print.inner
 
-be.list[uic]  = print.inner
+be.list[uic]   = print.inner
 
-be.maybe[uic] = print.inner
+be.maybe[uic]  = print.inner
 
 # ------------------------------------------------------------------
 
@@ -189,7 +189,11 @@ be.required = reqError.def ->
 
   props = R.flatten [...arguments]
 
-  objarr.on props, be.not.undef.err [\req,props]
+  ret = objarr.on props, be.not.undef.err [\req,props]
+
+
+  ret
+
 
 #------------------------------------------------------
 

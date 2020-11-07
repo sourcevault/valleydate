@@ -97,15 +97,22 @@ proto.functor.map    = wrap.rest \map
 
 proto.functor.on     = wrap.on
 
-proto.normal[uic]  = print.proto
+proto.normal[uic]    = print.proto
 
-proto.functor[uic] = print.proto
+proto.functor[uic]   = print.proto
 
 #---------------------------------------------------------
 
+
+handleError = (info) ->
+
+  print.route info
+
+  loopError!
+
 custom = hop
 
-.arn 1, -> print.route [\input.fault [\custom [\arg_count]]] ; loopError!
+.arn 1, -> handleError [\input.fault [\custom [\arg_count]]]
 
 .whn do
 
@@ -113,7 +120,7 @@ custom = hop
 
     ((R.type f) is \Function) or (f[sig])
 
-  -> print.route [\input.fault [\custom [\not_function]]] ; loopError!
+  -> handleError [\input.fault [\custom [\not_function]]]
 
 .def (F) ->
 
@@ -131,12 +138,60 @@ custom[uic] = print.inner
 
 #--------------------------------------------------------------------------
 
-validate.on = hop.unary
+define.on = ([type,ErrorData],args,state) ->
 
-.arn [1,2],(args,state) -> [\input.fault [\on [\arg_count,[state.str,\on]]]]
+  switch type
+  | \array =>
+
+    [props,F] = args
+
+    put = [\on,[\array,[(R.uniq props),...(cato F)]]]
+
+  | \string =>
+
+    [key,F] = args
+
+    put = [\on,[\string,[key,...(cato F)]]]
+
+    put
+
+  | \object =>
+
+    [ob] = args
+
+    fun   = [[key,...(cato val)] for key,val of ob]
+
+    put = [\on,[\object,fun]]
+
+  | \input.fault => return handleError ErrorData
+
+  block = define.and state,[put]
+
+  data = {
+    ...state
+    ...{
+      phase :\chain
+      all   :block
+      str   :state.str.concat \on
+    }
+  }
+
+  define.proto data
+
+#-----------------------------------------------------------------------
+
+gaurd.on = hop.unary
+
+.arn do
+
+  [1,2]
+
+  (args,state) -> handleError [\input.fault,[\on [\arg_count,[state.str,\on]]]]
 
 .arma do
+
   1
+
   ([maybe-object],state) ->
 
     if ((R.type maybe-object) is \Object)
@@ -151,43 +206,46 @@ validate.on = hop.unary
 
     else
 
-      false
+      return false
+
+  define.on
 
 .arma do
   2
-  ([maybe-array,maybe-function],state)->
+  ([first,second],state)->
 
-    if ((R.type maybe-array) is \Array)
+    switch R.type first
 
-      for I in maybe-array
+    | \Array =>
+
+      for I in first
 
         if not ((R.type I) is \String)
 
-          return [\input.fault [\on [\array ,[state.str,\on]]]]
-
-      if not (((R.type maybe-function) is \Function) or (cache.ins.has maybe-function))
-
           return [\input.fault [\on [\array,[state.str,\on]]]]
+
+      if not (((R.type second) is \Function) or (cache.ins.has second))
+
+        return [\input.fault [\on [\array,[state.str,\on]]]]
 
       return [\array]
 
-    else
+    | \String =>
 
-      return false
+      if not (((R.type second) is \Function) or (cache.ins.has second))
 
-  ([maybe-string,maybe-function],state) ->
+        return [\input.fault [\on [\string,[state.str,\on]]]]
 
-    if not ((R.type maybe-string) is \String)
+      return [\string]
 
-      return false
+    | otherwise => return false
 
-    if not (((R.type maybe-function) is \Function) or (cache.ins.has maybe-function))
+  define.on
 
-      return [\input.fault [\on [\string,[state.str,\on]]]]
+.def (args,state) ->
 
-    return [\string]
+  handleError [\input.fault [\on [\typeError,[state.str,\on]]]]
 
-.def (args,state) -> [\input.fault [\on [\typeError,[state.str,\on]]]]
 
 #-----------------------------------------------------------------------
 
@@ -270,58 +328,6 @@ gaurd.rest = hop
 .def loopError
 
 #-----------------------------------------------------------------------
-
-define.on = (type,state,args) ->
-
-  switch type
-  | \array =>
-
-    [props,F] = args
-
-    put = [\on,[\array,[(R.uniq props),...(cato F)]]]
-
-  | \string =>
-
-    [key,F] = args
-
-    put = [\on,[\string,[key,...(cato F)]]]
-
-    put
-
-  | \object =>
-
-    [ob] = args
-
-    fun   = [[key,...(cato val)] for key,val of ob]
-
-    put = [\on,[\object,fun]]
-
-  block = define.and state,[put]
-
-  data = {
-    ...state
-    ...{
-      phase :\chain
-      all   :block
-      str   :state.str.concat \on
-    }
-  }
-
-  define.proto data
-
-#-----------------------------------------------------------------------
-
-gaurd.on = (args,state)->
-
-  info = validate.on args,state
-
-  [type] = info
-
-  switch type
-  | \input.fault => print.route info ; return loopError!
-
-  define.on type,state,args
-
 
 define.copy = (F,data,type = data.type) ->
 

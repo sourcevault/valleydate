@@ -18,7 +18,7 @@
   pe = new prettyError();
   pe.skipNodeFiles();
   pe.filterParsedError(function(Error){
-    Error._trace = R.takeLast(5, Error._trace);
+    Error._trace = R.takeLast(0, Error._trace);
     return Error;
   });
   pe.skip(function(traceLine, lineNumber){
@@ -251,15 +251,15 @@
   };
   includes = R.flip(R.includes);
   same = includes(['and', 'or', 'cont', 'jam', 'fix', 'err', 'map', 'on', 'alt', 'auth']);
-  myflat = hop.ma(function(ob){
+  myflat = hop.wh(function(ob){
     switch (R.type(ob)) {
     case 'Function':
     case 'Object':
-      return false;
+      return true;
     default:
-      return {};
+      return false;
     }
-  }).def(function(ob, fin){
+  }, function(ob, fin){
     var keys, i$, len$, I, prop;
     fin == null && (fin = {});
     keys = Object.keys(ob);
@@ -271,6 +271,8 @@
       }
     }
     return fin;
+  }).def(function(){
+    return {};
   });
   print.proto = function(){
     var props, res$, name, str;
