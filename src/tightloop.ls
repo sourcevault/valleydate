@@ -30,7 +30,7 @@ sanatize = (x,UFO) ->
       switch R.type path
       | \Array =>
         npath = path
-      | \String =>
+      | \String,\Number =>
         npath = [path]
       | otherwise =>
         npath = []
@@ -348,7 +348,7 @@ upon = ([type,fun],value,args) ->
     {continue:true,error:false,value:value}
 
 
-settle = (fun,put,dtype,args) ->
+resolve = (fun,put,dtype,args) ->
 
   [type,F] = fun
 
@@ -437,7 +437,7 @@ reg.tightloop = (x) !->
         if put.error
           put = blunder fun,put,arguments
         else
-          put = settle fun,put,type,arguments
+          put = resolve fun,put,type,arguments
 
         J += 1
 
@@ -467,7 +467,7 @@ reg.tightloop = (x) !->
 
         [patt] = fun
 
-        nput = settle fun,put,type,arguments
+        nput = resolve fun,put,type,arguments
 
         if nput.continue and (patt is \alt)
           put = nput
@@ -481,6 +481,8 @@ reg.tightloop = (x) !->
         else if nput.error
 
           put.message.push nput.message
+
+          put.path = nput.path
 
           J += 1
 

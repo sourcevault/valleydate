@@ -36,5 +36,3 @@ data =
 #     true
 
 # V.auth {foo:{bar:1}},[\data],[\file]
-
-
