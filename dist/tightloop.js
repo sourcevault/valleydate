@@ -83,7 +83,9 @@
           return F;
         }
       }());
-      put.message = message;
+      if (message) {
+        put.message = message;
+      }
       return put;
     case 'fix':
       put.value = (function(){
@@ -466,9 +468,8 @@
             put = nput;
             I = nI;
             J = nJ;
-          } else if (nput.error) {
+          } else {
             put.message.push(nput.message);
-            put.path = nput.path;
             J += 1;
           }
         } while (J < nJ);
