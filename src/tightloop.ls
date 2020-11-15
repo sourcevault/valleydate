@@ -71,7 +71,8 @@ blunder = (fun,put,args) ->
     | \function => apply.normal.key F,put.message,args,put.path
     | otherwise => F
 
-    put.message = message
+    if message
+      put.message = message
 
     put
 
@@ -478,11 +479,9 @@ reg.tightloop = (x) !->
           I = nI
           J = nJ
 
-        else if nput.error
+        else
 
           put.message.push nput.message
-
-          put.path = nput.path
 
           J += 1
 
