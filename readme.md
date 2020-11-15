@@ -1,6 +1,8 @@
 
 ![](https://raw.githubusercontent.com/sourcevault/valleydate/dev/logo.jpg)
 
+**Install**
+
 ```js
 npm install valleydate
 ////| github.com | much install
@@ -223,7 +225,7 @@ var canbeIP = IS.str.or(IS.arr.map(IS.str))
 
 ### - `alt`
 
-- functionally similar to `or` using **either** condition **but** the result is merged with upstream validator chain.
+- functionally similar to `or` using **either** condition **but** the result ( or error ) is merged with upstream validator chain.
 
 ```js
 var canbeIP = IS.str.or(IS.arr.map(IS.str))
@@ -415,8 +417,7 @@ var IS = require("valleydate")
 IS.int(2)
 //{continue:true,error:false,value:1}
 
-IS.int(-1.1)
-//{continue:false,error:true,message:['not an integer']}
+IS.int(-1.1) //{continue:false,error:true,message:['not an integer']}
 
 IS.int(2.1)
 //{continue:false,error:true,message:['not an integer']}
