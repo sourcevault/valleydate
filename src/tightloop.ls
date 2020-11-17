@@ -67,6 +67,11 @@ blunder = (fun,put,args) ->
   switch patt
   | \err =>
 
+    if (typeof put.message) is \string
+
+      put.message = [put.message]
+
+
     message = switch typeof F
     | \function => apply.normal.key F,put.message,args,put.path
     | otherwise => F
@@ -363,6 +368,7 @@ resolve = (fun,put,dtype,args) ->
     apply.normal.top F,value,args
 
   # ------------------------------------------------------
+
   | \map       => map dtype,F,value,args
   | \on        => upon F,value,args
   | \cont      =>
@@ -401,6 +407,7 @@ resolve = (fun,put,dtype,args) ->
         return put
 
       I += 1
+
     while I < nI
 
     return put

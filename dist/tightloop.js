@@ -75,6 +75,9 @@
     patt = fun[0], F = fun[1];
     switch (patt) {
     case 'err':
+      if (typeof put.message === 'string') {
+        put.message = [put.message];
+      }
       message = (function(){
         switch (typeof F) {
         case 'function':

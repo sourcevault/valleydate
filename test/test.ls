@@ -36,3 +36,14 @@ data =
 #     true
 
 # V.auth {foo:{bar:1}},[\data],[\file]
+
+
+# V = be.required [\remotehost,\remotefold]
+
+# .on [\remotehost,\remotefold],be.str
+
+# .err (msg) ->
+
+#   z msg
+
+# V.auth {remotehost:"str",remotefold:1}
