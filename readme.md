@@ -40,7 +40,7 @@ var IS = require("valleydate")
 
 var V = IS.required("foo","bar")
 
-console.log(V.auth({foo:1}))
+console.log(V.auth({}))
 
 /*
 {
@@ -163,7 +163,7 @@ The return object will always return `.continue`, `.error` and `.value`. First t
 
 ⚠️ `.value` may be **modified** if consumption units are used in the chain , so be careful. ⚠️
 
-If `{cotinue:false,error:true,...}` the return object would also have attributes `.message` and `.path`, both are `Array` , with message values ( could be any type but better to be a string )  :
+If `{cotinue:false,error:true,...}` the return object would also have attributes `.message` and `.path`, both are `Array` , with message values :
 
 - `message`- that passes along error messages from the validator.
 - `path` - in case the input is of type array or object, the path within the object where the validator function failed.
