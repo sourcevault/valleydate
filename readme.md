@@ -391,13 +391,23 @@ isEmail.cont
 
 #### Context Variable
 
-`.auth` actually accepts two arguments, the second argument is a context variable.
+- `.auth` actually accepts **any number** of arguments.
 
-context is useful in two useful ways :
+- but expects the first argument to be what needs to be validated.
+
+so, what does `valleydate` do with the extra arguments ?
+
+- It simply passes it down to all consumption units in case they need them.
+
+- We refer to these extra arguments as context variables.
+
+- In cases where `.map` of `.on` are used, the context variables are appended with the key value.
+
+These context variables are useful in two important ways :
 
 - data needs to be provided to `.err` to create better error message, it could be things like filename.
 
-- the index / key for `.map`, `on` function.
+- `.map`, `on` modification is index / key dependant.
 
 #### Helper Validators
 
@@ -425,26 +435,31 @@ IS.int(2.1)
 
 #### `maybe.*`
 
-- It's common enough to have optional values in objects, however **if they do exist** we want it to conform to a type.
+- maybe namespace can be used to validate optional value that conform to a type.
 
 - The function exposed through `maybe.*` using `IS.int` :
 
 ```js
 var IS = require("valleydate")
 
-var disp = () => console.log("success !")
-
 var V = IS.maybe.int
-.cont(disp)
 
-V.auth(undefined) //
+V.auth(undefined) // { continue: true, error: false, value: undefined }
 
-V.auth(2) // success !
+V.auth(2) // { continue: true, error: false, value: 2}
+
+V.auth("foo bar")
+
+/*{
+  continue: false,
+  error: true,
+  message: [ 'not an integer ( or number )', 'not undefined' ],
+  value: 'foo bar'
+}*/
+
 ```
 
-#### `maybe.*`
-
-🟢 Table 2 - all possible primitive and helper function provided in core.
+🟢 All possible primitive and helper function provided in core.
 
 ```js
 // how to see both helper and primitive validators
