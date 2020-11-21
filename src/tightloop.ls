@@ -467,6 +467,8 @@ reg.tightloop = (x) !->
 
       nJ   = each.length
 
+      put.message = [put.message]
+
       do
 
         fun = each[J]
