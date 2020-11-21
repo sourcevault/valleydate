@@ -86,9 +86,7 @@
           return F;
         }
       }());
-      if (message) {
-        put.message = message;
-      }
+      put.message = message;
       return put;
     case 'fix':
       put.value = (function(){

@@ -71,13 +71,11 @@ blunder = (fun,put,args) ->
 
       put.message = [put.message]
 
-
     message = switch typeof F
     | \function => apply.normal.key F,put.message,args,put.path
     | otherwise => F
 
-    if message
-      put.message = message
+    put.message = message
 
     put
 

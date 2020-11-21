@@ -18,5 +18,4 @@
       bar: "hello world"
     }
   };
-  z(be.maybe.int.auth("hello world"));
 }).call(this);
