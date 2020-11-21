@@ -458,6 +458,7 @@
       case 1:
         J = 0;
         nJ = each.length;
+        put.message = [put.message];
         do {
           fun = each[J];
           patt = fun[0];
