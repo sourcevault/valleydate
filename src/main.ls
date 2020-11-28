@@ -230,7 +230,7 @@ gaurd.on = hop.unary
 
       return [\array]
 
-    | \String =>
+    | \String,\Number =>
 
       if not (((R.type second) is \Function) or (cache.ins.has second))
 

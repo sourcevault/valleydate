@@ -157,6 +157,7 @@
       }
       return ['array'];
     case 'String':
+    case 'Number':
       if (!(R.type(second) === 'Function' || cache.ins.has(second))) {
         return ['input.fault', ['on', ['string', [state.str, 'on']]]];
       }
