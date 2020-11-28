@@ -488,6 +488,10 @@ reg.tightloop = (x) !->
 
         else
 
+          if (typeof nput.message) is \string
+
+            nput.message = [nput.message]
+
           put.message.push nput.message
 
           J += 1
