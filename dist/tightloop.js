@@ -471,6 +471,9 @@
             I = nI;
             J = nJ;
           } else {
+            if (typeof nput.message === 'string') {
+              nput.message = [nput.message];
+            }
             put.message.push(nput.message);
             J += 1;
           }
