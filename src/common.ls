@@ -8,8 +8,6 @@ flat             = require "flat"
 
 hoplon           = require "hoplon"
 
-cc               = require "cli-color"
-
 alpha-sort       = require "alpha-sort"
 
 deep-freeze      = require "deep-freeze"
@@ -50,7 +48,6 @@ module.exports =
    j:j
    l:l
    R:R
-   cc:cc
    flat:flat
    hop:hoplon
    pad:advanced-pad

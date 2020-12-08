@@ -2,22 +2,22 @@ reg = require "./registry"
 
 {com,print} = reg
 
-{l,z,cc,R,j,pretty-error,hop,flat} = com
+{l,z,R,j,pretty-error,hop,flat} = com
 
 {pad,alpha-sort} = com
 
 {print,sig} = reg
 
-
 pkgname = reg.pkgname
 
 c = {}
-  ..ok1   = cc.greenBright
-  ..warn  = cc.xterm 209
-  ..er1   = cc.xterm 196
-  ..er2   = cc.magentaBright
-  ..er3   = cc.redBright
-  ..grey  = cc.xterm 8
+  ..ok1   = (txt) -> "\x1B[38;5;2m#{txt}\x1B[39m"
+  ..warn  = (txt) -> "\x1B[38;5;11m#{txt}\x1B[39m"
+  ..er1   = (txt) -> "\x1B[38;5;3m#{txt}\x1B[39m"
+  ..er2   = (txt) -> "\x1B[38;5;13m#{txt}\x1B[39m"
+  ..er3   = (txt) -> "\x1B[91m#{txt}\x1B[39m"
+  ..grey  = (txt) -> "\x1B[38;5;8m#{txt}\x1B[39m"
+
 
 help =
   c.grey "[  docs] #{reg.homepage}"
