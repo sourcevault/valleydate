@@ -11,13 +11,13 @@ scripts:
   "test": "make travis"
 dependencies:
   "@aitodotai/json-stringify-pretty-compact": "*"
-  pretty-error: "*"
+  error-stack-parser: "*"
+  advanced-pad: "*"
+  deep-freeze: "*"
+  alpha-sort: "*"
   hoplon: "*"
   ramda: "*"
   flat: "*"
-  deep-freeze: "*"
-  advanced-pad: "*"
-  alpha-sort: "*"
 keywords:
   - "json-schema-validator"
   - "schema-validator"

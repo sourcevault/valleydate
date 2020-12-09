@@ -18,6 +18,7 @@ data =
   *foo:
     bar:"hello world"
 
+
 # V = be.obj.on do
 #   \foo
 #   be.obj.on do

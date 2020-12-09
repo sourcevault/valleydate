@@ -13,13 +13,13 @@
   },
   "dependencies": {
     "@aitodotai/json-stringify-pretty-compact": "*",
-    "pretty-error": "*",
+    "error-stack-parser": "*",
+    "advanced-pad": "*",
+    "deep-freeze": "*",
+    "alpha-sort": "*",
     "hoplon": "*",
     "ramda": "*",
-    "flat": "*",
-    "deep-freeze": "*",
-    "advanced-pad": "*",
-    "alpha-sort": "*"
+    "flat": "*"
   },
   "keywords": [
     "json-schema-validator",

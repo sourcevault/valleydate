@@ -1,12 +1,8 @@
 reg = require "./registry"
 
-{com,print} = reg
+{com,print,sig} = reg
 
-{l,z,R,j,pretty-error,hop,flat} = com
-
-{pad,alpha-sort} = com
-
-{print,sig} = reg
+{l,z,R,j,hop,flat,pad,alpha-sort,esp} = com
 
 pkgname = reg.pkgname
 
@@ -18,43 +14,47 @@ c = {}
   ..er3   = (txt) -> "\x1B[91m#{txt}\x1B[39m"
   ..grey  = (txt) -> "\x1B[38;5;8m#{txt}\x1B[39m"
 
-
 help =
   c.grey "[  docs] #{reg.homepage}"
 
 # -------------------------------------------------------------------------------------------------------
 
-pe = (new prettyError!)
+show_stack = ->
 
-pe.skipNodeFiles!
+  l help + "\n"
 
-pe.filterParsedError (Error) ->
+  E = esp.parse new Error!
 
-  Error._trace = R.takeLast 0,Error._trace
+  E = R.drop 7,E
 
-  Error
+  for I in E
 
-pe.skip (traceLine,lineNumber) ->
+    {lineNumber,fileName,functionName,columnNumber} = I
 
-  if traceLine.dir is "internal/modules/cjs" then return true
+    path = fileName.split "/"
 
-  return false
+    [first,second] = path
 
+    if ((first is \internal) and (second is \modules)) then continue
 
-pe.appendStyle do
-  "pretty-error > header > title > kind":(display: "none")
-  "pretty-error > header > colon":(display: "none")
-  "pretty-error > header > message":(display:"none")
+    if (functionName is \Object.<anonymous>)
 
-# -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - - - - - - - - - - - - - - - - - - - - -
+      functionName = ""
 
-show_stack = !->
-
-  l help
-
-  E = pe.render new Error!
-
-  l E
+    lit do
+      [
+        "  - "
+        R.last path
+        ":"
+        lineNumber
+        " "
+        functionName
+        "\n    "
+        fileName + ":"
+        lineNumber
+        ":" + columnNumber + "\n"
+      ]
+      [0,c.warn,0,c.er1,0,0,0,c.black,c.er1,c.black]
 
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -112,14 +112,11 @@ print.input_fault = ([method_name,data]) ->
   | \custom   => fi.custom data
   | \and,\or  => fi.andor data
 
-
-
 show_chain = ([init,last]) ->
 
   lit do
     ["  ",((init).join "."),("."  + last),"(xx)"," <-- error here"]
     [0,c.ok1,c.er2,c.er3,c.er2]
-
 
 show_name = (name,type = "[inputError] ") ->
 
@@ -129,7 +126,6 @@ show_name = (name,type = "[inputError] ") ->
 
 print.input_fault.andor = ([type,info])->
 
-
   show_name ".#{info[1]}"
 
   l ""
@@ -137,7 +133,6 @@ print.input_fault.andor = ([type,info])->
   show_chain info
 
   l ""
-
 
   switch type
   | \arg_count =>
@@ -176,7 +171,6 @@ print.input_fault.custom = ([patt,loc]) ->
       "  no value passed."
       "\n\n"
       " minimum of 1 argument of function type is needed."
-
 
   | \not_function =>
 
@@ -351,7 +345,6 @@ find_len = R.reduce (accum,x) ->
 print.inner = ->
 
   props =  sort [ I for I of flat myflat @]
-
 
   ob = split props
 

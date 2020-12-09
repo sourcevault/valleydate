@@ -154,7 +154,6 @@ apply.auth.top = (F,val,args) ->
 
     F.auth ...A
 
-
 apply.auth.key = (F,val,args,key) ->
 
   switch args.length

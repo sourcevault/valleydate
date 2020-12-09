@@ -12,9 +12,9 @@ alpha-sort       = require "alpha-sort"
 
 deep-freeze      = require "deep-freeze"
 
-pretty-error     = require "pretty-error"
-
 advanced-pad     = require "advanced-pad"
+
+esp              = require "error-stack-parser"
 
 jspc             = require "@aitodotai/json-stringify-pretty-compact"
 
@@ -48,6 +48,7 @@ module.exports =
    j:j
    l:l
    R:R
+   esp:esp
    flat:flat
    hop:hoplon
    pad:advanced-pad
@@ -55,5 +56,3 @@ module.exports =
    alpha-sort:alpha-sort
    deep-freeze:deep-freeze
    uic:util_inspect_custom
-   pretty-error:pretty-error
-

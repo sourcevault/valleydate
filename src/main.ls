@@ -138,9 +138,9 @@ custom[uic] = print.inner
 
 #--------------------------------------------------------------------------
 
-define.on = ([type,ErrorData],args,state) ->
+define.on = (type,args,state) ->
 
-  switch type
+  switch type[0]
   | \array =>
 
     [props,F] = args
@@ -163,7 +163,7 @@ define.on = ([type,ErrorData],args,state) ->
 
     put = [\on,[\object,fun]]
 
-  | \input.fault => return handleError ErrorData
+  | \input.fault => return handleError type
 
   block = define.and state,[put]
 
