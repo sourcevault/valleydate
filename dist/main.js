@@ -95,10 +95,9 @@
     return define.proto(data);
   });
   custom[uic] = print.inner;
-  define.on = function(arg$, args, state){
-    var type, ErrorData, props, F, put, key, ob, fun, res$, val, block, data, ref$;
-    type = arg$[0], ErrorData = arg$[1];
-    switch (type) {
+  define.on = function(type, args, state){
+    var props, F, put, key, ob, fun, res$, val, block, data, ref$;
+    switch (type[0]) {
     case 'array':
       props = args[0], F = args[1];
       put = ['on', ['array', [R.uniq(props)].concat(arrayFrom$(cato(F)))]];
@@ -119,7 +118,7 @@
       put = ['on', ['object', fun]];
       break;
     case 'input.fault':
-      return handleError(ErrorData);
+      return handleError(type);
     }
     block = define.and(state, [put]);
     data = (ref$ = {}, import$(ref$, state), (ref$.phase = 'chain', ref$.all = block, ref$.str = state.str.concat('on'), ref$));
