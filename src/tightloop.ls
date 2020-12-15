@@ -67,9 +67,9 @@ blunder = (fun,put,args) ->
   switch patt
   | \err =>
 
-    if (typeof put.message) is \string
+    # if (typeof put.message) is \string
 
-      put.message = [put.message]
+    #   put.message = [put.message]
 
     message = switch typeof F
     | \function => apply.normal.key F,put.message,args,put.path
@@ -450,10 +450,6 @@ reg.tightloop = (x) !->
 
       if put.error
 
-        switch typeof put.message
-        | \string   =>
-          put.message = [put.message]
-
         I += 1
 
       else
@@ -487,11 +483,13 @@ reg.tightloop = (x) !->
 
         else
 
-          if (typeof nput.message) is \string
+          if not ((R.type put.message) is \Array)
 
-            nput.message = [nput.message]
+            put.message = [put.message]
 
-          put.message.push nput.message
+          if not (nput.message is undefined)
+
+            put.message.push nput.message
 
           J += 1
 

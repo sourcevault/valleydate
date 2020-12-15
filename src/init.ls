@@ -289,16 +289,14 @@ be.boolnum = be boolnum
 
 #--------------------------------------------------------
 
-be.maybe.int = be.int.or be.undef
+be.int.neg  = be.int.and do
+    (x) ->
+      if (x <= 0)
+        return true
+      else
+        return [false,"not a negative integer"]
 
-#--------------------------------------------------------
-
-maybe = be.maybe
-
-#--------------------------------------------------------
-
-maybe.int.pos  =
-  maybe.int.and do
+be.int.pos  = be.int.and do
     (x) ->
       if (x >= 0)
         return true
@@ -307,15 +305,13 @@ maybe.int.pos  =
 
 #--------------------------------------------------------
 
-maybe.int.neg  =
-  maybe.int.and do
-    (x) ->
-      if (x <= 0)
-        return true
-      else
-        return [false,"not a negative integer"]
+maybe = be.maybe
 
-#--------------------------------------------------------
+maybe.int = be.int.or be.undef
+
+maybe.int.pos  = maybe be.int.pos
+
+maybe.int.neg  = maybe be.int.neg
 
 maybe.boolnum = be maybe_boolnum
 

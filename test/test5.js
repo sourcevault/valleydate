@@ -15,7 +15,7 @@
   };
   V = be.arr.map(be.str).or(be.str).or(be.obj).and(F);
   ret = V.auth(null);
-  if (!(ret.message[0][0] === "not array")) {
+  if (!(ret.message[0] === "not array")) {
     p();
   }
 }).call(this);

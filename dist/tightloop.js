@@ -75,9 +75,6 @@
     patt = fun[0], F = fun[1];
     switch (patt) {
     case 'err':
-      if (typeof put.message === 'string') {
-        put.message = [put.message];
-      }
       message = (function(){
         switch (typeof F) {
         case 'function':
@@ -446,10 +443,6 @@
           J += 1;
         } while (J < nJ);
         if (put.error) {
-          switch (typeof put.message) {
-          case 'string':
-            put.message = [put.message];
-          }
           I += 1;
         } else {
           I += 2;
@@ -471,10 +464,12 @@
             I = nI;
             J = nJ;
           } else {
-            if (typeof nput.message === 'string') {
-              nput.message = [nput.message];
+            if (!(R.type(put.message) === 'Array')) {
+              put.message = [put.message];
             }
-            put.message.push(nput.message);
+            if (!(nput.message === undefined)) {
+              put.message.push(nput.message);
+            }
             J += 1;
           }
         } while (J < nJ);

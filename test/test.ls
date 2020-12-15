@@ -4,7 +4,7 @@ valleydate = require "../dist/main"
 
 {com,print} = reg
 
-{z,l,hop,R} = com
+{z,l,hop,R,j} = com
 
 p = print.fail "test/test.js"
 
@@ -17,6 +17,7 @@ F = (x)  -> [false,\foobar]
 data =
   *foo:
     bar:"hello world"
+
 
 
 # V = be.obj.on do
@@ -39,12 +40,14 @@ data =
 # V.auth {foo:{bar:1}},[\data],[\file]
 
 
-# V = be.required [\remotehost,\remotefold]
+V = be.required [\remotehost,\remotefold]
 
-# .on [\remotehost,\remotefold],be.str
+.on [\remotehost,\remotefold],be.str
+
+# .or do
+#   be.bool.or be.undef.err ["data"]
+#   # .err ([__,b]) -> b
 
 # .err (msg) ->
 
-#   z msg
-
-# V.auth {remotehost:"str",remotefold:1}
+#   j msg

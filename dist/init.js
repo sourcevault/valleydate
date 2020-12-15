@@ -250,22 +250,24 @@
   cache.def.add(maybe_boolnum);
   be.int = be(integer);
   be.boolnum = be(boolnum);
-  be.maybe.int = be.int.or(be.undef);
-  maybe = be.maybe;
-  maybe.int.pos = maybe.int.and(function(x){
-    if (x >= 0) {
-      return true;
-    } else {
-      return [false, "not a positive integer"];
-    }
-  });
-  maybe.int.neg = maybe.int.and(function(x){
+  be.int.neg = be.int.and(function(x){
     if (x <= 0) {
       return true;
     } else {
       return [false, "not a negative integer"];
     }
   });
+  be.int.pos = be.int.and(function(x){
+    if (x >= 0) {
+      return true;
+    } else {
+      return [false, "not a positive integer"];
+    }
+  });
+  maybe = be.maybe;
+  maybe.int = be.int.or(be.undef);
+  maybe.int.pos = maybe(be.int.pos);
+  maybe.int.neg = maybe(be.int.neg);
   maybe.boolnum = be(maybe_boolnum);
   list = be.list;
   list.ofstr = list(be.str).err(function(msg, key){

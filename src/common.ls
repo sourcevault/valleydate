@@ -1,22 +1,24 @@
+vendor           = require "./vendor"
+
 z                = console.log
 
 l                = console.log
 
-R                = require "ramda"
+flat             = vendor.flat
 
-flat             = require "flat"
+advanced-pad     = vendor.pad
+
+R                = require "ramda"
 
 hoplon           = require "hoplon"
 
-alpha-sort       = require "alpha-sort"
+jspc             = vendor.stringify
 
-deep-freeze      = require "deep-freeze"
+deep-freeze      = vendor.deepFreeze
 
-advanced-pad     = require "advanced-pad"
+alpha-sort       = vendor.alpha_sort
 
 esp              = require "error-stack-parser"
-
-jspc             = require "@aitodotai/json-stringify-pretty-compact"
 
 if (typeof window is "undefined") and (typeof module is "object")
 
@@ -42,6 +44,7 @@ loopfault = ->
   get   = -> new Proxy(loopError,{apply:apply,get:get})
 
   new Proxy(loopError,{apply:apply,get:get})
+
 
 module.exports =
   *z:z
