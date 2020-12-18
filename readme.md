@@ -29,7 +29,8 @@ valleydate is a functional approach to schema validation that puts composability
 1. [Helper Validators](#helper-validators)
       - [required](#helper-validators)
       - [integer](#helper-validators)
-      - [\*maybe](#maybe)
+      - [maybe\*](#maybe)
+1. [.grexato](#grexato)
 
 .. **quick examples** ..
 
@@ -395,15 +396,15 @@ isEmail.cont
 
 - but expects the first argument to be what needs to be validated.
 
-so, what does `valleydate` do with the extra arguments ?
+🟡 *so, what does `valleydate` do with the extra arguments ?*
 
-- It simply passes it down to all consumption units in case they need them.
+- It simply passes it downstream ( as subsequent ) arguments in case they need them.
 
-- We refer to these extra arguments as context variables.
+- We refer to these extra arguments as ***context variables***.
 
 - In cases where `.map` of `.on` are used, the context variables are appended with the key value.
 
-These context variables are useful in two important ways :
+🟡 These context variables are useful in two important ways :
 
 - data needs to be provided to `.err` to create better error message, it could be things like filename.
 
@@ -465,6 +466,7 @@ V.auth("foo bar")
 // how to see both helper and primitive validators
 > console.log((require("valleydate")))
 {.*}
+int.neg              int.pos
 list.ofint           list.ofnum
 list.ofstr           maybe.arr
 maybe.bool           maybe.boolnum
@@ -480,11 +482,45 @@ not.obj              not.str
 not.undef            arg
 arr                  bool
 boolnum              fun
-int                  null
+grexato              null
 num                  obj
 reqres               required
 restricted           str
 undef                undefnull
+```
+
+####  `.grexato`
+
+`valleydate`'s `.err` function by default gives the raw chain of errors.
+
+untangling it gets quite messy 🤷🏼‍♂️.
+
+`valleydate` provides a helper function `.grexato` *( translation : untangle error )* to smoothly untangle raw error values.
+
+but it requires your messages to follow some basic rules :
+
+- error should be a tuple ( an array of 2 value ) with the second value being an array.
+
+- first value of error should always be a string.
+
+- to help with sorting, a number can be provided after ":" to tell grexato the hierarchy of your messages.
+
+```js
+// Examples of message that grexato matches against
+[
+  'not_tuple',
+  [' value is not tuple type.']
+]
+
+[
+  'not_tuple:1',
+  ['length',' value is not tuple type.']
+]
+
+[
+  'not_tuple:2',
+  ['innertype',' value is not tuple type.']
+]
 ```
 
 ## LICENCE

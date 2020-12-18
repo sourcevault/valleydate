@@ -316,22 +316,6 @@ myflat = hop
 
 .def -> {}
 
-print.proto = ->
-
-  if @[sig] is undefined then return null
-
-  props = [name for name of @]
-
-  str = c.ok1 "{.*} "
-
-  str += props
-  |> sort
-  |> R.join " "
-  |> c.grey
-
-  str
-
-
 split = R.groupBy (name) -> (/\./).test name
 
 find_len = R.reduce (accum,x) ->

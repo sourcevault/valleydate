@@ -323,22 +323,22 @@ list.ofstr = list be.str
 .err (msg,key)->
 
   switch R.type key
-  | \Undefined => [\prime , "not a list of string."]
-  | otherwise  => [\list , "not string type at .#{key[0]}"]
+  | \Undefined => "not a list of string."
+  | otherwise  => [\list ,[key[0],"not string type"]]
 
 list.ofnum = list be.num
 .err (msg,key) ->
 
   switch R.type key
-  | \Undefined => [\prime,"not a list of number."]
-  | otherwise  => [\list,"not number type at .#{key[0]}"]
+  | \Undefined =>  "not a list of number."
+  | otherwise  => [\list,[key[0],"not number type"]]
 
 list.ofint = list be.int
 .err (msg,key) ->
 
   switch R.type key
-  | \Undefined => [\prime,"not a list of integer."]
-  | otherwise  => [\list,"not integer type at .#{key[0]}"]
+  | \Undefined => "not a list of integer."
+  | otherwise  => [\list,[key[0],"not integer type"]]
 
 maybe.list = {}
 
@@ -347,6 +347,97 @@ maybe.list.ofstr = maybe list.ofstr
 maybe.list.ofnum = maybe list.ofnum
 
 maybe.list.ofint = maybe list.ofint
+
+# -----------------------------------
+
+handleE = {}
+
+handleE.rm_num = ([txt,__]) ->
+
+  name = (txt.split ":")[0]
+
+  [name,__]
+
+
+handleE.sort = ([txt1],[txt2]) ->
+
+  [name1,number1] = txt1.split ":"
+
+  if (number1 is void)
+
+    number1 = 0
+
+  else
+
+    number1 = parseInt number1
+
+  [name2,number2] = txt2.split ":"
+
+  if (number2 is void)
+
+    number2 = 0
+
+  else
+
+    number2 = parseInt number2
+
+  if number1 > number2 then return -1
+
+  if number1 < number2 then return 1
+
+  else then return 0
+
+handleE.array = (msg,fin) ->
+
+  for I in msg
+
+    switch R.type I
+    | \String =>
+      fin.push I
+    | \Array  =>
+
+      if (I.length is 2) and ((R.type I[0]) is \String) and ((R.type I[1]) is \Array)
+
+        fin.push I
+
+      else
+
+        handleE.array I,fin
+
+rmob = R.filter (x) -> ((typeof x) is \object)
+
+handleE.entry = (msg) ->
+
+  out = switch R.type msg
+
+  | \String   => [msg]
+
+  | \Array    =>
+
+      fin = []
+
+      handleE.array msg,fin
+
+      fin
+
+  onlyob = rmob out
+
+  if onlyob.length is 0
+
+    return out
+
+  else
+
+    sorted = onlyob.sort handleE.sort
+
+    sorted.map handleE.rm_num
+
+# -----------------------------------
+
+be.grexato = handleE.entry
+
+# -----------------------------------
+
 
 module.exports = be
 

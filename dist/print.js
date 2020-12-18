@@ -275,23 +275,6 @@
   }).def(function(){
     return {};
   });
-  print.proto = function(){
-    var props, res$, name, str;
-    if (this[sig] === undefined) {
-      return null;
-    }
-    res$ = [];
-    for (name in this) {
-      res$.push(name);
-    }
-    props = res$;
-    str = c.ok1("{.*} ");
-    str += c.grey(
-    R.join(" ")(
-    sort(
-    props)));
-    return str;
-  };
   split = R.groupBy(function(name){
     return /\./.test(name);
   });
