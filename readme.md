@@ -491,7 +491,7 @@ undef                undefnull
 
 ####  `.grexato`
 
-`valleydate`'s `.err` function by default gives the raw chain of errors.
+`.err` function by default gives the raw chain of errors.
 
 untangling it gets quite messy 🤷🏼‍♂️.
 
