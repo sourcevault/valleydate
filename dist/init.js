@@ -128,29 +128,29 @@
   reqresError = hop.wh(function(req, res){
     var i$, len$, I, ref$;
     if (!(R.type(req) === "Array" && R.type(res) === "Array")) {
-      print.route(['resreq', ['resreq', 'prime']]);
+      print.route([':resreq', ['resreq', 'prime']]);
       return true;
     }
     for (i$ = 0, len$ = req.length; i$ < len$; ++i$) {
       I = req[i$];
       if (!((ref$ = R.type(I)) === 'String' || ref$ === 'Number')) {
-        print.route(['resreq', ['resreq', 'res']]);
+        print.route([':resreq', ['resreq', 'res']]);
         return true;
       }
     }
     for (i$ = 0, len$ = res.length; i$ < len$; ++i$) {
       I = res[i$];
       if (!((ref$ = R.type(I)) === 'String' || ref$ === 'Number')) {
-        print.route(['resreq', ['resreq', 'req']]);
+        print.route([':resreq', ['resreq', 'req']]);
         return true;
       }
     }
   }, loopError);
-  objarr = be.obj.alt(be.arr).err(['prime', "not object or array"]);
+  objarr = be.obj.alt(be.arr).err("not object or array");
   be.required = reqError.def(function(){
     var props, ret;
     props = R.flatten(arrayFrom$(arguments));
-    ret = objarr.on(props, be.not.undef.err(['req', props]));
+    ret = objarr.on(props, be.not.undef.err([':req', props]));
     return ret;
   });
   restricted = function(props, po){
@@ -160,7 +160,7 @@
       for (i$ = 0, len$ = keys.length; i$ < len$; ++i$) {
         I = keys[i$];
         if (!po[I]) {
-          return [false, ['res', props], I];
+          return [false, [':res', props], I];
         }
       }
       return true;
@@ -183,7 +183,7 @@
       I = res[i$];
       po[I] = true;
     }
-    return objarr.on(req, be.not.undef.err(['req', req])).and(restricted(res, po));
+    return objarr.on(req, be.not.undef.err([':req', req])).and(restricted(res, po));
   });
   integer = function(UFO){
     var residue;
@@ -275,7 +275,7 @@
     case 'Undefined':
       return "not a list of string.";
     default:
-      return ['list', [key[0], "not string type"]];
+      return [':list', [key[0], "not string type"]];
     }
   });
   list.ofnum = list(be.num).err(function(msg, key){
@@ -283,7 +283,7 @@
     case 'Undefined':
       return "not a list of number.";
     default:
-      return ['list', [key[0], "not number type"]];
+      return [':list', [key[0], "not number type"]];
     }
   });
   list.ofint = list(be.int).err(function(msg, key){
@@ -291,7 +291,7 @@
     case 'Undefined':
       return "not a list of integer.";
     default:
-      return ['list', [key[0], "not integer type"]];
+      return [':list', [key[0], "not integer type"]];
     }
   });
   maybe.list = {};
@@ -300,22 +300,26 @@
   maybe.list.ofint = maybe(list.ofint);
   handleE = {};
   handleE.rm_num = function(arg$){
-    var txt, __, name;
-    txt = arg$[0], __ = arg$[1];
-    name = txt.split(":")[0];
-    return [name, __];
+    var txt, msg, name;
+    txt = arg$[0], msg = arg$[1];
+    name = txt.split(":")[1];
+    if (msg === void 8) {
+      return [name];
+    } else {
+      return [name, msg];
+    }
   };
   handleE.sort = function(arg$, arg1$){
-    var txt1, txt2, ref$, name1, number1, name2, number2;
+    var txt1, txt2, ref$, __, name1, number1, name2, number2;
     txt1 = arg$[0];
     txt2 = arg1$[0];
-    ref$ = txt1.split(":"), name1 = ref$[0], number1 = ref$[1];
+    ref$ = txt1.split(":"), __ = ref$[0], name1 = ref$[1], number1 = ref$[2];
     if (number1 === void 8) {
       number1 = 0;
     } else {
       number1 = parseInt(number1);
     }
-    ref$ = txt2.split(":"), name2 = ref$[0], number2 = ref$[1];
+    ref$ = txt2.split(":"), __ = ref$[0], name2 = ref$[1], number2 = ref$[2];
     if (number2 === void 8) {
       number2 = 0;
     } else {
@@ -331,7 +335,7 @@
     }
   };
   handleE.array = function(msg, fin){
-    var i$, len$, I, results$ = [];
+    var i$, len$, I, uno, results$ = [];
     for (i$ = 0, len$ = msg.length; i$ < len$; ++i$) {
       I = msg[i$];
       switch (R.type(I)) {
@@ -339,7 +343,8 @@
         results$.push(fin.push(I));
         break;
       case 'Array':
-        if (I.length === 2 && R.type(I[0]) === 'String' && R.type(I[1]) === 'Array') {
+        uno = I[0];
+        if (R.type(uno) === 'String' && uno[0] === ":") {
           results$.push(fin.push(I));
         } else {
           results$.push(handleE.array(I, fin));
