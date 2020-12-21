@@ -18,7 +18,7 @@
   };
   V = be.restricted([0, 1]);
   ret = V.auth(['a', 'b', 'c']);
-  if (!(ret.message[0] === 'res')) {
+  if (!(ret.message[0] === ':res')) {
     p(".restricted message is not accurate.");
   }
 }).call(this);

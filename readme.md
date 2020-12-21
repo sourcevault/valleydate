@@ -501,24 +501,24 @@ but it requires your messages to follow some basic rules :
 
 - error should be a tuple ( an array of 2 value ) with the second value being an array.
 
-- first value of error should always be a string.
+- first value of error should always be a string that starts with a colon ":".
 
-- to help with sorting, a number can be provided after ":" to tell grexato the hierarchy of your messages.
+- to help with sorting, a number can be provided after a second colon (":") to tell grexato the hierarchy of your messages.
 
 ```js
 // Examples of message that grexato matches against
 [
-  'not_tuple',
+  ':not_tuple',
   [' value is not tuple type.']
 ]
 
 [
-  'not_tuple:1',
+  ':not_tuple:1',
   ['length',' value is not tuple type.']
 ]
 
 [
-  'not_tuple:2',
+  ':not_tuple:2',
   ['innertype',' value is not tuple type.']
 ]
 ```

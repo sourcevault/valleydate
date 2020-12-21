@@ -157,7 +157,7 @@ reqresError = hop.wh do
 
     if not (((R.type req) is "Array") and (((R.type res) is "Array")))
 
-      print.route [\resreq,[\resreq,\prime]]
+      print.route [\:resreq,[\resreq,\prime]]
 
       return true
 
@@ -165,7 +165,7 @@ reqresError = hop.wh do
 
       if not ((R.type I) in [\String \Number])
 
-        print.route [\resreq,[\resreq,\res]]
+        print.route [\:resreq,[\resreq,\res]]
 
         return true
 
@@ -174,7 +174,7 @@ reqresError = hop.wh do
 
       if not ((R.type I) in [\String \Number])
 
-        print.route [\resreq,[\resreq,\req]]
+        print.route [\:resreq,[\resreq,\req]]
 
         return true
 
@@ -183,13 +183,13 @@ reqresError = hop.wh do
 
 #------------------------------------------------------
 
-objarr = (be.obj.alt be.arr).err [\prime,"not object or array"]
+objarr = (be.obj.alt be.arr).err "not object or array"
 
 be.required = reqError.def ->
 
   props = R.flatten [...arguments]
 
-  ret = objarr.on props, be.not.undef.err [\req,props]
+  ret = objarr.on props, be.not.undef.err [\:req,props]
 
   ret
 
@@ -204,7 +204,7 @@ restricted = (props,po) -> (obj) ->
 
     if not po[I]
 
-      return [false,[\res,props],I]
+      return [false,[\:res,props],I]
 
   true
 
@@ -228,7 +228,7 @@ be.reqres = reqresError.def (req,res) ->
 
     po[I] = true
 
-  objarr.on req, be.not.undef.err [\req,req]
+  objarr.on req, be.not.undef.err [\:req,req]
   .and restricted res,po
 
 #------------------------------------------------------
@@ -324,21 +324,21 @@ list.ofstr = list be.str
 
   switch R.type key
   | \Undefined => "not a list of string."
-  | otherwise  => [\list ,[key[0],"not string type"]]
+  | otherwise  => [\:list ,[key[0],"not string type"]]
 
 list.ofnum = list be.num
 .err (msg,key) ->
 
   switch R.type key
   | \Undefined =>  "not a list of number."
-  | otherwise  => [\list,[key[0],"not number type"]]
+  | otherwise  => [\:list,[key[0],"not number type"]]
 
 list.ofint = list be.int
 .err (msg,key) ->
 
   switch R.type key
   | \Undefined => "not a list of integer."
-  | otherwise  => [\list,[key[0],"not integer type"]]
+  | otherwise  => [\:list,[key[0],"not integer type"]]
 
 maybe.list = {}
 
@@ -352,16 +352,17 @@ maybe.list.ofint = maybe list.ofint
 
 handleE = {}
 
-handleE.rm_num = ([txt,__]) ->
+handleE.rm_num = ([txt,msg]) ->
 
-  name = (txt.split ":")[0]
+  name = (txt.split ":")[1]
 
-  [name,__]
+  if msg is void then [name]
+  else then [name,msg]
 
 
 handleE.sort = ([txt1],[txt2]) ->
 
-  [name1,number1] = txt1.split ":"
+  [__,name1,number1] = txt1.split ":"
 
   if (number1 is void)
 
@@ -371,7 +372,7 @@ handleE.sort = ([txt1],[txt2]) ->
 
     number1 = parseInt number1
 
-  [name2,number2] = txt2.split ":"
+  [__,name2,number2] = txt2.split ":"
 
   if (number2 is void)
 
@@ -396,7 +397,9 @@ handleE.array = (msg,fin) ->
       fin.push I
     | \Array  =>
 
-      if (I.length is 2) and ((R.type I[0]) is \String) and ((R.type I[1]) is \Array)
+      uno = I[0]
+
+      if (((R.type uno) is \String) and (uno[0] is ":"))
 
         fin.push I
 
