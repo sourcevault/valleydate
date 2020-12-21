@@ -19,10 +19,10 @@ data =
     bar:"hello world"
 
 
-# V = be.arr
-# .and -> [false,[\:rsync,[2,'hello world']]]
-# .or be.bool
-# .err
+# V = be -> [false,[\:rsync,[1,\world]]]
+# # .or be.bool
+# .err be.flatxato
+
 
 # j (V.auth []).message
 

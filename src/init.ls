@@ -393,7 +393,7 @@ handleE.array = (msg,fin) ->
   for I in msg
 
     switch R.type I
-    | \String =>
+    | \String,\Number =>
       fin.push I
     | \Array  =>
 
