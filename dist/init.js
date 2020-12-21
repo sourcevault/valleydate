@@ -340,6 +340,7 @@
       I = msg[i$];
       switch (R.type(I)) {
       case 'String':
+      case 'Number':
         results$.push(fin.push(I));
         break;
       case 'Array':
