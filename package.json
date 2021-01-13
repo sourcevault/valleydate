@@ -12,9 +12,8 @@
     "test": "make travis"
   },
   "dependencies": {
-    "error-stack-parser": "*",
     "hoplon": "*",
-    "ramda": "*"
+    "@sourcevault/utils.common": "*"
   },
   "keywords": [
     "json-schema-validator",

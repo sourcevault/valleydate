@@ -1,4 +1,6 @@
-com = require "./common"
+com = require "@sourcevault/utils.common"
+
+com.hop = require "hoplon"
 
 reg = {}
 
@@ -20,7 +22,7 @@ reg = {}
 
   ..pkg = null
 
-  ..sig = Symbol "self"
+  ..sig = com.common_symbols.valleydate
 
 
 module.exports = reg

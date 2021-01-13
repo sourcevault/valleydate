@@ -1,10 +1,10 @@
-{z,noops} = require "../dist/common"
+reg                  = require "../dist/registry"
 
-print = require "../dist/print"
+{z,noops,print_fail} = reg.com
 
 be = require "../dist/main"
 
-p = print.fail "test/test1.js"
+p = print_fail "test/test1.js"
 
 address = be.required \city
 .on \city,be.str

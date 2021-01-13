@@ -4,9 +4,9 @@ valleydate = require "../dist/main"
 
 {com,print} = reg
 
-{z,l,hop,R,j} = com
+{z,l,hop,R,j,print_fail} = com
 
-p = print.fail "test/test.js"
+p = print_fail "test/test.js"
 
 be = valleydate
 

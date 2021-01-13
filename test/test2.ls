@@ -1,10 +1,10 @@
-{z,noops} = require "../dist/common"
+reg                  = require "../dist/registry"
 
-print = require "../dist/print"
+{z,noops,print_fail} = reg.com
 
 be = require "../dist/main"
 
-p = print.fail "test/test2.js"
+p = print_fail "test/test2.js"
 
 G7 = new Set ["USA","EU","UK","Japan","Italy","Germany","France"]
 

@@ -8,7 +8,7 @@ require "./tightloop" # [....]
 
 {com,print,tightloop,sig,cache} = reg
 
-{z,l,R,hop,j,uic,deep-freeze,loopError} = com
+{z,l,R,hop,j,uic,deep_freeze,loopError} = com
 
 # ------------------------------------------------------------------
 
@@ -429,6 +429,6 @@ reg.internal = {custom,define}
 
 pkg = require "./init" # [....]
 
-deep-freeze pkg
+deep_freeze pkg
 
 module.exports = pkg

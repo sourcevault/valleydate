@@ -1,14 +1,10 @@
-reg = require "../dist/registry"
+reg                  = require "../dist/registry"
 
-valleydate = require "../dist/main"
+{z,noops,print_fail} = reg.com
 
-{com,print} = reg
+be = require "../dist/main"
 
-{z,hop,j} = com
-
-p = print.fail "test/test5.js"
-
-be = valleydate
+p = print_fail "test/test5.js"
 
 T = (x) -> true
 

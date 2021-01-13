@@ -2,82 +2,18 @@ reg = require "./registry"
 
 {com,print,sig} = reg
 
-{l,z,R,j,hop,flat,pad,alpha-sort,esp} = com
+{l,z,R,j,hop,flat,pad,alpha-sort,esp,c,lit,create_stack} = com
 
 pkgname = reg.pkgname
-
-c = {}
-  ..ok1   = (txt) -> "\x1B[38;5;2m#{txt}\x1B[39m"
-  ..warn  = (txt) -> "\x1B[38;5;11m#{txt}\x1B[39m"
-  ..er1   = (txt) -> "\x1B[38;5;3m#{txt}\x1B[39m"
-  ..er2   = (txt) -> "\x1B[38;5;13m#{txt}\x1B[39m"
-  ..er3   = (txt) -> "\x1B[91m#{txt}\x1B[39m"
-  ..grey  = (txt) -> "\x1B[38;5;8m#{txt}\x1B[39m"
 
 help =
   c.grey "[  docs] #{reg.homepage}"
 
 # -------------------------------------------------------------------------------------------------------
 
-show_stack = ->
-
-  l help + "\n"
-
-  E = esp.parse new Error!
-
-  E = R.drop 7,E
-
-  for I in E
-
-    {lineNumber,fileName,functionName,columnNumber} = I
-
-    path = fileName.split "/"
-
-    [first,second] = path
-
-    if ((first is \internal) and (second is \modules)) then continue
-
-    if (functionName is \Object.<anonymous>)
-
-      functionName = ""
-
-    lit do
-      [
-        "  - "
-        R.last path
-        ":"
-        lineNumber
-        " "
-        functionName
-        "\n    "
-        fileName + ":"
-        lineNumber
-        ":" + columnNumber + "\n"
-      ]
-      [0,c.warn,0,c.er1,0,0,0,c.black,c.er1,c.black]
+show_stack = create_stack []
 
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - - - - - - - - - - - - - - - - - - - - -
-
-print.fail = (filename) -> (message) !->
-
-  l do
-    "[TEST ERROR] originating from module"
-    "[#{pkgname}]"
-    "\n\n- 'npm test' failed at #{filename}:"
-
-  if message
-
-    l "\n    #{message}\n"
-
-  process.exitCode = 1
-
-lit = R.pipe do
-  R.zipWith (x,f) ->
-    switch R.type f
-    | \Function => f x
-    | otherwise => x
-  R.join ""
-  l
 
 print.resreq = ([cat,type]) ->
 

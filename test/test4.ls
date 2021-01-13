@@ -1,12 +1,10 @@
-common = require "../dist/common"
+reg                  = require "../dist/registry"
 
-print = require "../dist/print"
+{z,noops,print_fail} = reg.com
 
 be = require "../dist/main"
 
-{z,j,noop} = common
-
-p = print.fail "test/test4.js"
+p = print_fail "test/test1.js"
 
 inn = be.str.or be.num.or (be.obj.on "age",be.num)
 
