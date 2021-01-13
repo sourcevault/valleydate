@@ -373,10 +373,11 @@ var IS = require("valleydate")
 
 var simpleEmail = function(value){
 
-var isemail = value.match (/[\w-]+@([\w-]+\.)+[\w-]+/)
+  var isemail = value.match (/[\w-]+@([\w-]+\.)+[\w-]+/)
 
-if (isemail) {return true}
-else {return [false,"not a valid email address"] }
+  if (isemail) {return true}
+  else {return [false,"not a valid email address"] }
+
 }
 
 var isEmail = IS(simpleEmail)
@@ -497,7 +498,7 @@ flatting it gets quite messy 🤷🏼‍♂️.
 
 `valleydate` provides a helper function `.flatxato` *( xato means error )* to smoothly flatten raw error values.
 
-but it requires your messages to follow some basic rules :
+but it requires your messages to follow a protocol :
 
 - error should be a tuple ( an array of 2 value ) with the second value being an array.
 

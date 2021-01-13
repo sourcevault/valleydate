@@ -6,15 +6,14 @@
   "license": "BSD-3-Clause",
   "description": "immutable object validator",
   "repository": "https://github.com/sourcevault/valleydate.git",
-  "version": "0.1.17",
+  "version": "0.1.12",
   "main": "dist/main.js",
   "scripts": {
     "test": "make travis"
   },
   "dependencies": {
-    "error-stack-parser": "*",
     "hoplon": "*",
-    "ramda": "*"
+    "@sourcevault/utils.common": "*"
   },
   "keywords": [
     "json-schema-validator",
