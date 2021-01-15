@@ -4,7 +4,7 @@ valleydate = require "../dist/main"
 
 {com,print} = reg
 
-{z,l,hop,R,j,print_fail} = com
+{z,l,hop,R,j,zj,print_fail} = com
 
 p = print_fail "test/test.js"
 
@@ -19,12 +19,20 @@ data =
     bar:"hello world"
 
 
-# V = be -> [false,[\:rsync,[1,\world]]]
-# # .or be.bool
-# .err be.flatxato
+# V = be -> [false,\first]
+# .or (be -> [false,\second]).or be -> [false,\third]
+# .or be.obj
+# .err be.flatato
 
+# z V.auth 1
 
-# j (V.auth []).message
+# z (be.obj.on \foo, ->)
+
+# z be.str.and ->
+
+# zj (V.auth []).message
+
+# .and 1
 
 # V = be.obj.on do
 #   \foo

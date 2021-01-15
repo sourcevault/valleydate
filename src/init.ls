@@ -138,7 +138,7 @@ not-arrayof-str-or-num = (type) -> ->
 
     if not ((R.type key) in [\String \Number])
 
-      print.route [\resreq,[type]]
+      print.route [(new Error!),\resreq,[type]]
 
       return true
 
@@ -157,7 +157,7 @@ reqresError = hop.wh do
 
     if not (((R.type req) is "Array") and (((R.type res) is "Array")))
 
-      print.route [\:resreq,[\resreq,\prime]]
+      print.route [(new Error!),\resreq,[\resreq,\prime]]
 
       return true
 
@@ -165,7 +165,7 @@ reqresError = hop.wh do
 
       if not ((R.type I) in [\String \Number])
 
-        print.route [\:resreq,[\resreq,\res]]
+        print.route [(new Error!),\resreq,[\resreq,\res]]
 
         return true
 
@@ -174,7 +174,7 @@ reqresError = hop.wh do
 
       if not ((R.type I) in [\String \Number])
 
-        print.route [\:resreq,[\resreq,\req]]
+        print.route [(new Error!),\resreq,[\resreq,\req]]
 
         return true
 
@@ -388,18 +388,30 @@ handleE.sort = ([txt1],[txt2]) ->
 
   else then return 0
 
+is_special_str = (str) ->
+
+  if (((R.type str) is \String) and (str[0] is ":"))
+
+    return true
+
+  else return false
+
+
 handleE.array = (msg,fin) ->
 
   for I in msg
 
     switch R.type I
+
     | \String,\Number =>
+
       fin.push I
+
     | \Array  =>
 
       uno = I[0]
 
-      if (((R.type uno) is \String) and (uno[0] is ":"))
+      if is_special_str uno
 
         fin.push I
 
@@ -407,7 +419,8 @@ handleE.array = (msg,fin) ->
 
         handleE.array I,fin
 
-rmob = R.filter (x) -> ((typeof x) is \object)
+
+rm-obj = R.filter (x) -> ((typeof x) is \object)
 
 handleE.entry = (msg) ->
 
@@ -419,11 +432,16 @@ handleE.entry = (msg) ->
 
       fin = []
 
+      if is_special_str msg[0]
+
+        msg = [msg]
+
       handleE.array msg,fin
 
       fin
 
-  onlyob = rmob out
+
+  onlyob = rm-obj out
 
   if onlyob.length is 0
 
@@ -433,11 +451,11 @@ handleE.entry = (msg) ->
 
     sorted = onlyob.sort handleE.sort
 
-    sorted.map handleE.rm_num
+    sorted
 
 # -----------------------------------
 
-be.grexato = handleE.entry
+be.flatato = handleE.entry
 
 # -----------------------------------
 

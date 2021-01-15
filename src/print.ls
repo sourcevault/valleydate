@@ -2,16 +2,16 @@ reg = require "./registry"
 
 {com,print,sig} = reg
 
-{l,z,R,j,hop,flat,pad,alpha-sort,esp,c,lit,create_stack} = com
+{l,z,R,j,hop,flat,pad,alpha_sort,esp,c,lit,create_stack} = com
 
 pkgname = reg.pkgname
 
 help =
-  c.grey "[  docs] #{reg.homepage}"
+  c.grey "[  docs] #{reg.homepage}\n"
 
 # -------------------------------------------------------------------------------------------------------
 
-show_stack = create_stack []
+show_stack = create_stack 2,[],help
 
 # -  - - - - - - - - - - - - - - - - - - - - - - - - --  - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -22,7 +22,7 @@ print.resreq = ([cat,type]) ->
   | \res     => ".restricted"
   | \req     => ".required"
 
-  lit ["[#{pkgname}]","[argumentError] ",methodname],[c.er2,c.er3,c.er1]
+  l lit ["[#{pkgname}]","[argumentError] ",methodname],[c.er2,c.er3,c.er1]
 
   txt = switch cat
   | \resreq =>
@@ -35,7 +35,7 @@ print.resreq = ([cat,type]) ->
   | \res,\req    => "  one of the (inner) argument is not of type of String / Number."
 
 
-  lit ['\n',txt,'\n'],[0,c.warn,0]
+  l lit ['\n',txt,'\n'],[0,c.warn,0]
 
 
 print.input_fault = ([method_name,data]) ->
@@ -50,13 +50,13 @@ print.input_fault = ([method_name,data]) ->
 
 show_chain = ([init,last]) ->
 
-  lit do
+  l lit do
     ["  ",((init).join "."),("."  + last),"(xx)"," <-- error here"]
-    [0,c.ok1,c.er2,c.er3,c.er2]
+    [0,c.ok,c.er2,c.er3,c.er2]
 
 show_name = (name,type = "[inputError] ") ->
 
-  lit do
+  l lit do
     ["[#{pkgname}]",type,name]
     [c.er1,c.er3,c.warn]
 
@@ -85,11 +85,11 @@ print.input_fault.andor = ([type,info])->
 
   l ""
 
-  l c.grey " - | type signature / information | - "
+  l c.ok " accepted type signature :"
 
   l ""
 
-  l c.ok1 " - :: fun|[fun,..],..,.."
+  l c.blue " - :: fun|[fun,..],..,.."
 
   l ""
 
@@ -140,8 +140,8 @@ print.input_fault.map = ([patt,loc]) ->
 
 on_dtype = {}
   ..string = "string|number , function"
+  ..array  = "string|[number....] , function"
   ..object = "object{*:function} "
-  ..array  = "[string|number....] , function"
 
 
 print.input_fault.on = ([patt,loc])->
@@ -149,7 +149,6 @@ print.input_fault.on = ([patt,loc])->
   eType = switch patt
   | \typeError => \typeError
   | otherwise  => \inputError
-
 
   show_name ".on","[#{eType}] "
 
@@ -173,12 +172,12 @@ print.input_fault.on = ([patt,loc])->
 
     l ""
 
-    lit [" - | types that may match ",".on"," | -"],[c.grey,c.ok1,c.white]
+    l c.grey " types that may match :"
 
     l ""
 
 
-    lines = [(" - :: " + c.ok1 val) for key,val of on_dtype].join "\n\n"
+    lines = [c.blue (" - .on :: #{val}") for key,val of on_dtype].join "\n\n"
 
     l lines
 
@@ -187,45 +186,41 @@ print.input_fault.on = ([patt,loc])->
 
     dtype = on_dtype[patt]
 
-    lit do
+    l lit do
       [" .on"," :: ",dtype," <-- what may match"]
-      [c.warn,c.white,c.ok1,c.grey]
+      [c.warn,c.white,c.ok,c.grey]
 
   l ""
 
 
-print.route = (data) ->
-
-  [ECLASS,info] = data
+print.route = ([E,ECLASS,info]) ->
 
   switch ECLASS
   | \resreq       => print.resreq info
   | \input.fault  => print.input_fault info
 
-  show_stack!
+  show_stack E
+
+# ------------------------------------------------------------------------
+
+getprop = (item) ->
+
+  fin = []
+
+  for I of item
+    fin.push I
+
+  fin
+
+includes = R.flip R.includes
 
 print.log = ->
 
-  all = Object.entries @
+  prop = getprop @
 
-  prop = [name for [name] in all]
+  lit ["{.*} ",prop.join " "],[c.pink,c.blue]
 
-  str = c.ok1 "{.*}"
-
-  str += c.ok1 " "
-
-  for I in prop
-
-    str += c.grey (I + " ")
-
-  str
-
-
-sort = (x) -> x.sort(alpha-sort.ascending)
-
-# R.sort (a,b) -> b.length - a.length
-
-includes = R.flip R.includes
+sort = (x) -> x.sort(alpha_sort.ascending)
 
 same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on','alt','auth']
 
@@ -281,10 +276,9 @@ print.inner = ->
 
   table = [I.join " " for I in (R.splitEvery 2,table)].join "\n"
 
-  str = c.ok1 "{.*}\n"
+  str = c.pink "{.*}\n"
 
-  str += table
-  |> c.grey
+  str += c.blue table
 
   str
 

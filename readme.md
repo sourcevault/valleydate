@@ -30,7 +30,7 @@ valleydate is a functional approach to schema validation that puts composability
       - [required](#helper-validators)
       - [integer](#helper-validators)
       - [maybe\*](#maybe)
-1. [.flatxato](#flatxato)
+1. [.flatato](#flatato)
 
 .. **quick examples** ..
 
@@ -483,31 +483,31 @@ not.obj              not.str
 not.undef            arg
 arr                  bool
 boolnum              fun
-flatxato              null
+flatato              null
 num                  obj
 reqres               required
 restricted           str
 undef                undefnull
 ```
 
-####  `.flatxato`
+####  `.flatato`
 
 `.err` function by default gives the raw chain of errors.
 
 flatting it gets quite messy 🤷🏼‍♂️.
 
-`valleydate` provides a helper function `.flatxato` *( xato means error )* to smoothly flatten raw error values.
+`valleydate` provides a helper function `.flatato` to smoothly flatten raw error values.
 
-but it requires your messages to follow a protocol :
+but it requires your messages to follow a specific message passing protocol :
 
-- error should be a tuple ( an array of 2 value ) with the second value being an array.
+- error value should always be an array.
 
-- first value of error should always be a string that starts with a colon ":".
+- first value of said array should always be a string that starts with a colon ":".
 
-- to help with sorting, a number can be provided after a second colon (":") to tell flatxato the hierarchy of your messages.
+- to help with sorting, a number can be provided after a second colon (":") to tell flatato the hierarchy of your messages.
 
 ```js
-// Examples of message that flatxato matches against
+// Examples of message that flatato matches against
 [
   ':not_tuple',
   [' value is not tuple type.']

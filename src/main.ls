@@ -53,12 +53,13 @@ wrap      = {}
   ..on    = null
   ..rest  = null
 
-gaurd     = {}
+guard     = {}
   ..on    = null
   ..rest  = null
 
 define = {}
   ..and    = null
+
   ..or     = null
   ..proto  = null
   ..on     = null
@@ -77,9 +78,9 @@ init-state =
   type :null
   str  :[]
 
-wrap.rest  = (type) -> -> gaurd.rest arguments,@[sig],type
+wrap.rest  = (type) -> ->  guard.rest arguments,@[sig],type
 
-wrap.on    = -> gaurd.on arguments,@[sig]
+wrap.on    = -> guard.on arguments,@[sig]
 
 proto       = {}
   ..normal  = {}
@@ -87,9 +88,14 @@ proto       = {}
 
 for key,val of props
 
-  proto.normal[val]  = wrap.rest val
+  F = wrap.rest val
+
+  proto.normal[val]  = F
+
 
 proto.normal.auth    = tightloop
+
+proto.normal[uic]    = print.log
 
 proto.functor        = {...proto.normal}
 
@@ -97,9 +103,7 @@ proto.functor.map    = wrap.rest \map
 
 proto.functor.on     = wrap.on
 
-proto.normal[uic]    = print.proto
-
-proto.functor[uic]   = print.proto
+proto.functor[uic]   = print.log
 
 #---------------------------------------------------------
 
@@ -112,7 +116,7 @@ handleError = (info) ->
 
 custom = hop
 
-.arn 1, -> handleError [\input.fault [\custom [\arg_count]]]
+.arn 1, -> handleError [(new Error!),\input.fault,[\custom [\arg_count]]]
 
 .whn do
 
@@ -120,7 +124,7 @@ custom = hop
 
     ((R.type f) is \Function) or (f[sig])
 
-  -> handleError [\input.fault [\custom [\not_function]]]
+  -> handleError [(new Error!),\input.fault,[\custom [\not_function]]]
 
 .def (F) ->
 
@@ -163,8 +167,6 @@ define.on = (type,args,state) ->
 
     put = [\on,[\object,fun]]
 
-  | \input.fault => return handleError type
-
   block = define.and state,[put]
 
   data = {
@@ -180,17 +182,13 @@ define.on = (type,args,state) ->
 
 #-----------------------------------------------------------------------
 
-gaurd.on = hop.unary
+guard.on = hop.unary
 
-.arn do
+.arn [1,2],
 
-  [1,2]
+  (args,state) -> handleError [(new Error!),\input.fault,[\on [\arg_count,[state.str,\on]]]]
 
-  (args,state) -> handleError [\input.fault,[\on [\arg_count,[state.str,\on]]]]
-
-.arma do
-
-  1
+.arpar 1,
 
   ([maybe-object],state) ->
 
@@ -200,18 +198,23 @@ gaurd.on = hop.unary
 
         if not (((R.type val) is \Function) or (cache.ins.has val))
 
-          return [\input.fault [\on [\object,[state.str,\on]]]]
+          return [false,[(new Error!),\input.fault,[\on [\object,[state.str,\on]]]]]
 
-      return [\object]
+      return [true,\object]
 
     else
 
-      return false
+      return [false]
 
   define.on
+  (data)->
 
-.arma do
-  2
+    if (data[1] is \input.fault) then return handleError data
+
+    false
+
+.arma 2,
+
   ([first,second],state)->
 
     switch R.type first
@@ -222,11 +225,11 @@ gaurd.on = hop.unary
 
         if not ((R.type I) is \String)
 
-          return [\input.fault [\on [\array,[state.str,\on]]]]
+          return [(new Error!),\input.fault,[\on [\array,[state.str,\on]]]]
 
       if not (((R.type second) is \Function) or (cache.ins.has second))
 
-        return [\input.fault [\on [\array,[state.str,\on]]]]
+        return [(new Error!),\input.fault,[\on [\array,[state.str,\on]]]]
 
       return [\array]
 
@@ -234,7 +237,7 @@ gaurd.on = hop.unary
 
       if not (((R.type second) is \Function) or (cache.ins.has second))
 
-        return [\input.fault [\on [\string,[state.str,\on]]]]
+        return [(new Error!),\input.fault,[\on [\string,[state.str,\on]]]]
 
       return [\string]
 
@@ -244,7 +247,7 @@ gaurd.on = hop.unary
 
 .def (args,state) ->
 
-  handleError [\input.fault [\on [\typeError,[state.str,\on]]]]
+  handleError [(new Error!),\input.fault,[\on [\typeError,[state.str,\on]]]]
 
 
 #-----------------------------------------------------------------------
@@ -257,7 +260,7 @@ validate.rest = (funs,state,type) ->
 
     if (funs.length is 0)
 
-      print.route [\input.fault,[type,[\arg_count,[state.str,type]]]]
+      print.route [(new Error!),\input.fault,[type,[\arg_count,[state.str,type]]]]
 
       return false
 
@@ -265,7 +268,7 @@ validate.rest = (funs,state,type) ->
 
       if not (((R.type F) is \Function) or (cache.ins.has F))
 
-        print.route [\input.fault,[type,[\not_function,[state.str,type]]]]
+        print.route [(new Error!),\input.fault,[type,[\not_function,[state.str,type]]]]
 
         return false
 
@@ -275,7 +278,7 @@ validate.rest = (funs,state,type) ->
 
     if not (funs.length is 1)
 
-      print.route [\input.fault,[type,[\arg_count,[state.str,type]]]]
+      print.route [(new Error!),\input.fault,[type,[\arg_count,[state.str,type]]]]
 
       return false
 
@@ -285,7 +288,7 @@ validate.rest = (funs,state,type) ->
 
     if not (((R.type f) is \Function) or (cache.ins.has F))
 
-      print.route [\input.fault,[type,[\not_function,[state.str,type]]]]
+      print.route [(new Error!),\input.fault,[type,[\not_function,[state.str,type]]]]
 
       return false
 
@@ -299,7 +302,7 @@ validate.rest = (funs,state,type) ->
 
 #-----------------------------------------------------------------------
 
-gaurd.rest = hop
+guard.rest = hop
 .wh do
   validate.rest
   (args,state,type) ->
