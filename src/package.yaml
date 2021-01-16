@@ -5,13 +5,13 @@ homepage: https://github.com/sourcevault/valleydate#readme.md
 license: BSD-3-Clause
 description: immutable object validator
 repository: https://github.com/sourcevault/valleydate.git
-version: 0.1.19
+version: 0.1.20
 main: dist/main.js
 scripts:
   "test": "make travis"
 dependencies:
   hoplon: "*"
-  '@sourcevault/utils.common': "*"
+  "@sourcevault/utils.common": "*"
 keywords:
   - "json-schema-validator"
   - "schema-validator"
