@@ -32,6 +32,7 @@ valleydate is a functional approach to schema validation that puts composability
       - [maybe\*](#maybe)
 1. [.flatato](#flatato)
 1. [common pitfall](#common-pitfall)
+
 .. **quick examples** ..
 
 🟡 Object with required properties `foo` and `bar`.
