@@ -47,7 +47,7 @@
   z1$ = validate = {};
   z1$.on = null;
   z1$.rest = null;
-  props = ['and', 'or', 'alt', 'cont', 'err', 'jam', 'fix'];
+  props = ['and', 'or', 'alt', 'cont', 'edit', 'err', 'jam', 'fix'];
   initState = {
     all: [],
     type: null,
@@ -204,6 +204,7 @@
     case 'fix':
     case 'cont':
     case 'jam':
+    case 'edit':
       return true;
     default:
       return false;
@@ -226,6 +227,7 @@
       case 'fix':
       case 'cont':
       case 'jam':
+      case 'edit':
         return define.and(state, [[type, args[0]]]);
       }
     }());
