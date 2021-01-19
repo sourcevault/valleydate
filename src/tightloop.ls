@@ -362,9 +362,9 @@ resolve = (fun,put,dtype,args) ->
 
   # ------------------------------------------------------
 
-  | \map       => map dtype,F,value,args
-  | \on        => upon F,value,args
-  | \cont      =>
+  | \map         => map dtype,F,value,args
+  | \on          => upon F,value,args
+  | \cont,\edit  =>
 
     put.value   = switch typeof F
     | \function => apply.normal.top F,value,args

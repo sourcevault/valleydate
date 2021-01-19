@@ -379,6 +379,7 @@
     case 'on':
       return upon(F, value, args);
     case 'cont':
+    case 'edit':
       put.value = (function(){
         switch (typeof F) {
         case 'function':

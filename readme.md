@@ -20,7 +20,7 @@ valleydate is a functional approach to schema validation that puts composability
       - [alt](#--alt)
       - [map](#--map)
       - [on](#--on)
-      - [cont](#--cont)
+      - [edit / cont](#--cont)
       - [fix](#--fix)
       - [err](#--err)
       - [jam](#--jam)
@@ -133,7 +133,7 @@ We start by defining our basetypes:
 
 .. and finally consumption units :
 
-- `cont`,`jam`, `err` and `fix`.
+- `cont/edit`,`jam`, `err` and `fix`.
 
 
 #### Initializing Validator
@@ -288,11 +288,13 @@ V2.auth((foo:1,bar:2))
 
 ### - `cont`
 
+Alias: **edit**
+
 - accepts functions that run based on output of validation.
 
 - After validating some data, it needs to be consumed ( if valid ) or throw an error.
 
-- `.cont`,`jam`,`fix` and `err` are consumption unit function that can be used to do just that.
+- `.cont/edit`,`jam`,`fix` and `err` are consumption unit function that can be used to do just that.
 
 - return value of consumption units are important, they replace some parts of return object.
 
