@@ -31,7 +31,7 @@ valleydate is a functional approach to schema validation that puts composability
       - [integer](#helper-validators)
       - [maybe\*](#maybe)
 1. [.flatato](#flatato)
-
+1. [common pitfall](#common-pitfall)
 .. **quick examples** ..
 
 🟡 Object with required properties `foo` and `bar`.
@@ -525,6 +525,28 @@ but it requires your messages to follow a specific message passing protocol :
   ['innertype',' value is not tuple type.']
 ]
 ```
+
+#### .. common pitfall ..
+
+1. **why does mutating variable in function does not change it downstream ?**
+
+each value is rewritten *at every return*, so for example using context variable to try and change a value will lead to confusing output.
+
+```ls
+# .. in livescript instead of javascript ..
+
+V = be.obj.on \foo,
+  (foo,__,data) ->
+    data.foo = "i got changed !"
+    true
+
+data = {foo:void}
+
+torn = (V data,data).value
+
+console.log torn #{foo:undefined} 🡐 ( wont change, can't change )
+```
+It's one of the trade off of having hidden **mutability**, it's easy to avoid such "bugs" by restricting the use of the chainable functions for their stated purpose ( e.g don't use `.and` to edit variables, use `.edit` instead ).
 
 ## LICENCE
 
