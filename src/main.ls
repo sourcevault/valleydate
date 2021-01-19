@@ -71,7 +71,7 @@ validate   = {}
 
 #---------------------------------------------------------
 
-props = [\and \or \alt \cont \err \jam \fix]
+props = [\and \or \alt \cont \edit \err \jam \fix]
 
 init-state =
   all  :[]
@@ -294,7 +294,7 @@ validate.rest = (funs,state,type) ->
 
     return true
 
-  | \err,\fix,\cont,\jam  =>
+  | \err,\fix,\cont,\jam,\edit  =>
 
     return true
 
@@ -312,11 +312,11 @@ guard.rest = hop
     funs = cato args
 
     block = switch type
-    | \and                  => define.and state,funs
-    | \or                   => define.or state,funs
-    | \alt                  => define.or state,[[\alt,funs]]
-    | \map                  => define.and state,[[\map,funs[0]]]
-    | \err,\fix,\cont,\jam  => define.and state,[[type,args[0]]]
+    | \and                        => define.and state,funs
+    | \or                         => define.or state,funs
+    | \alt                        => define.or state,[[\alt,funs]]
+    | \map                        => define.and state,[[\map,funs[0]]]
+    | \err,\fix,\cont,\jam,\edit  => define.and state,[[type,args[0]]]
 
     data = {
       ...state

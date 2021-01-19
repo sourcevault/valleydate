@@ -222,7 +222,7 @@ print.log = ->
 
 sort = (x) -> x.sort(alpha_sort.ascending)
 
-same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on','alt','auth']
+same = includes ['and', 'or', 'cont', 'jam', 'fix', 'err','map','on','alt','auth','edit']
 
 myflat = hop
 .wh do
