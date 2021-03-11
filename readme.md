@@ -1,3 +1,12 @@
+#### MODULE HAS BEEN DEPRECATED AND MOVED TO [hoplon](https://github.com/sourcevault/hoplon)
+
+- you can find all the functions under `hoplon.types` in the new module.
+
+- `valleydate` will still be available, but will not receive any updates.
+
+- in case newer features are needed in your project, please refactor any code to use `hoplon.types` instead of `valleydate`.
+
+------------------
 
 ![](https://raw.githubusercontent.com/sourcevault/valleydate/dev/logo.jpg)
 
@@ -507,7 +516,7 @@ but it requires your messages to follow a specific message passing protocol :
 
 - first value of said array should always be a string that starts with a colon ":".
 
-- to help with sorting, a number can be provided after a second colon (":") to tell flatato the hierarchy of your messages.
+- to help with sorting, a number can be provided after a second colon to tell flatato the hierarchy of your messages.
 
 ```js
 // Examples of message that flatato matches against
