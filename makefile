@@ -15,7 +15,7 @@ pkg:
 
 compile:
 	make pkg
-	lsc -co dist src
+	lsc -bco dist src
 	lsc -c test
 	node ${file}
 
@@ -35,7 +35,7 @@ travis:
 	done
 
 testy:
-	lsc -co dist src
+	lsc -bco dist src
 	lsc -c test/*.ls
 	make pkg
 	make travis

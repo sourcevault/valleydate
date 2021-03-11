@@ -10,8 +10,8 @@ main: dist/main.js
 scripts:
   "test": "make travis"
 dependencies:
-  hoplon: "*"
-  "@sourcevault/utils.common": "*"
+  hoplon: 0.0.44
+  "@sourcevault/utils.common": 0.0.5
 keywords:
   - "json-schema-validator"
   - "schema-validator"
